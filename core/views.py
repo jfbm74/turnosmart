@@ -1,3 +1,6 @@
+# core/views.py:
+
+from django.utils.encoding import force_str
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.views import APIView
@@ -6,8 +9,18 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .serializers import UserSerializer, UserRegisterSerializer, UserLoginSerializer
+from .serializers import UserSerializer, UserRegisterSerializer, UserLoginSerializer, PasswordChangeSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.contrib.auth import get_user_model
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+
+
+
+User = get_user_model()
 
 class UserRegister(APIView):
     permission_classes = [AllowAny]  # Aseguramos la no autenticación del endpoint.
@@ -102,3 +115,59 @@ class UserCreateView(APIView):
                 "data": serializer.data,
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Vista para cambiar contraseña
+class PasswordChangeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(request_body=PasswordChangeSerializer)
+    def post(self, request):
+        serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            request.user.set_password(serializer.validated_data['new_password'])
+            request.user.save()
+            return Response({"message": "Contraseña actualizada exitosamente."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Vista para solicitar recuperación de contraseña
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(request_body=PasswordResetRequestSerializer)
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            user = User.objects.get(email=serializer.validated_data['email'])
+            token = PasswordResetTokenGenerator().make_token(user)
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            reset_url = f"http://example.com/reset-password/{uidb64}/{token}"
+
+            send_mail(
+                'Recuperación de contraseña',
+                f'Use el siguiente enlace para restablecer su contraseña: {reset_url}',
+                'noreply@example.com',
+                [user.email],
+                fail_silently=False,
+            )
+
+            return Response({"message": "Se ha enviado un enlace de recuperación a su correo."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Vista para confirmar recuperación de contraseña
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(request_body=PasswordResetConfirmSerializer)
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        if serializer.is_valid():
+            uid = force_str(urlsafe_base64_decode(serializer.validated_data['uidb64']))
+            user = User.objects.get(pk=uid)
+            user.set_password(serializer.validated_data['new_password'])
+            user.save()
+            return Response({"message": "La contraseña ha sido restablecida exitosamente."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

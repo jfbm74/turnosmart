@@ -1,3 +1,5 @@
+# core/test.py:
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
@@ -17,6 +19,9 @@ class AuthenticationTests(APITestCase):
         self.profile_url = reverse('profile')
         self.logout_url = reverse('logout')
         self.users_url = reverse('create_user')
+        self.password_change_url = reverse('password_change')
+        self.password_reset_request_url = reverse('password_reset_request')
+        self.password_reset_confirm_url = reverse('password_reset_confirm')
 
 
     def test_user_registration(self):
@@ -160,5 +165,67 @@ class AuthenticationTests(APITestCase):
         }
         response = self.client.post(self.users_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)  # Cambiado de 403 a 401
+
+
+
+    def test_password_change(self):
+        """Test para cambiar la contraseña del usuario autenticado."""
+        login_response = self.client.post(self.login_url, {
+            "username": "testuser",
+            "password": "testpassword"
+        }, format='json')
+
+        token = login_response.data['token']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {token}')
+
+        response = self.client.post(self.password_change_url, {
+            "current_password": "testpassword",
+            "new_password": "newpassword123"
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "Contraseña actualizada exitosamente.")
+
+        # Verificar que el usuario puede iniciar sesión con la nueva contraseña
+        login_response = self.client.post(self.login_url, {
+            "username": "testuser",
+            "password": "newpassword123"
+        }, format='json')
+        self.assertEqual(login_response.status_code, status.HTTP_200_OK)
+
+    def test_password_reset_request(self):
+        """Test para solicitar un enlace de recuperación de contraseña."""
+        response = self.client.post(self.password_reset_request_url, {
+            "email": "test@example.com"
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "Se ha enviado un enlace de recuperación a su correo.")
+
+    def test_password_reset_confirm(self):
+        """Test para confirmar la recuperación de contraseña."""
+        user = User.objects.get(email="test@example.com")
+        from django.contrib.auth.tokens import PasswordResetTokenGenerator
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+
+        token = PasswordResetTokenGenerator().make_token(user)
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+
+        response = self.client.post(self.password_reset_confirm_url, {
+            "uidb64": uidb64,
+            "token": token,
+            "new_password": "newpassword123"
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "La contraseña ha sido restablecida exitosamente.")
+
+        # Verificar que el usuario puede iniciar sesión con la nueva contraseña
+        login_response = self.client.post(self.login_url, {
+            "username": "testuser",
+            "password": "newpassword123"
+        }, format='json')
+        self.assertEqual(login_response.status_code, status.HTTP_200_OK)
 
     
