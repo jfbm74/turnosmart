@@ -24,10 +24,9 @@ jobs:
           cd backend
           python3 -m venv venv
           source venv/bin/activate
-          pip install -r requirements.txt
+          pip install -r /home/runner/work/turnosmart/turnosmart/backend/requirements.txt # Ruta completa a requirements.txt
 
       - name: Run Django Tests
         run: |
-         cd turnosmart
-         source backend/venv/bin/activate
-         python manage.py test core
+          source backend/venv/bin/activate # Ahora sin cd
+          python manage.py test core
