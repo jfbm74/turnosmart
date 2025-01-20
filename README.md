@@ -56,6 +56,3 @@ This project is under the [insert license type] license.
 ## Contact
 
 For any questions or suggestions, please contact the owner of this repository.
-
----
-This `README.md` file provides a clear and concise overview of the project. Feel free to adjust and extend it with more details specific to your development.
