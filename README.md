@@ -1,5 +1,5 @@
 # TurnoSmart: Smart Queue Management System
-
+[![Run Django Tests](https://github.com/jfbm74/turnosmart/actions/workflows/test.yml/badge.svg)](https://github.com/jfbm74/turnosmart/actions/workflows/test.yml)
 ## Overview
 
 This repository contains the source code for **TurnoSmart**, a comprehensive queue management system designed to streamline and optimize customer service processes for businesses and organizations with high traffic. TurnoSmart aims to enhance the overall customer experience by providing an organized, efficient, and transparent approach to managing waiting times.
