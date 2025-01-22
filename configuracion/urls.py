@@ -10,6 +10,7 @@ from .views import (
 )
 
 router = DefaultRouter()
+# Las rutas ahora comienzan sin la `/`, ya que `/api/` se gestiona en backend/urls.py
 router.register(r'instituciones', InstitucionViewSet, basename='institucion')
 router.register(r'imagenes', ImagenViewSet, basename='imagen')
 router.register(r'videos', VideoViewSet, basename='video')
