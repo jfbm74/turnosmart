@@ -29,4 +29,4 @@ jobs:
       - name: Run Django Tests
         run: |
           source backend/venv/bin/activate # Ahora sin cd
-          python manage.py test core
+          python manage.py test --verbosity=2

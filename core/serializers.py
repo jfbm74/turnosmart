@@ -17,28 +17,39 @@ from .models import UserProfile
 User = get_user_model()
 
 
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-       model = UserProfile  # Ahora el modelo es UserProfile
-       fields = ['id', 'username', 'email', 'first_name', 'last_name', 'cedula', 'foto', 'perfil', 'ventanillas_atencion']
+        model = UserProfile  # Ahora el modelo es UserProfile
+        fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "cedula",
+            "foto",
+            "perfil",
+            "ventanillas_atencion",
+        ]
+
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
-       model = UserProfile # Ahora el modelo es UserProfile
-       fields = ['username', 'email', 'first_name', 'last_name','password']
-       extra_kwargs = {'password': {'write_only': True}}
+        model = UserProfile  # Ahora el modelo es UserProfile
+        fields = ["username", "email", "first_name", "last_name", "password"]
+        extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
-         password = validated_data.pop('password')
-         user = UserProfile(**validated_data) # Ahora el modelo es UserProfile
-         user.set_password(password)
-         user.save()
-         return user
+        password = validated_data.pop("password")
+        user = UserProfile(**validated_data)  # Ahora el modelo es UserProfile
+        user.set_password(password)
+        user.save()
+        return user
+
 
 class UserLoginSerializer(serializers.Serializer):
-   username = serializers.CharField()
-   password = serializers.CharField()
+    username = serializers.CharField()
+    password = serializers.CharField()
 
 
 # Serializer para cambio de contraseña
@@ -47,8 +58,8 @@ class PasswordChangeSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
 
     def validate(self, data):
-        user = self.context['request'].user
-        if not user.check_password(data['current_password']):
+        user = self.context["request"].user
+        if not user.check_password(data["current_password"]):
             raise serializers.ValidationError("La contraseña actual es incorrecta.")
         return data
 
@@ -71,12 +82,14 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
     def validate(self, data):
         try:
-            uid = force_str(urlsafe_base64_decode(data['uidb64']))
+            uid = force_str(urlsafe_base64_decode(data["uidb64"]))
             user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             raise serializers.ValidationError("El enlace de recuperación es inválido.")
 
-        if not PasswordResetTokenGenerator().check_token(user, data['token']):
-            raise serializers.ValidationError("El token de recuperación no es válido o ha expirado.")
+        if not PasswordResetTokenGenerator().check_token(user, data["token"]):
+            raise serializers.ValidationError(
+                "El token de recuperación no es válido o ha expirado."
+            )
 
         return data
