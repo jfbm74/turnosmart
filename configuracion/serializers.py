@@ -1,3 +1,5 @@
+# configuracion/serializers.py
+
 from rest_framework import serializers
 from .models import Institucion, Imagen, Video, Audio, Ticket, Sistema, Voz
 
