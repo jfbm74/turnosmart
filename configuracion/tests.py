@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from django.contrib.auth import get_user_model
 from backend import settings
-from configuracion.models import Institucion, Imagen, Video, Audio
+from configuracion.models import Institucion, Imagen, Video, Audio, Ticket, Sistema
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
 import io
@@ -131,6 +131,10 @@ class InstitucionAPITests(APITestCase):
         """Test para eliminar una institución sin autenticación."""
         response = self.client.delete(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
+    def tearDown(self):
+        Institucion.objects.all().delete()
+        User.objects.all().delete()
 
 
 class ImagenAPITests(APITestCase):
@@ -190,6 +194,10 @@ class ImagenAPITests(APITestCase):
         response = self.client.post(self.list_url, data, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Imagen.objects.count(), 2)
+    
+    def tearDown(self):
+        Imagen.objects.all().delete()
+        User.objects.all().delete()
 
 
 class VideoAPITests(APITestCase):
@@ -279,17 +287,10 @@ class VideoAPITests(APITestCase):
         self.client.force_authenticate(user=None)
         response = self.client.delete(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-
-
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-from configuracion.models import Audio
-from django.contrib.auth import get_user_model
-from django.core.files.uploadedfile import SimpleUploadedFile
-
-User = get_user_model()
+    
+    def tearDown(self):
+        Video.objects.all().delete()
+        User.objects.all().delete()
 
 
 class AudioAPITests(APITestCase):
@@ -368,15 +369,10 @@ class AudioAPITests(APITestCase):
         self.client.force_authenticate(user=None)
         response = self.client.delete(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-from configuracion.models import Ticket
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+    
+    def tearDown(self):
+        Audio.objects.all().delete()
+        User.objects.all().delete()
 
 
 class TicketAPITests(APITestCase):
@@ -478,3 +474,112 @@ class TicketAPITests(APITestCase):
         self.client.force_authenticate(user=None)
         response = self.client.delete(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
+    def tearDown(self):
+        Ticket.objects.all().delete()
+        User.objects.all().delete()
+
+
+class SistemaAPITests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="testuser", password="testpassword", email="testuser@example.com"
+        )
+        self.client.force_authenticate(user=self.user)
+
+        # Crear una configuración inicial del sistema
+        self.sistema = Sistema.objects.create(
+            tiempo_espera=10,
+            umbral_espera=5,
+            mostrar_turnos_anulados=True,
+            mostrar_turnos_atendidos=False,
+            num_max_turnos_cedula=3,
+            version_sistema="4.0.1",
+        )
+
+        self.list_url = reverse("sistema-list")
+        self.detail_url = reverse("sistema-detail", args=[self.sistema.id])
+
+    def test_list_sistema_authenticated(self):
+        """Test para listar configuraciones del sistema con autenticación."""
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+
+    def test_list_sistema_unauthenticated(self):
+        """Test para listar configuraciones del sistema sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_create_sistema_authenticated(self):
+        """Test para crear una configuración del sistema con autenticación."""
+        data = {
+            "tiempo_espera": 15,
+            "umbral_espera": 7,
+            "mostrar_turnos_anulados": False,
+            "mostrar_turnos_atendidos": True,
+            "num_max_turnos_cedula": 5,
+            "version_sistema": "4.0.2",
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Sistema.objects.count(), 2)
+
+    def test_create_sistema_unauthenticated(self):
+        """Test para crear una configuración del sistema sin autenticación."""
+        self.client.force_authenticate(user=None)
+        data = {
+            "tiempo_espera": 15,
+            "umbral_espera": 7,
+            "mostrar_turnos_anulados": False,
+            "mostrar_turnos_atendidos": True,
+            "num_max_turnos_cedula": 5,
+            "version_sistema": "4.0.2",
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_retrieve_sistema_authenticated(self):
+        """Test para obtener una configuración del sistema específica con autenticación."""
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["tiempo_espera"], self.sistema.tiempo_espera)
+
+    def test_retrieve_sistema_unauthenticated(self):
+        """Test para obtener una configuración del sistema específica sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_sistema_authenticated(self):
+        """Test para actualizar una configuración del sistema con autenticación."""
+        data = {
+            "tiempo_espera": 20,
+            "umbral_espera": 10,
+            "mostrar_turnos_anulados": True,
+            "mostrar_turnos_atendidos": True,
+            "num_max_turnos_cedula": 10,
+            "version_sistema": "4.1.0",
+        }
+        response = self.client.put(self.detail_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.sistema.refresh_from_db()
+        self.assertEqual(self.sistema.tiempo_espera, 20)
+
+    def test_delete_sistema_authenticated(self):
+        """Test para eliminar una configuración del sistema con autenticación."""
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Sistema.objects.count(), 0)
+
+    def test_delete_sistema_unauthenticated(self):
+        """Test para eliminar una configuración del sistema sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def tearDown(self):
+        Sistema.objects.all().delete()
+        User.objects.all().delete()

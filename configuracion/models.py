@@ -95,7 +95,7 @@ class Sistema(models.Model):
     enviar_encuesta_cliente = models.BooleanField(default=False)
     asignacion_automatica = models.BooleanField(default=False)
     version_sistema = models.CharField(max_length=20, default='4.0.1')
-    copyright = models.CharField(max_length=200, default='jairo blanquiceth')
+    copyright = models.CharField(max_length=200, default='Juan Felipe Bustamante')
     contrasena_email_notificaciones = models.CharField(max_length=200, default='a', blank=True, null=True)
     puerto_notificaciones = models.IntegerField(default=587, blank=True, null=True)
     duracion_link_recuperacion_clave = models.IntegerField(default=1)
@@ -107,11 +107,11 @@ class Sistema(models.Model):
          ('QR', 'QR'),
     ], default = 'IMPRIMIR')
     url_copyright = models.URLField(default='https://piisa.com', blank=True, null=True)
-    email_notificaciones = models.EmailField(default='jairoblanquicethcuello@gmail.com', blank=True, null=True)
+    email_notificaciones = models.EmailField(default='pipebustamante@gmail.com', blank=True, null=True)
     host_notificaciones = models.CharField(max_length=200, default='smtp.gmail.com', blank=True, null=True)
-    remitente_notificaciones = models.CharField(max_length=200, default='Socioturnos', blank=True, null=True)
-    enlace_recuperacion_clave = models.URLField(default='http://socioturnos.com/digiturnos/recuperarclave.php', blank=True, null=True)
-    enlace_encuesta = models.URLField(default='http://socioturnos.com/digiturnos/encuesta.php', blank=True, null=True)
+    remitente_notificaciones = models.CharField(max_length=200, default='TurnoSmart', blank=True, null=True)
+    enlace_recuperacion_clave = models.URLField(default='http://turnosmart.com/digiturnos/recuperarclave.php', blank=True, null=True)
+    enlace_encuesta = models.URLField(default='http://turnosmart.com/digiturnos/encuesta.php', blank=True, null=True)
 
 
 class Voz(models.Model):
