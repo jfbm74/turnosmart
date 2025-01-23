@@ -368,3 +368,113 @@ class AudioAPITests(APITestCase):
         self.client.force_authenticate(user=None)
         response = self.client.delete(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase, APIClient
+from configuracion.models import Ticket
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+
+class TicketAPITests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="testuser", password="testpassword", email="testuser@example.com"
+        )
+        self.client.force_authenticate(user=self.user)
+
+        # Crear una configuración inicial de ticket
+        self.ticket = Ticket.objects.create(
+            ancho_ticket=80,
+            ancho_logo=35,
+            logo_visible=True,
+            fuente_turno=14,
+            fuente_tramite=5,
+            tramite_visible=True,
+        )
+
+        self.list_url = reverse("ticket-list")
+        self.detail_url = reverse("ticket-detail", args=[self.ticket.id])
+
+    def test_list_tickets_authenticated(self):
+        """Test para listar configuraciones de tickets con autenticación."""
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+
+    def test_list_tickets_unauthenticated(self):
+        """Test para listar configuraciones de tickets sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_create_ticket_authenticated(self):
+        """Test para crear una configuración de ticket con autenticación."""
+        data = {
+            "ancho_ticket": 90,
+            "ancho_logo": 40,
+            "logo_visible": True,
+            "fuente_turno": 16,
+            "fuente_tramite": 6,
+            "tramite_visible": True,
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Ticket.objects.count(), 2)
+
+    def test_create_ticket_unauthenticated(self):
+        """Test para crear una configuración de ticket sin autenticación."""
+        self.client.force_authenticate(user=None)
+        data = {
+            "ancho_ticket": 90,
+            "ancho_logo": 40,
+            "logo_visible": True,
+            "fuente_turno": 16,
+            "fuente_tramite": 6,
+            "tramite_visible": True,
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_retrieve_ticket_authenticated(self):
+        """Test para obtener una configuración específica de ticket con autenticación."""
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["ancho_ticket"], self.ticket.ancho_ticket)
+
+    def test_retrieve_ticket_unauthenticated(self):
+        """Test para obtener una configuración específica de ticket sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_ticket_authenticated(self):
+        """Test para actualizar una configuración de ticket con autenticación."""
+        data = {
+            "ancho_ticket": 100,
+            "ancho_logo": 45,
+            "logo_visible": False,
+            "fuente_turno": 18,
+            "fuente_tramite": 7,
+            "tramite_visible": False,
+        }
+        response = self.client.put(self.detail_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.ancho_ticket, 100)
+
+    def test_delete_ticket_authenticated(self):
+        """Test para eliminar una configuración de ticket con autenticación."""
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Ticket.objects.count(), 0)
+
+    def test_delete_ticket_unauthenticated(self):
+        """Test para eliminar una configuración de ticket sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
