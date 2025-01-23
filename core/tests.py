@@ -44,7 +44,7 @@ class AuthenticationTests(APITestCase):
         self.assertIn("data", response.data)
         self.assertEqual(
             User.objects.count(), 2
-        )  # Verificar que el usuario fue creado en la base de datos
+        ) 
 
     def test_user_login(self):
         """Test de login del usuario, obteniendo un token."""
@@ -140,7 +140,7 @@ class AuthenticationTests(APITestCase):
         self.assertIn("data", response.data)
         self.assertEqual(
             User.objects.count(), 2
-        )  # Verificamos que el usuario fue creado en la base de datos
+        ) 
 
     def test_user_registration_unauthenticated(self):
         """Test para registrar un usuario sin autenticación, enviando petición al endpoint `/users`."""

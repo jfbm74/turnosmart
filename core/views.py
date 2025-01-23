@@ -103,7 +103,7 @@ class UserProfileView(APIView):
     def get(self, request):
         user_serializer = UserSerializer(
             request.user
-        )  # Serializamos la información del usuario actual
+        ) 
         return Response(user_serializer.data, status=status.HTTP_200_OK)
 
 

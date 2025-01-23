@@ -9,14 +9,13 @@ User = get_user_model()
 
 class ClienteAPITests(APITestCase):
     def setUp(self):
-        # Configuración inicial para los tests
+
         self.client = APIClient()
         self.user = User.objects.create_user(
             username="testuser", password="testpassword", email="test@example.com"
         )
         self.client.force_authenticate(user=self.user)
 
-        # Crear cliente de prueba
         self.cliente = Cliente.objects.create(
             nombre="Juan",
             apellido="Pérez",
@@ -27,7 +26,6 @@ class ClienteAPITests(APITestCase):
             estado=True,
         )
 
-        # Asegúrate de que los nombres coincidan con `clientes/urls.py`
         self.list_create_url = reverse("clientes_list_create")
         self.detail_url = reverse("clientes_detail", kwargs={"pk": self.cliente.id})
 

@@ -64,7 +64,6 @@ class VideoViewSet(viewsets.ModelViewSet):
         url = request.data.get("url_video", None)
         if not url:
             return Response({"error": "Debe proporcionar una URL."}, status=400)
-        # Aquí puedes agregar lógica para validar la URL
         return Response({"mensaje": "URL válida."})
 
 

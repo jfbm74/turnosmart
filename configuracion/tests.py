@@ -22,7 +22,6 @@ class InstitucionAPITests(APITestCase):
             username="testuser", password="testpassword", email="test@example.com"
         )
 
-        # Crear institución inicial
         self.institucion = Institucion.objects.create(
             nombre="Institución de Prueba",
             siglas="IDP",
