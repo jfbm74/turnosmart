@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from django.contrib.auth import get_user_model
 from backend import settings
-from configuracion.models import Institucion, Imagen, Video, Audio, Ticket, Sistema
+from configuracion.models import Institucion, Imagen, Video, Audio, Ticket, Sistema, Voz
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
 import io
@@ -582,4 +582,105 @@ class SistemaAPITests(APITestCase):
 
     def tearDown(self):
         Sistema.objects.all().delete()
+        User.objects.all().delete()
+
+class VozAPITests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="testuser", password="testpassword", email="testuser@example.com"
+        )
+        self.client.force_authenticate(user=self.user)
+
+        # Crear una configuración inicial de voz
+        self.voz = Voz.objects.create(
+            llamado_turno_con_voz=True,
+            origen_voz="TTS NAVEGADOR WEB",
+            idioma="ESPAÑOL (ESPAÑA)",
+            tono=1.2,
+            velocidad=1.0,
+            volumen=0.8,
+        )
+
+        self.list_url = reverse("voz-list")
+        self.detail_url = reverse("voz-detail", args=[self.voz.id])
+
+    def test_list_vozes_authenticated(self):
+        """Test para listar configuraciones de voz con autenticación."""
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+
+    def test_list_vozes_unauthenticated(self):
+        """Test para listar configuraciones de voz sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_create_voz_authenticated(self):
+        """Test para crear una configuración de voz con autenticación."""
+        data = {
+            "llamado_turno_con_voz": False,
+            "origen_voz": "URL EXTERNA",
+            "idioma": "INGLÉS (EEUU)",
+            "tono": 1.0,
+            "velocidad": 1.5,
+            "volumen": 1.0,
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Voz.objects.count(), 2)
+
+    def test_create_voz_unauthenticated(self):
+        """Test para crear una configuración de voz sin autenticación."""
+        self.client.force_authenticate(user=None)
+        data = {
+            "llamado_turno_con_voz": False,
+            "origen_voz": "URL EXTERNA",
+            "idioma": "INGLÉS (EEUU)",
+            "tono": 1.0,
+            "velocidad": 1.5,
+            "volumen": 1.0,
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_retrieve_voz_authenticated(self):
+        """Test para obtener una configuración de voz específica con autenticación."""
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["idioma"], self.voz.idioma)
+
+    def test_retrieve_voz_unauthenticated(self):
+        """Test para obtener una configuración de voz específica sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_voz_authenticated(self):
+        """Test para actualizar una configuración de voz con autenticación."""
+        data = {
+            "tono": 1.5,
+            "velocidad": 0.9,
+            "volumen": 0.7,
+        }
+        response = self.client.patch(self.detail_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.voz.refresh_from_db()
+        self.assertEqual(self.voz.tono, 1.5)
+
+    def test_delete_voz_authenticated(self):
+        """Test para eliminar una configuración de voz con autenticación."""
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Voz.objects.count(), 0)
+
+    def test_delete_voz_unauthenticated(self):
+        """Test para eliminar una configuración de voz sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def tearDown(self):
+        Voz.objects.all().delete()
         User.objects.all().delete()
