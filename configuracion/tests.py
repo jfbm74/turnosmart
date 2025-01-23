@@ -279,3 +279,92 @@ class VideoAPITests(APITestCase):
         self.client.force_authenticate(user=None)
         response = self.client.delete(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase, APIClient
+from configuracion.models import Audio
+from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
+
+User = get_user_model()
+
+
+class AudioAPITests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="testuser", password="testpassword", email="testuser@example.com"
+        )
+        self.client.force_authenticate(user=self.user)
+
+        # Crear un audio inicial
+        self.audio = Audio.objects.create(
+            timbre=SimpleUploadedFile("test_audio.mp3", b"file_content")
+        )
+
+        self.list_url = reverse("audio-list")
+        self.detail_url = reverse("audio-detail", args=[self.audio.id])
+
+    def test_list_audios_authenticated(self):
+        """Test para listar audios con autenticación."""
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+
+    def test_list_audios_unauthenticated(self):
+        """Test para listar audios sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_create_audio_authenticated(self):
+        """Test para crear un audio con autenticación."""
+        data = {
+            "timbre": SimpleUploadedFile("new_audio.mp3", b"new_file_content"),
+        }
+        response = self.client.post(self.list_url, data, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Audio.objects.count(), 2)
+
+    def test_create_audio_unauthenticated(self):
+        """Test para crear un audio sin autenticación."""
+        self.client.force_authenticate(user=None)
+        data = {
+            "timbre": SimpleUploadedFile("new_audio.mp3", b"new_file_content"),
+        }
+        response = self.client.post(self.list_url, data, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_retrieve_audio_authenticated(self):
+        """Test para obtener un audio específico con autenticación."""
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_retrieve_audio_unauthenticated(self):
+        """Test para obtener un audio específico sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_audio_authenticated(self):
+        """Test para actualizar un audio con autenticación."""
+        data = {
+            "timbre": SimpleUploadedFile("updated_audio.mp3", b"updated_file_content"),
+        }
+        response = self.client.put(self.detail_url, data, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_delete_audio_authenticated(self):
+        """Test para eliminar un audio con autenticación."""
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Audio.objects.count(), 0)
+
+    def test_delete_audio_unauthenticated(self):
+        """Test para eliminar un audio sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
