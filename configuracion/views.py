@@ -1,6 +1,9 @@
 # configuracion/views.py
 
+import os
 from rest_framework import viewsets
+
+from backend import settings
 from .models import Institucion, Imagen, Video, Audio, Ticket, Sistema, Voz
 from .serializers import (
     InstitucionSerializer,
@@ -40,6 +43,12 @@ class ImagenViewSet(viewsets.ModelViewSet):
     """
     queryset = Imagen.objects.all()
     serializer_class = ImagenSerializer
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        images_dir = os.path.join(settings.MEDIA_ROOT, 'images')
+        if not os.path.exists(images_dir):
+            os.makedirs(images_dir)
 
 
 class VideoViewSet(viewsets.ModelViewSet):
@@ -89,3 +98,10 @@ class VozViewSet(viewsets.ModelViewSet):
     """
     queryset = Voz.objects.all()
     serializer_class = VozSerializer
+
+
+
+class ImagenViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ImagenSerializer
+    queryset = Imagen.objects.all()

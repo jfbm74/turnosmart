@@ -1,8 +1,14 @@
+import os
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from django.contrib.auth import get_user_model
-from configuracion.models import Institucion
+from backend import settings
+from configuracion.models import Institucion, Imagen 
+from django.core.files.uploadedfile import SimpleUploadedFile
+from PIL import Image
+import io
+
 
 User = get_user_model()
 
@@ -124,3 +130,108 @@ class InstitucionAPITests(APITestCase):
         """Test para eliminar una institución sin autenticación."""
         response = self.client.delete(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class ImagenAPITests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        # Crear usuarios
+        self.admin_user = User.objects.create_superuser(
+            username="admin", password="123456", email="admin@example.com"
+        )
+        self.user = User.objects.create_user(
+            username="testuser", password="testpassword", email="testuser@example.com"
+        )
+
+        # Crear una imagen inicial
+        self.imagen = Imagen.objects.create(
+            logo_pequeño="images/small_logo.png",
+            logo_grande="images/large_logo.png",
+            logo_ticket="images/ticket_logo.png",
+            footer="images/footer.png",
+            wallpaper_turnero="images/wallpaper.png",
+        )
+
+        self.list_url = reverse("imagen-list")
+        self.detail_url = reverse("imagen-detail", args=[self.imagen.id])
+
+    def authenticate(self):
+        response = self.client.post(
+            reverse("token_obtain_pair"), 
+            {"username": "admin", "password": "123456"},
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        token = response.data.get("access")
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def test_list_imagenes_authenticated(self):
+        """Test para listar imágenes con autenticación."""
+        self.authenticate()
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+
+    def test_list_imagenes_unauthenticated(self):
+        """Test para listar imágenes sin autenticación."""
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_create_imagen_authenticated(self):
+        """Test para crear una imagen con autenticación."""
+        self.authenticate()
+        data = {
+            "logo_pequeño": "images/new_small_logo.png",
+            "logo_grande": "images/new_large_logo.png",
+            "logo_ticket": "images/new_ticket_logo.png",
+            "footer": "images/new_footer.png",
+            "wallpaper_turnero": "images/new_wallpaper.png",
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Imagen.objects.count(), 2)
+
+    def test_create_imagen_unauthenticated(self):
+        """Test para crear una imagen sin autenticación."""
+        data = {
+            "logo_pequeño": "images/bonsana_peq.jpeg",
+            "logo_grande": "images/logo_med_bonsana.png",
+            "logo_ticket": "images/logo_ticket.jpg",
+            "footer": "images/logo_footer.png",
+            "wallpaper_turnero": "images/logo_wallpaper.jpg",
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+
+    def test_create_imagen_authenticated(self):
+        self.authenticate()
+        
+        # Create actual image files
+        def create_test_image(filename):
+            image = Image.new('RGB', (100, 100), color='red')
+            byte_arr = io.BytesIO()
+            image.save(byte_arr, format='PNG')
+            return SimpleUploadedFile(filename, byte_arr.getvalue(), content_type='image/png')
+        
+        data = {
+            "logo_pequeño": create_test_image("small_logo.png"),
+            "logo_grande": create_test_image("large_logo.png"),
+            "logo_ticket": create_test_image("ticket_logo.png"),
+            "footer": create_test_image("footer.png"),
+            "wallpaper_turnero": create_test_image("wallpaper.png"),
+        }
+        
+        response = self.client.post(self.list_url, data, format="multipart")
+        
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Imagen.objects.count(), 2)
+
+
+        def test_delete_imagen_authenticated(self):
+            """Test para eliminar una imagen con autenticación."""
+            self.authenticate()
+            response = self.client.delete(self.detail_url)
+            self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+            self.assertEqual(Imagen.objects.count(), 0)

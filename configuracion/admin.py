@@ -48,3 +48,6 @@ class VozAdmin(admin.ModelAdmin):
     list_display = ('id', 'llamado_turno_con_voz', 'origen_voz', 'idioma')
     list_filter = ('origen_voz',)
     ordering = ('id',)
+
+
+

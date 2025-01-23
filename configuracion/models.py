@@ -1,3 +1,4 @@
+import os
 from django.db import models
 
 # Create your models here.
@@ -18,16 +19,12 @@ class Institucion(models.Model):
       return self.nombre
     
 
-
 class Imagen(models.Model):
-  """
-  Modelo para las imágenes de la aplicación.
-  """
-  logo_pequeño = models.ImageField(upload_to='images/', blank=True, null=True)
-  logo_grande = models.ImageField(upload_to='images/', blank=True, null=True)
-  logo_ticket = models.ImageField(upload_to='images/', blank=True, null=True)
-  footer = models.ImageField(upload_to='images/', blank=True, null=True)
-  wallpaper_turnero = models.ImageField(upload_to='images/', blank=True, null=True)
+    logo_pequeño = models.ImageField(upload_to='small', blank=True, null=True)
+    logo_grande = models.ImageField(upload_to='large', blank=True, null=True)
+    logo_ticket = models.ImageField(upload_to='ticket', blank=True, null=True)
+    footer = models.ImageField(upload_to='footer', blank=True, null=True)
+    wallpaper_turnero = models.ImageField(upload_to='wallpaper', blank=True, null=True)
 
 
 

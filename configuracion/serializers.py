@@ -81,3 +81,12 @@ class VozSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'id': {'help_text': 'Identificador único de la configuración de voz', 'read_only': True},
         }
+
+
+class ImagenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Imagen
+        fields = ['id', 'logo_pequeño', 'logo_grande', 'logo_ticket', 'footer', 'wallpaper_turnero']
+        extra_kwargs = {
+            'id': {'read_only': True, 'help_text': 'Identificador único de la imagen.'},
+         }
