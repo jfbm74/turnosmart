@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from django.contrib.auth import get_user_model
 from backend import settings
-from configuracion.models import Institucion, Imagen, Video
+from configuracion.models import Institucion, Imagen, Video, Audio
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
 import io
