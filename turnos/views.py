@@ -1,10 +1,11 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
-from .models import FranjaHoraria, Horario
-from .serializers import FranjaHorariaSerializer, HorarioSerializer
+from .models import FranjaHoraria, Horario, Turnero
+from .serializers import FranjaHorariaSerializer, HorarioSerializer, TurneroSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from datetime import datetime
+from rest_framework import viewsets
 
 
 
@@ -61,3 +62,12 @@ class GenerarHorariosAPIView(APIView):
             })
 
         return Response({"horarios_activos": resultado})
+
+
+class TurneroViewSet(viewsets.ModelViewSet):
+    """
+    API para gestionar los turneros.
+    """
+    queryset = Turnero.objects.all()
+    serializer_class = TurneroSerializer
+    permission_classes = [IsAuthenticated]

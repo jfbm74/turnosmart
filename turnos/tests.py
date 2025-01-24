@@ -1,9 +1,10 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
-from turnos.models import FranjaHoraria, Horario
+from turnos.models import FranjaHoraria, Horario, Turnero
 from django.contrib.auth import get_user_model
 from datetime import datetime
+
 
 User = get_user_model()
 
@@ -185,13 +186,6 @@ class HorarioAPITests(APITestCase):
         User.objects.all().delete()
 
 
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-from turnos.models import FranjaHoraria, Horario
-from django.contrib.auth import get_user_model
-from datetime import datetime
-
 User = get_user_model()
 
 class GenerarHorariosAPITests(APITestCase):
@@ -235,3 +229,88 @@ class GenerarHorariosAPITests(APITestCase):
         FranjaHoraria.objects.all().delete()
         User.objects.all().delete()
 
+
+
+class TurneroAPITests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+        username="testuser", password="testpassword", email="testuser@example.com"
+    )
+        self.client.force_authenticate(user=self.user)
+
+    # Crear un turnero inicial
+        self.turnero = Turnero.objects.create(
+            nombre="Turnero de Prueba",
+            presentacion="IMPRIMIR",
+        )
+
+        self.list_url = reverse("turnero-list")
+        self.detail_url = reverse("turnero-detail", args=[self.turnero.id])
+
+    def test_list_turneros_authenticated(self):
+        """Test para listar turneros con autenticación."""
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+
+    def test_list_turneros_unauthenticated(self):
+        """Test para listar turneros sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_create_turnero_authenticated(self):
+        """Test para crear un turnero con autenticación."""
+        data = {
+            "nombre": "Nuevo Turnero",
+            "presentacion": "QR",
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Turnero.objects.count(), 2)
+
+    def test_create_turnero_unauthenticated(self):
+        """Test para crear un turnero sin autenticación."""
+        self.client.force_authenticate(user=None)
+        data = {
+            "nombre": "Nuevo Turnero",
+            "presentacion": "QR",
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_retrieve_turnero_authenticated(self):
+        """Test para obtener un turnero específico con autenticación."""
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["nombre"], self.turnero.nombre)
+
+    def test_retrieve_turnero_unauthenticated(self):
+        """Test para obtener un turnero específico sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_turnero_authenticated(self):
+        """Test para actualizar un turnero con autenticación."""
+        data = {
+            "nombre": "Turnero Actualizado",
+            "presentacion": "QR",
+        }
+        response = self.client.put(self.detail_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.turnero.refresh_from_db()
+        self.assertEqual(self.turnero.nombre, "Turnero Actualizado")
+
+    def test_delete_turnero_authenticated(self):
+        """Test para eliminar un turnero con autenticación."""
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Turnero.objects.count(), 0)
+
+    def test_delete_turnero_unauthenticated(self):
+        """Test para eliminar un turnero sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

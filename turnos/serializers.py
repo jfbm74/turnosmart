@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import FranjaHoraria, Horario
+from .models import FranjaHoraria, Horario, Turnero
 
 class FranjaHorariaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,3 +16,13 @@ class HorarioSerializer(serializers.ModelSerializer):
             'id', 'franja_horaria', 'lunes', 'martes', 'miercoles', 
             'jueves', 'viernes', 'sabado', 'domingo'
         ]
+
+class TurneroSerializer(serializers.ModelSerializer):
+  class Meta:
+        model = Turnero
+        fields = ['id', 'nombre', 'presentacion']
+        extra_kwargs = {
+            'id': {'read_only': True, 'help_text': 'Identificador único del turnero.'},
+            'nombre': {'help_text': 'Nombre del turnero'},
+            'presentacion': {'help_text': 'Tipo de presentación del turno (IMPRIMIR o QR).'},
+         }
