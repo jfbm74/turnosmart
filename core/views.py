@@ -16,7 +16,7 @@ from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from .models import Grupo
+from .models import Grupo, Ventanilla
 from .serializers import (
     GrupoSerializer,
     UserSerializer,
@@ -25,7 +25,9 @@ from .serializers import (
     PasswordChangeSerializer,
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer,
+    VentanillaSerializer,
 )
+from rest_framework.viewsets import ModelViewSet
 
 
 
@@ -217,3 +219,12 @@ class GrupoViewSet(viewsets.ModelViewSet):
          queryset = Grupo.objects.all()
          serializer_class = GrupoSerializer
          permission_classes = [IsAuthenticated]
+
+
+class VentanillaViewSet(ModelViewSet):
+    """
+    API para gestionar ventanillas individuales.
+    """
+    queryset = Ventanilla.objects.all()
+    serializer_class = VentanillaSerializer
+    permission_classes = [IsAuthenticated]

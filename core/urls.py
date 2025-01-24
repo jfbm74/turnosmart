@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 from .views import (
     GrupoViewSet,
     PasswordChangeView,
@@ -9,13 +9,14 @@ from .views import (
     UserProfileView,
     UserLogoutView,
     UserCreateView,
+    VentanillaViewSet,
 )
 from rest_framework import routers
 
 
 router = routers.DefaultRouter()
 router.register(r'grupos', GrupoViewSet, basename='grupos')
-
+router.register(r'ventanillas', VentanillaViewSet, basename='ventanilla')
 
 urlpatterns = [
     path("auth/register", UserRegister.as_view(), name="register"),
@@ -26,4 +27,5 @@ urlpatterns = [
     path("auth/password-change", PasswordChangeView.as_view(), name="password_change"),
     path("auth/password-reset-request", PasswordResetRequestView.as_view(), name="password_reset_request"),
     path("auth/password-reset-confirm", PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
+    path('', include(router.urls)),
 ]

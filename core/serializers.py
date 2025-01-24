@@ -11,7 +11,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .models import UserProfile, Grupo
+from .models import UserProfile, Grupo, Ventanilla
 
 
 User = get_user_model()
@@ -108,3 +108,15 @@ class GrupoSerializer(serializers.ModelSerializer):
             'ventanillas_atencion': {'help_text': 'Lista de ids de ventanillas que pertenecen al grupo.'},
            'estado': {'help_text': 'Estado del grupo', 'example': 'True'},
          }
+
+
+class VentanillaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ventanilla
+        fields = ['id', 'id_ventanilla', 'descripcion', 'estado']
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'id_ventanilla': {'help_text': 'Identificador único de la ventanilla.'},
+            'descripcion': {'help_text': 'Descripción de la ventanilla.'},
+            'estado': {'help_text': 'Estado de la ventanilla (activo/inactivo).'},
+        }

@@ -6,6 +6,8 @@ from rest_framework.test import APITestCase, APIClient
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 
+from core.models import Ventanilla
+
 User = get_user_model()
 
 
@@ -228,3 +230,53 @@ class AuthenticationTests(APITestCase):
             format="json",
         )
         self.assertEqual(login_response.status_code, status.HTTP_200_OK)
+
+
+class VentanillaAPITests(APITestCase):
+    def setUp(self):
+        # Crear usuario de prueba y autenticarlo
+        self.user = User.objects.create_user(username="admin", password="password")
+        self.client.force_authenticate(user=self.user)
+
+        # Crear ventanilla de prueba
+        self.ventanilla = Ventanilla.objects.create(
+            id_ventanilla=1, descripcion="Ventanilla 1", estado=True
+        )
+
+        # Configurar rutas para pruebas
+        self.list_url = reverse("ventanilla-list")
+        self.detail_url = reverse("ventanilla-detail", kwargs={"pk": self.ventanilla.id})
+
+    def test_list_ventanillas(self):
+        """Test para listar todas las ventanillas."""
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+
+    def test_create_ventanilla(self):
+        """Test para crear una nueva ventanilla."""
+        data = {"id_ventanilla": 2, "descripcion": "Nueva Ventanilla", "estado": True}
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Ventanilla.objects.count(), 2)
+
+    def test_update_ventanilla(self):
+        """Test para actualizar una ventanilla existente."""
+        data = {"id_ventanilla": 1, "descripcion": "Actualizada", "estado": False}
+        response = self.client.put(self.detail_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.ventanilla.refresh_from_db()
+        self.assertEqual(self.ventanilla.descripcion, "Actualizada")
+        self.assertFalse(self.ventanilla.estado)
+
+    def test_delete_ventanilla(self):
+        """Test para eliminar una ventanilla existente."""
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Ventanilla.objects.count(), 0)
+
+    def test_unauthenticated_access(self):
+        """Test para verificar que el acceso no autenticado está restringido."""
+        self.client.force_authenticate(user=None)  # Eliminar autenticación
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
