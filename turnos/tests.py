@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
-from turnos.models import FranjaHoraria
+from turnos.models import FranjaHoraria, Horario
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -97,5 +97,88 @@ class FranjaHorariaAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def tearDown(self):
+        FranjaHoraria.objects.all().delete()
+        User.objects.all().delete()
+
+
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase, APIClient
+from turnos.models import Horario, FranjaHoraria
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class HorarioAPITests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="testuser", password="testpassword", email="testuser@example.com"
+        )
+        self.client.force_authenticate(user=self.user)
+
+        # Crear franja horaria inicial
+        self.franja = FranjaHoraria.objects.create(
+            hora_inicio="08:00:00", hora_fin="12:00:00", estado=True
+        )
+
+        # Crear horario inicial
+        self.horario = Horario.objects.create(
+            franja_horaria=self.franja,
+            lunes=True, martes=False, miercoles=True,
+            jueves=False, viernes=True, sabado=False, domingo=False
+        )
+
+        self.list_url = reverse("horario-list")
+        self.detail_url = reverse("horario-detail", args=[self.horario.id])
+
+    def test_list_horarios_authenticated(self):
+        """Test para listar horarios con autenticación."""
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+
+    def test_list_horarios_unauthenticated(self):
+        """Test para listar horarios sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_create_horario_authenticated(self):
+        """Test para crear un horario con autenticación."""
+        data = {
+            "franja_horaria": self.franja.id,
+            "lunes": False, "martes": True, "miercoles": False,
+            "jueves": True, "viernes": False, "sabado": True, "domingo": False
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Horario.objects.count(), 2)
+
+    def test_create_horario_unauthenticated(self):
+        """Test para crear un horario sin autenticación."""
+        self.client.force_authenticate(user=None)
+        data = {
+            "franja_horaria": self.franja.id,
+            "lunes": False, "martes": True, "miercoles": False,
+            "jueves": True, "viernes": False, "sabado": True, "domingo": False
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_delete_horario_authenticated(self):
+        """Test para eliminar un horario con autenticación."""
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Horario.objects.count(), 0)
+
+    def test_delete_horario_unauthenticated(self):
+        """Test para eliminar un horario sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def tearDown(self):
+        Horario.objects.all().delete()
         FranjaHoraria.objects.all().delete()
         User.objects.all().delete()
