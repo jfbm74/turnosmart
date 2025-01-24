@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from turnos.models import FranjaHoraria, Horario
 from django.contrib.auth import get_user_model
+from datetime import datetime
 
 User = get_user_model()
 
@@ -182,3 +183,55 @@ class HorarioAPITests(APITestCase):
         Horario.objects.all().delete()
         FranjaHoraria.objects.all().delete()
         User.objects.all().delete()
+
+
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase, APIClient
+from turnos.models import FranjaHoraria, Horario
+from django.contrib.auth import get_user_model
+from datetime import datetime
+
+User = get_user_model()
+
+class GenerarHorariosAPITests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="testuser", password="testpassword", email="testuser@example.com"
+        )
+        self.client.force_authenticate(user=self.user)
+
+        # Crear franjas horarias y horarios asociados
+        self.franja1 = FranjaHoraria.objects.create(hora_inicio="08:00:00", hora_fin="12:00:00", estado=True)
+        self.franja2 = FranjaHoraria.objects.create(hora_inicio="14:00:00", hora_fin="18:00:00", estado=True)
+
+        self.horario1 = Horario.objects.create(franja_horaria=self.franja1, lunes=True, miercoles=True)
+        self.horario2 = Horario.objects.create(franja_horaria=self.franja2, martes=True, jueves=True)
+
+        self.generar_url = reverse("generar-horarios")
+
+    def test_generar_horarios_authenticated(self):
+        """Test para generar horarios con autenticación."""
+        # Forzar que sea lunes para la prueba
+        datetime_now_patch = datetime.now()
+        dia_actual = datetime_now_patch.strftime('%A').lower()
+
+        response = self.client.get(self.generar_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        if dia_actual in ['monday', 'wednesday']:
+            self.assertGreaterEqual(len(response.data['horarios_activos']), 1)
+        else:
+            self.assertEqual(len(response.data['horarios_activos']), 0)
+
+    def test_generar_horarios_unauthenticated(self):
+        """Test para generar horarios sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.generar_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def tearDown(self):
+        Horario.objects.all().delete()
+        FranjaHoraria.objects.all().delete()
+        User.objects.all().delete()
+
