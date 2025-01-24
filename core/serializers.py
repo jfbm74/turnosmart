@@ -11,7 +11,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .models import UserProfile
+from .models import UserProfile, Grupo
 
 
 User = get_user_model()
@@ -93,3 +93,18 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
             )
 
         return data
+
+
+class GrupoSerializer(serializers.ModelSerializer):
+     """
+        Serializer para el modelo Grupo.
+    """
+     class Meta:
+         model = Grupo
+         fields = ['id', 'nombre', 'ventanillas_atencion', 'estado']
+         extra_kwargs = {
+            'id': {'read_only': True, 'help_text': 'Identificador único del grupo.'},
+            'nombre': {'help_text': 'Nombre del grupo', 'example': 'Grupo de admisiones'},
+            'ventanillas_atencion': {'help_text': 'Lista de ids de ventanillas que pertenecen al grupo.'},
+           'estado': {'help_text': 'Estado del grupo', 'example': 'True'},
+         }

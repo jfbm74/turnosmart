@@ -1,15 +1,24 @@
 # core/views.py:
 
-from django.utils.encoding import force_str
-from django.shortcuts import render
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.core.mail import send_mail
+
+from django.utils.encoding import force_str, force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
+from rest_framework import status, viewsets
 from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+
+from .models import Grupo
 from .serializers import (
+    GrupoSerializer,
     UserSerializer,
     UserRegisterSerializer,
     UserLoginSerializer,
@@ -17,13 +26,7 @@ from .serializers import (
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer,
 )
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.contrib.auth import get_user_model
-from django.utils.http import urlsafe_base64_decode
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.core.mail import send_mail
+
 
 
 User = get_user_model()
@@ -103,7 +106,7 @@ class UserProfileView(APIView):
     def get(self, request):
         user_serializer = UserSerializer(
             request.user
-        ) 
+        )  # Serializamos la información del usuario actual
         return Response(user_serializer.data, status=status.HTTP_200_OK)
 
 
@@ -206,3 +209,11 @@ class PasswordResetConfirmView(APIView):
                 status=status.HTTP_200_OK,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class GrupoViewSet(viewsets.ModelViewSet):
+         """
+         API para gestionar grupos de ventanillas.
+         """
+         queryset = Grupo.objects.all()
+         serializer_class = GrupoSerializer
+         permission_classes = [IsAuthenticated]
