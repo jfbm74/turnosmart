@@ -1,11 +1,13 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
-from .models import FranjaHoraria, Horario, Turnero
-from .serializers import FranjaHorariaSerializer, HorarioSerializer, TurneroSerializer
+from .models import FranjaHoraria, Horario, Turnero, Menu
+from .serializers import FranjaHorariaSerializer, HorarioSerializer, TurneroSerializer, TurneroMenuAssociationSerializer, MenuSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from datetime import datetime
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework import status
 
 
 
@@ -71,3 +73,25 @@ class TurneroViewSet(viewsets.ModelViewSet):
     queryset = Turnero.objects.all()
     serializer_class = TurneroSerializer
     permission_classes = [IsAuthenticated]
+
+    @action(detail=True, methods=['post'], url_path='associate-menus')
+    def associate_menus(self, request, pk=None):
+        turnero = self.get_object()
+        serializer = TurneroMenuAssociationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        menu_ids = serializer.validated_data.get('menu_ids', [])
+        menus = Menu.objects.filter(id__in=menu_ids)
+        turnero.menus.set(menus)
+
+        return Response({
+            "message": "Menús asociados correctamente.",
+            "turnero": self.get_serializer(turnero).data
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get'], url_path='get-menus')
+    def get_menus(self, request, pk=None):
+        turnero = self.get_object()
+        menus = turnero.menus.all()
+        serializer = MenuSerializer(menus, many=True)
+        return Response(serializer.data)

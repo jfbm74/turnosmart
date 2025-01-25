@@ -31,18 +31,7 @@ class Horario(models.Model):
 
 
 
-class Turnero(models.Model):
-    """
-    Modelo para la gestión de los turneros.
-    """
-    nombre = models.CharField(max_length=100)
-    presentacion = models.CharField(max_length=10, choices=[
-          ('IMPRIMIR', 'Imprimir'),
-         ('QR', 'QR'),
-    ], default='IMPRIMIR')
 
-    def __str__(self):
-        return self.nombre
 
 
 class Sala(models.Model):
@@ -59,22 +48,23 @@ class Sala(models.Model):
 
 
 class Menu(models.Model):
-   """
-     Modelo para la gestión de los menús de los turneros.
-   """
-   TIPO_MENU = [
-         ('CONTENEDOR', 'Menú Contenedor'),
-          ('TRAMITE', 'Trámite'),
-     ]
-   nombre = models.CharField(max_length=200, blank=True, null=True)
-   tipo = models.CharField(max_length=100, choices=TIPO_MENU)
-   horario_general = models.BooleanField(default=True)
-   tramite = models.ForeignKey('core.Tramite', on_delete=models.SET_NULL, blank=True, null=True)
-   prioridad = models.ForeignKey('Prioridad', on_delete=models.SET_NULL, blank=True, null=True)
-   imagen = models.ImageField(upload_to='menu_icons/', blank=True, null=True)
+  """
+    Modelo para la gestión de los menús de los turneros.
+  """
+  TIPO_MENU = [
+        ('CONTENEDOR', 'Menú Contenedor'),
+        ('TRAMITE', 'Trámite'),
+    ]
+  nombre = models.CharField(max_length=200, blank=True, null=True)
+  tipo = models.CharField(max_length=100, choices=TIPO_MENU)
+  horario_general = models.BooleanField(default=True)
+  tramite = models.ForeignKey('core.Tramite', on_delete=models.SET_NULL, blank=True, null=True)
+  prioridad = models.ForeignKey('Prioridad', on_delete=models.SET_NULL, blank=True, null=True)
+  imagen = models.ImageField(upload_to='menu_icons/', blank=True, null=True)
+  descripcion = models.TextField(blank=True, null=True)
 
-   def __str__(self):
-      return self.nombre
+  def __str__(self):
+    return self.nombre
 
 
 class Prioridad(models.Model):
@@ -92,3 +82,17 @@ class Prioridad(models.Model):
       return self.nombre
 
 
+class Turnero(models.Model):
+    """
+    Modelo para la gestión de los turneros.
+    """
+    nombre = models.CharField(max_length=100)
+    ubicacion = models.CharField(max_length=200, blank=True, null=True)
+    menus = models.ManyToManyField(Menu, related_name='turneros', blank=True)
+    presentacion = models.CharField(max_length=10, choices=[
+          ('IMPRIMIR', 'Imprimir'),
+         ('QR', 'QR'),
+    ], default='IMPRIMIR')
+
+    def __str__(self):
+        return self.nombre
