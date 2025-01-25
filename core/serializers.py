@@ -104,9 +104,9 @@ class GrupoSerializer(serializers.ModelSerializer):
          fields = ['id', 'nombre', 'ventanillas_atencion', 'estado']
          extra_kwargs = {
             'id': {'read_only': True, 'help_text': 'Identificador único del grupo.'},
-            'nombre': {'help_text': 'Nombre del grupo', 'example': 'Grupo de admisiones'},
+            'nombre': {'help_text': 'Nombre del grupo'},
             'ventanillas_atencion': {'help_text': 'Lista de ids de ventanillas que pertenecen al grupo.'},
-           'estado': {'help_text': 'Estado del grupo', 'example': 'True'},
+           'estado': {'help_text': 'Estado del grupo'},
          }
 
 
