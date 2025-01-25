@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Espera
+from .models import ColaEspera, Espera
 
 class EsperaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,4 +20,7 @@ class EsperaSerializer(serializers.ModelSerializer):
         'limite_turnos_visibles_presentacion': {'help_text': 'Límite de turnos visibles en la presentación.'}
     }
 
-    
+class ColaEsperaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ColaEspera
+        fields = '__all__'

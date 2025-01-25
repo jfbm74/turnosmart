@@ -1,5 +1,7 @@
 from django.db import models
 
+from turnos.models import Sala
+
 # Create your models here.
 class Espera(models.Model):
     """
@@ -23,3 +25,23 @@ class Espera(models.Model):
     titulo_columna_espera = models.CharField(max_length=50, default='ESPERA TR', blank=True, null=True)
     titulo_columna_ventanillas = models.CharField(max_length=50, default='SERVICIO', blank=True, null=True)
     limite_turnos_visibles_presentacion = models.IntegerField(default=7, blank=True, null=True)
+
+
+
+class ColaEspera(models.Model):
+    sala = models.ForeignKey(Sala, on_delete=models.CASCADE, related_name='colas')
+    max_turnos = models.IntegerField(default=10)
+    ordenar_por = models.CharField(
+        max_length=20,
+        choices=[
+            ('tiempo', 'Tiempo de Espera'),
+            ('prioridad', 'Prioridad')
+        ],
+        default='tiempo'
+    )
+    mostrar_atendidos = models.BooleanField(default=True)
+    mostrar_anulados = models.BooleanField(default=False)
+    limite_turnos_visibles_presentacion = models.IntegerField(default=7, blank=True, null=True)
+
+    def __str__(self):
+        return f"Cola de {self.sala.nombre}"
