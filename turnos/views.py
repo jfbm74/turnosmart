@@ -1,7 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
-from .models import FranjaHoraria, Horario, Turnero, Menu
-from .serializers import FranjaHorariaSerializer, HorarioSerializer, TurneroSerializer, TurneroMenuAssociationSerializer, MenuSerializer
+from .models import FranjaHoraria, Horario, Turnero, Menu, Sala
+from .serializers import FranjaHorariaSerializer, HorarioSerializer, TurneroSerializer, TurneroMenuAssociationSerializer, MenuSerializer, SalaSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from datetime import datetime
@@ -95,3 +95,9 @@ class TurneroViewSet(viewsets.ModelViewSet):
         menus = turnero.menus.all()
         serializer = MenuSerializer(menus, many=True)
         return Response(serializer.data)
+
+
+class SalaViewSet(ModelViewSet):
+    queryset = Sala.objects.all()
+    serializer_class = SalaSerializer
+    permission_classes = [IsAuthenticated] 

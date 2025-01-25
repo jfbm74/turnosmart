@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import FranjaHoraria, Horario, Turnero, Menu, Sala
 
+
 class FranjaHorariaSerializer(serializers.ModelSerializer):
     class Meta:
         model = FranjaHoraria
@@ -47,3 +48,21 @@ class TurneroMenuAssociationSerializer(serializers.Serializer):
         child=serializers.IntegerField(),
         help_text="Lista de IDs de los menús a asociar con el turnero."
     )
+
+
+class SalaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sala
+        fields = ['id', 'nombre', 'descripcion']
+        
+    def validate_nombre(self, value):
+        """
+        Validate that the name is not empty and has a reasonable length.
+        """
+        if not value:
+            raise serializers.ValidationError("El nombre de la sala no puede estar vacío.")
+        if len(value) < 3:
+            raise serializers.ValidationError("El nombre de la sala debe tener al menos 3 caracteres.")
+        if len(value) > 100:
+            raise serializers.ValidationError("El nombre de la sala no puede exceder 100 caracteres.")
+        return value

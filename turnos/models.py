@@ -41,6 +41,7 @@ class Sala(models.Model):
   nombre = models.CharField(max_length=100)
   tramite_turnos_en_espera = models.ManyToManyField('core.Tramite', related_name='salas_espera')
   ventanillas_asignadas = models.ManyToManyField('core.Ventanilla', related_name='salas_atencion')
+  descripcion = models.TextField(blank=True, null=True)
 
   def __str__(self):
     return self.nombre

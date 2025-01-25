@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
-from turnos.models import FranjaHoraria, Horario, Turnero, Menu
+from turnos.models import FranjaHoraria, Horario, Sala, Turnero, Menu
 from django.contrib.auth import get_user_model
 from datetime import datetime
 
@@ -266,3 +266,57 @@ class TurneroAPITests(APITestCase):
         Turnero.objects.all().delete()
         Menu.objects.all().delete()
         User.objects.all().delete()
+
+
+class SalaAPITests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+        # Crear un usuario y autenticarlo
+        self.user = User.objects.create_user(
+            username="admin", password="password", email="admin@example.com"
+        )
+        self.client.force_authenticate(user=self.user)
+
+        # Crear salas de espera iniciales
+        self.sala1 = Sala.objects.create(nombre="Sala Principal", descripcion="Sala principal para recepción")
+        self.sala2 = Sala.objects.create(nombre="Sala Secundaria", descripcion="Sala para laboratorio")
+
+        # Configurar URLs
+        self.list_url = reverse('sala-espera-list')
+
+    def test_list_salas(self):
+        """Test para listar todas las salas."""
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+
+    def test_create_sala(self):
+        """Test para crear una sala de espera."""
+        data = {"nombre": "Sala Nueva", "descripcion": "Una nueva sala de espera"}
+        response = self.client.post(self.list_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Sala.objects.count(), 3)
+
+    def test_retrieve_sala(self):
+        """Test para obtener una sala específica."""
+        detail_url = reverse('sala-espera-detail', kwargs={'pk': self.sala1.id})
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['nombre'], "Sala Principal")
+
+    def test_update_sala(self):
+        """Test para actualizar una sala de espera."""
+        detail_url = reverse('sala-espera-detail', kwargs={'pk': self.sala1.id})
+        data = {"nombre": "Sala Actualizada", "descripcion": "Descripción actualizada"}
+        response = self.client.put(detail_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.sala1.refresh_from_db()
+        self.assertEqual(self.sala1.nombre, "Sala Actualizada")
+
+    def test_delete_sala(self):
+        """Test para eliminar una sala de espera."""
+        detail_url = reverse('sala-espera-detail', kwargs={'pk': self.sala1.id})
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Sala.objects.count(), 1)
