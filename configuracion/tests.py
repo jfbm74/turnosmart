@@ -200,97 +200,6 @@ class ImagenAPITests(APITestCase):
         User.objects.all().delete()
 
 
-class VideoAPITests(APITestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.user = User.objects.create_user(
-            username="testuser", password="testpassword", email="testuser@example.com"
-        )
-        self.client.force_authenticate(user=self.user)
-
-        # Crear un video inicial
-        self.video = Video.objects.create(
-            origen="URL",
-            url_video="http://example.com/video.mp4",
-            estado=True,
-        )
-
-        self.list_url = reverse("video-list")
-        self.detail_url = reverse("video-detail", args=[self.video.id])
-
-    def test_list_videos_authenticated(self):
-        """Test para listar videos con autenticación."""
-        response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(len(response.data), 1)
-
-    def test_list_videos_unauthenticated(self):
-        """Test para listar videos sin autenticación."""
-        self.client.force_authenticate(user=None)
-        response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_create_video_authenticated(self):
-        """Test para crear un video con autenticación."""
-        data = {
-            "origen": "URL",
-            "url_video": "http://example.com/new_video.mp4",
-            "estado": True,
-        }
-        response = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Video.objects.count(), 2)
-
-    def test_create_video_unauthenticated(self):
-        """Test para crear un video sin autenticación."""
-        self.client.force_authenticate(user=None)
-        data = {
-            "origen": "URL",
-            "url_video": "http://example.com/new_video.mp4",
-            "estado": True,
-        }
-        response = self.client.post(self.list_url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_retrieve_video_authenticated(self):
-        """Test para obtener un video específico con autenticación."""
-        response = self.client.get(self.detail_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["url_video"], self.video.url_video)
-
-    def test_retrieve_video_unauthenticated(self):
-        """Test para obtener un video específico sin autenticación."""
-        self.client.force_authenticate(user=None)
-        response = self.client.get(self.detail_url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_update_video_authenticated(self):
-        """Test para actualizar un video con autenticación."""
-        data = {
-            "origen": "URL",
-            "url_video": "http://example.com/updated_video.mp4",
-            "estado": False,
-        }
-        response = self.client.put(self.detail_url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.video.refresh_from_db()
-        self.assertEqual(self.video.url_video, "http://example.com/updated_video.mp4")
-
-    def test_delete_video_authenticated(self):
-        """Test para eliminar un video con autenticación."""
-        response = self.client.delete(self.detail_url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Video.objects.count(), 0)
-
-    def test_delete_video_unauthenticated(self):
-        """Test para eliminar un video sin autenticación."""
-        self.client.force_authenticate(user=None)
-        response = self.client.delete(self.detail_url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-    
-    def tearDown(self):
-        Video.objects.all().delete()
-        User.objects.all().delete()
 
 
 class AudioAPITests(APITestCase):
@@ -683,4 +592,121 @@ class VozAPITests(APITestCase):
 
     def tearDown(self):
         Voz.objects.all().delete()
+        User.objects.all().delete()
+
+
+class VideoAPITests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.admin_user = User.objects.create_superuser(
+            username="admin", password="123456", email="admin@example.com"
+        )
+        self.test_user = User.objects.create_user(
+            username="testuser", password="testpassword", email="testuser@example.com"
+        )
+        self.authenticate()
+
+        # Crear un video inicial
+        self.video = Video.objects.create(
+            origen="URL",
+            url_video="http://example.com/video.mp4",
+            estado=True,
+        )
+
+        self.list_url = reverse("video-list")
+        self.detail_url = reverse("video-detail", args=[self.video.id])
+
+    def authenticate(self):
+        response = self.client.post(
+             reverse("api_token_auth"),
+             {"username": "admin", "password": "123456"},
+           format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        token = response.data.get("token")
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
+
+    def test_list_videos_authenticated(self):
+       """Test para listar videos con autenticación."""
+       response = self.client.get(self.list_url)
+       self.assertEqual(response.status_code, status.HTTP_200_OK)
+       self.assertGreaterEqual(len(response.data), 1)
+
+    def test_create_video_authenticated(self):
+        """Test para crear un video con autenticación."""
+        data = {
+           "origen": "URL",
+           "url_video": "http://example.com/new_video.mp4",
+            "estado": True,
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Video.objects.count(), 2)
+    
+    def test_create_video_invalid_url(self):
+         """Test para crear un video con URL sin autenticación."""
+         self.authenticate()
+         data = {
+            "origen": "URL",
+            "estado": True,
+          }
+         response = self.client.post(self.list_url, data, format="json")
+         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_video_invalid_file(self):
+        """Test para crear un video desde archivo sin autenticación."""
+        self.authenticate()
+        data = {
+            "origen": "SISTEMA",
+           "estado": True,
+          }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+   
+
+    def test_retrieve_video_authenticated(self):
+        """Test para obtener un video específico con autenticación."""
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["url_video"], self.video.url_video)
+  
+    def test_update_video_authenticated(self):
+        """Test para actualizar un video con autenticación."""
+        data = {
+            "origen": "URL",
+            "url_video": "http://example.com/updated_video.mp4",
+            "estado": False,
+            }
+        response = self.client.put(self.detail_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.video.refresh_from_db()
+        self.assertEqual(self.video.url_video, "http://example.com/updated_video.mp4")
+
+    def test_delete_video_authenticated(self):
+       """Test para eliminar un video con autenticación."""
+       response = self.client.delete(self.detail_url)
+       self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+       self.assertEqual(Video.objects.count(), 0)
+   
+   
+    def test_list_videos_unauthenticated(self):
+        """Test para listar videos sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_retrieve_video_unauthenticated(self):
+        """Test para obtener un video específico sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_delete_video_unauthenticated(self):
+       """Test para eliminar un video sin autenticación."""
+       self.client.force_authenticate(user=None)
+       response = self.client.delete(self.detail_url)
+       self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def tearDown(self):
+        Video.objects.all().delete()
         User.objects.all().delete()
