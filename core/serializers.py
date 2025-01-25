@@ -96,42 +96,63 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
 
 class GrupoSerializer(serializers.ModelSerializer):
-     """
-        Serializer para el modelo Grupo.
     """
-     class Meta:
-         model = Grupo
-         fields = ['id', 'nombre', 'ventanillas_atencion', 'estado']
-         extra_kwargs = {
-            'id': {'read_only': True, 'help_text': 'Identificador único del grupo.'},
-            'nombre': {'help_text': 'Nombre del grupo'},
-            'ventanillas_atencion': {'help_text': 'Lista de ids de ventanillas que pertenecen al grupo.'},
-           'estado': {'help_text': 'Estado del grupo'},
-         }
+    Serializer para el modelo Grupo.
+    """
+
+    class Meta:
+        model = Grupo
+        fields = ["id", "nombre", "ventanillas_atencion", "estado"]
+        extra_kwargs = {
+            "id": {"read_only": True, "help_text": "Identificador único del grupo."},
+            "nombre": {"help_text": "Nombre del grupo"},
+            "ventanillas_atencion": {
+                "help_text": "Lista de ids de ventanillas que pertenecen al grupo."
+            },
+            "estado": {"help_text": "Estado del grupo"},
+        }
 
 
 class VentanillaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ventanilla
-        fields = ['id', 'id_ventanilla', 'descripcion', 'estado']
+        fields = ["id", "id_ventanilla", "descripcion", "estado"]
         extra_kwargs = {
-            'id': {'read_only': True},
-            'id_ventanilla': {'help_text': 'Identificador único de la ventanilla.'},
-            'descripcion': {'help_text': 'Descripción de la ventanilla.'},
-            'estado': {'help_text': 'Estado de la ventanilla (activo/inactivo).'},
+            "id": {"read_only": True},
+            "id_ventanilla": {"help_text": "Identificador único de la ventanilla."},
+            "descripcion": {"help_text": "Descripción de la ventanilla."},
+            "estado": {"help_text": "Estado de la ventanilla (activo/inactivo)."},
         }
 
 
 class TramiteSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Tramite
-            fields = ['id', 'nombre', 'iniciales', 'cliente_requerido', 'ventanilla_atencion', 'ventanilla_transferencia_frecuente', 'grupo_transferencia_frecuente']
-            extra_kwargs = {
-               'id': {'read_only': True},
-                'nombre': {'help_text': 'Nombre del trámite.'},
-               'iniciales': {'help_text': 'Iniciales del trámite (para mostrar en el ticket).'},
-               'cliente_requerido': {'help_text': 'Define si se solicita información del cliente (no, al atender, al tomar turno).'},
-                 'ventanilla_atencion': {'help_text': 'Ventanilla por defecto para la atención de este trámite.'},
-                 'ventanilla_transferencia_frecuente': {'help_text': 'Ventanillas frecuentes a las que se puede transferir el trámite.'},
-                'grupo_transferencia_frecuente': {'help_text': 'Grupos frecuentes a los que se puede transferir el trámite.'},
-            }
+    class Meta:
+        model = Tramite
+        fields = [
+            "id",
+            "nombre",
+            "iniciales",
+            "cliente_requerido",
+            "ventanilla_atencion",
+            "ventanilla_transferencia_frecuente",
+            "grupo_transferencia_frecuente",
+        ]
+        extra_kwargs = {
+            "id": {"read_only": True},
+            "nombre": {"help_text": "Nombre del trámite."},
+            "iniciales": {
+                "help_text": "Iniciales del trámite (para mostrar en el ticket)."
+            },
+            "cliente_requerido": {
+                "help_text": "Define si se solicita información del cliente (no, al atender, al tomar turno)."
+            },
+            "ventanilla_atencion": {
+                "help_text": "Ventanilla por defecto para la atención de este trámite."
+            },
+            "ventanilla_transferencia_frecuente": {
+                "help_text": "Ventanillas frecuentes a las que se puede transferir el trámite."
+            },
+            "grupo_transferencia_frecuente": {
+                "help_text": "Grupos frecuentes a los que se puede transferir el trámite."
+            },
+        }

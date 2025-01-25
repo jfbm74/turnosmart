@@ -8,6 +8,7 @@ from datetime import datetime
 
 User = get_user_model()
 
+
 class FranjaHorariaAPITests(APITestCase):
     def setUp(self):
         self.client = APIClient()
@@ -82,9 +83,8 @@ class FranjaHorariaAPITests(APITestCase):
         response = self.client.put(self.detail_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.franja.refresh_from_db()
-        self.assertEqual(str(self.franja.hora_inicio), "09:00:00") 
-        self.assertEqual(str(self.franja.hora_fin), "13:00:00") 
-
+        self.assertEqual(str(self.franja.hora_inicio), "09:00:00")
+        self.assertEqual(str(self.franja.hora_fin), "13:00:00")
 
     def test_delete_franja_authenticated(self):
         """Test para eliminar una franja horaria con autenticación."""
@@ -111,6 +111,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 class HorarioAPITests(APITestCase):
     def setUp(self):
         self.client = APIClient()
@@ -127,8 +128,13 @@ class HorarioAPITests(APITestCase):
         # Crear horario inicial
         self.horario = Horario.objects.create(
             franja_horaria=self.franja,
-            lunes=True, martes=False, miercoles=True,
-            jueves=False, viernes=True, sabado=False, domingo=False
+            lunes=True,
+            martes=False,
+            miercoles=True,
+            jueves=False,
+            viernes=True,
+            sabado=False,
+            domingo=False,
         )
 
         self.list_url = reverse("horario-list")
@@ -150,8 +156,13 @@ class HorarioAPITests(APITestCase):
         """Test para crear un horario con autenticación."""
         data = {
             "franja_horaria": self.franja.id,
-            "lunes": False, "martes": True, "miercoles": False,
-            "jueves": True, "viernes": False, "sabado": True, "domingo": False
+            "lunes": False,
+            "martes": True,
+            "miercoles": False,
+            "jueves": True,
+            "viernes": False,
+            "sabado": True,
+            "domingo": False,
         }
         response = self.client.post(self.list_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -162,8 +173,13 @@ class HorarioAPITests(APITestCase):
         self.client.force_authenticate(user=None)
         data = {
             "franja_horaria": self.franja.id,
-            "lunes": False, "martes": True, "miercoles": False,
-            "jueves": True, "viernes": False, "sabado": True, "domingo": False
+            "lunes": False,
+            "martes": True,
+            "miercoles": False,
+            "jueves": True,
+            "viernes": False,
+            "sabado": True,
+            "domingo": False,
         }
         response = self.client.post(self.list_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -188,6 +204,7 @@ class HorarioAPITests(APITestCase):
 
 User = get_user_model()
 
+
 class GenerarHorariosAPITests(APITestCase):
     def setUp(self):
         self.client = APIClient()
@@ -197,11 +214,19 @@ class GenerarHorariosAPITests(APITestCase):
         self.client.force_authenticate(user=self.user)
 
         # Crear franjas horarias y horarios asociados
-        self.franja1 = FranjaHoraria.objects.create(hora_inicio="08:00:00", hora_fin="12:00:00", estado=True)
-        self.franja2 = FranjaHoraria.objects.create(hora_inicio="14:00:00", hora_fin="18:00:00", estado=True)
+        self.franja1 = FranjaHoraria.objects.create(
+            hora_inicio="08:00:00", hora_fin="12:00:00", estado=True
+        )
+        self.franja2 = FranjaHoraria.objects.create(
+            hora_inicio="14:00:00", hora_fin="18:00:00", estado=True
+        )
 
-        self.horario1 = Horario.objects.create(franja_horaria=self.franja1, lunes=True, miercoles=True)
-        self.horario2 = Horario.objects.create(franja_horaria=self.franja2, martes=True, jueves=True)
+        self.horario1 = Horario.objects.create(
+            franja_horaria=self.franja1, lunes=True, miercoles=True
+        )
+        self.horario2 = Horario.objects.create(
+            franja_horaria=self.franja2, martes=True, jueves=True
+        )
 
         self.generar_url = reverse("generar-horarios")
 
@@ -209,14 +234,14 @@ class GenerarHorariosAPITests(APITestCase):
         """Test para generar horarios con autenticación."""
         # Forzar que sea lunes para la prueba
         datetime_now_patch = datetime.now()
-        dia_actual = datetime_now_patch.strftime('%A').lower()
+        dia_actual = datetime_now_patch.strftime("%A").lower()
 
         response = self.client.get(self.generar_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        if dia_actual in ['monday', 'wednesday']:
-            self.assertGreaterEqual(len(response.data['horarios_activos']), 1)
+        if dia_actual in ["monday", "wednesday"]:
+            self.assertGreaterEqual(len(response.data["horarios_activos"]), 1)
         else:
-            self.assertEqual(len(response.data['horarios_activos']), 0)
+            self.assertEqual(len(response.data["horarios_activos"]), 0)
 
     def test_generar_horarios_unauthenticated(self):
         """Test para generar horarios sin autenticación."""
@@ -229,6 +254,7 @@ class GenerarHorariosAPITests(APITestCase):
         FranjaHoraria.objects.all().delete()
         User.objects.all().delete()
 
+
 class TurneroAPITests(APITestCase):
     def setUp(self):
         self.client = APIClient()
@@ -238,31 +264,41 @@ class TurneroAPITests(APITestCase):
         self.client.force_authenticate(user=self.user)
 
         # Create menu objects
-        self.menu1 = Menu.objects.create(nombre="Menu General", descripcion="Opciones generales")
-        self.menu2 = Menu.objects.create(nombre="Menu Laboratorio", descripcion="Opciones de laboratorio")
-        
+        self.menu1 = Menu.objects.create(
+            nombre="Menu General", descripcion="Opciones generales"
+        )
+        self.menu2 = Menu.objects.create(
+            nombre="Menu Laboratorio", descripcion="Opciones de laboratorio"
+        )
+
         # Create turnero object
-        self.turnero = Turnero.objects.create(nombre="Turnero Principal", ubicacion="Recepción")
-        
+        self.turnero = Turnero.objects.create(
+            nombre="Turnero Principal", ubicacion="Recepción"
+        )
+
         # Set up URLs with correct dynamic routing
-        self.associate_url = reverse('turnero-associate-menus', kwargs={'pk': self.turnero.pk})
-        self.get_menus_url = reverse('turnero-get-menus', kwargs={'pk': self.turnero.pk})
+        self.associate_url = reverse(
+            "turnero-associate-menus", kwargs={"pk": self.turnero.pk}
+        )
+        self.get_menus_url = reverse(
+            "turnero-get-menus", kwargs={"pk": self.turnero.pk}
+        )
 
     def test_associate_menus(self):
         data = {"menu_ids": [self.menu1.id, self.menu2.id]}
-        response = self.client.post(self.associate_url, data, format='json')
+        response = self.client.post(self.associate_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.turnero.refresh_from_db()
         self.assertEqual(self.turnero.menus.count(), 2)
 
     def test_get_menus(self):
         self.turnero.menus.add(self.menu1, self.menu2)
-        response = self.client.get(self.get_menus_url, format='json')
+        response = self.client.get(self.get_menus_url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
 
     def tearDown(self):
-        
+
         Turnero.objects.all().delete()
         Menu.objects.all().delete()
         User.objects.all().delete()
@@ -279,11 +315,15 @@ class SalaAPITests(APITestCase):
         self.client.force_authenticate(user=self.user)
 
         # Crear salas de espera iniciales
-        self.sala1 = Sala.objects.create(nombre="Sala Principal", descripcion="Sala principal para recepción")
-        self.sala2 = Sala.objects.create(nombre="Sala Secundaria", descripcion="Sala para laboratorio")
+        self.sala1 = Sala.objects.create(
+            nombre="Sala Principal", descripcion="Sala principal para recepción"
+        )
+        self.sala2 = Sala.objects.create(
+            nombre="Sala Secundaria", descripcion="Sala para laboratorio"
+        )
 
         # Configurar URLs
-        self.list_url = reverse('sala-espera-list')
+        self.list_url = reverse("sala-espera-list")
 
     def test_list_salas(self):
         """Test para listar todas las salas."""
@@ -294,29 +334,29 @@ class SalaAPITests(APITestCase):
     def test_create_sala(self):
         """Test para crear una sala de espera."""
         data = {"nombre": "Sala Nueva", "descripcion": "Una nueva sala de espera"}
-        response = self.client.post(self.list_url, data, format='json')
+        response = self.client.post(self.list_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Sala.objects.count(), 3)
 
     def test_retrieve_sala(self):
         """Test para obtener una sala específica."""
-        detail_url = reverse('sala-espera-detail', kwargs={'pk': self.sala1.id})
+        detail_url = reverse("sala-espera-detail", kwargs={"pk": self.sala1.id})
         response = self.client.get(detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['nombre'], "Sala Principal")
+        self.assertEqual(response.data["nombre"], "Sala Principal")
 
     def test_update_sala(self):
         """Test para actualizar una sala de espera."""
-        detail_url = reverse('sala-espera-detail', kwargs={'pk': self.sala1.id})
+        detail_url = reverse("sala-espera-detail", kwargs={"pk": self.sala1.id})
         data = {"nombre": "Sala Actualizada", "descripcion": "Descripción actualizada"}
-        response = self.client.put(detail_url, data, format='json')
+        response = self.client.put(detail_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.sala1.refresh_from_db()
         self.assertEqual(self.sala1.nombre, "Sala Actualizada")
 
     def test_delete_sala(self):
         """Test para eliminar una sala de espera."""
-        detail_url = reverse('sala-espera-detail', kwargs={'pk': self.sala1.id})
+        detail_url = reverse("sala-espera-detail", kwargs={"pk": self.sala1.id})
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Sala.objects.count(), 1)

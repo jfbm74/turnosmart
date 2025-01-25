@@ -44,9 +44,7 @@ class AuthenticationTests(APITestCase):
         self.assertIn("message", response.data)
         self.assertEqual(response.data["message"], "User created successfully")
         self.assertIn("data", response.data)
-        self.assertEqual(
-            User.objects.count(), 2
-        ) 
+        self.assertEqual(User.objects.count(), 2)
 
     def test_user_login(self):
         """Test de login del usuario, obteniendo un token."""
@@ -140,9 +138,7 @@ class AuthenticationTests(APITestCase):
         self.assertIn("message", response.data)
         self.assertEqual(response.data["message"], "User created successfully")
         self.assertIn("data", response.data)
-        self.assertEqual(
-            User.objects.count(), 2
-        ) 
+        self.assertEqual(User.objects.count(), 2)
 
     def test_user_registration_unauthenticated(self):
         """Test para registrar un usuario sin autenticación, enviando petición al endpoint `/users`."""
@@ -245,7 +241,9 @@ class VentanillaAPITests(APITestCase):
 
         # Configurar rutas para pruebas
         self.list_url = reverse("ventanilla-list")
-        self.detail_url = reverse("ventanilla-detail", kwargs={"pk": self.ventanilla.id})
+        self.detail_url = reverse(
+            "ventanilla-detail", kwargs={"pk": self.ventanilla.id}
+        )
 
     def test_list_ventanillas(self):
         """Test para listar todas las ventanillas."""
@@ -284,25 +282,25 @@ class VentanillaAPITests(APITestCase):
 
 class TramiteAPITests(APITestCase):
     def setUp(self):
-         self.client = APIClient()
-         self.user = User.objects.create_user(
+        self.client = APIClient()
+        self.user = User.objects.create_user(
             username="testuser", password="testpassword", email="testuser@example.com"
-         )
-         self.client.force_authenticate(user=self.user)
-         self.ventanilla = Ventanilla.objects.create(id_ventanilla = 1, descripcion='Ventanilla 1')
+        )
+        self.client.force_authenticate(user=self.user)
+        self.ventanilla = Ventanilla.objects.create(
+            id_ventanilla=1, descripcion="Ventanilla 1"
+        )
 
+        # Crear un trámite inicial
+        self.tramite = Tramite.objects.create(
+            nombre="Consulta Medica",
+            iniciales="CM",
+            cliente_requerido="no",
+            ventanilla_atencion=self.ventanilla,
+        )
 
-      # Crear un trámite inicial
-         self.tramite = Tramite.objects.create(
-              nombre="Consulta Medica",
-             iniciales="CM",
-              cliente_requerido="no",
-             ventanilla_atencion=self.ventanilla
-         )
-
-
-         self.list_url = reverse("tramite-list")
-         self.detail_url = reverse("tramite-detail", args=[self.tramite.id])
+        self.list_url = reverse("tramite-list")
+        self.detail_url = reverse("tramite-detail", args=[self.tramite.id])
 
     def test_list_tramites_authenticated(self):
         """Test para listar trámites con autenticación."""
@@ -321,7 +319,7 @@ class TramiteAPITests(APITestCase):
         data = {
             "nombre": "Pago de Factura",
             "iniciales": "PF",
-             "cliente_requerido": "atender",
+            "cliente_requerido": "atender",
             "ventanilla_atencion": self.ventanilla.id,
             "ventanilla_transferencia_frecuente": [],
             "grupo_transferencia_frecuente": [],
@@ -334,12 +332,12 @@ class TramiteAPITests(APITestCase):
         """Test para crear un trámite sin autenticación."""
         self.client.force_authenticate(user=None)
         data = {
-              "nombre": "Pago de Factura",
-              "iniciales": "PF",
-              "cliente_requerido": "atender",
-             "ventanilla_atencion": self.ventanilla.id,
-             "ventanilla_transferencia_frecuente": [],
-             "grupo_transferencia_frecuente": [],
+            "nombre": "Pago de Factura",
+            "iniciales": "PF",
+            "cliente_requerido": "atender",
+            "ventanilla_atencion": self.ventanilla.id,
+            "ventanilla_transferencia_frecuente": [],
+            "grupo_transferencia_frecuente": [],
         }
         response = self.client.post(self.list_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -360,22 +358,22 @@ class TramiteAPITests(APITestCase):
         """Test para actualizar un trámite con autenticación."""
         data = {
             "nombre": "Trámite Actualizado",
-              "iniciales": "TA",
-             "cliente_requerido": "turno",
-             "ventanilla_atencion": self.ventanilla.id,
+            "iniciales": "TA",
+            "cliente_requerido": "turno",
+            "ventanilla_atencion": self.ventanilla.id,
             "ventanilla_transferencia_frecuente": [],
-             "grupo_transferencia_frecuente": [],
+            "grupo_transferencia_frecuente": [],
         }
         response = self.client.put(self.detail_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.tramite.refresh_from_db()
         self.assertEqual(self.tramite.nombre, "Trámite Actualizado")
-    
+
     def test_delete_tramite_authenticated(self):
-       """Test para eliminar un trámite con autenticación."""
-       response = self.client.delete(self.detail_url)
-       self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-       self.assertEqual(Tramite.objects.count(), 0)
+        """Test para eliminar un trámite con autenticación."""
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Tramite.objects.count(), 0)
 
     def test_delete_tramite_unauthenticated(self):
         """Test para eliminar un trámite sin autenticación."""
@@ -387,4 +385,3 @@ class TramiteAPITests(APITestCase):
         Tramite.objects.all().delete()
         Ventanilla.objects.all().delete()
         User.objects.all().delete()
-

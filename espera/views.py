@@ -7,10 +7,12 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+
 class EsperaViewSet(viewsets.ModelViewSet):
     """
     API para gestionar la configuración de mensajes de salas de espera.
     """
+
     queryset = Espera.objects.all()
     serializer_class = EsperaSerializer
     permission_classes = [IsAuthenticated]
@@ -22,7 +24,7 @@ class EsperaViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(
         request_body=EsperaSerializer,
-        responses={status.HTTP_201_CREATED: EsperaSerializer()}
+        responses={status.HTTP_201_CREATED: EsperaSerializer()},
     )
     def create(self, request, *args, **kwargs):
         """Crear una nueva configuración de espera"""
@@ -35,7 +37,7 @@ class EsperaViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(
         request_body=EsperaSerializer,
-        responses={status.HTTP_200_OK: EsperaSerializer()}
+        responses={status.HTTP_200_OK: EsperaSerializer()},
     )
     def update(self, request, *args, **kwargs):
         """Editar una configuración de espera por ID"""
@@ -48,23 +50,31 @@ class EsperaViewSet(viewsets.ModelViewSet):
         """Eliminar una configuración de espera por ID"""
         return super().destroy(request, *args, **kwargs)
 
+
 class ColaEsperaViewSet(viewsets.ModelViewSet):
     queryset = ColaEspera.objects.all()
     serializer_class = ColaEsperaSerializer
     permission_classes = [IsAuthenticated]
 
-    @action(detail=True, methods=['get'], url_path='get-cola')
+    @action(detail=True, methods=["get"], url_path="get-cola")
     def get_cola(self, request, pk=None):
         cola = self.get_object()
-        return Response({
-            "sala": cola.sala.nombre,
-            "turnos": [
-                {"numero": "A001", "tramite": "Consulta General", "estado": "En espera"},
-                {"numero": "A002", "tramite": "Laboratorio", "estado": "En espera"},
-            ]
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "sala": cola.sala.nombre,
+                "turnos": [
+                    {
+                        "numero": "A001",
+                        "tramite": "Consulta General",
+                        "estado": "En espera",
+                    },
+                    {"numero": "A002", "tramite": "Laboratorio", "estado": "En espera"},
+                ],
+            },
+            status=status.HTTP_200_OK,
+        )
 
-    @action(detail=True, methods=['post'], url_path='configurar-cola')
+    @action(detail=True, methods=["post"], url_path="configurar-cola")
     def configurar_cola(self, request, pk=None):
         cola = self.get_object()
         serializer = self.get_serializer(instance=cola, data=request.data, partial=True)

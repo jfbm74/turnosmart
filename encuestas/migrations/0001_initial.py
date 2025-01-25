@@ -8,23 +8,45 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Encuesta',
+            name="Encuesta",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('pregunta', models.CharField(max_length=200)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("pregunta", models.CharField(max_length=200)),
             ],
         ),
         migrations.CreateModel(
-            name='Respuesta',
+            name="Respuesta",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('respuesta', models.CharField(max_length=200)),
-                ('encuesta', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='respuestas', to='encuestas.encuesta')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("respuesta", models.CharField(max_length=200)),
+                (
+                    "encuesta",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="respuestas",
+                        to="encuestas.encuesta",
+                    ),
+                ),
             ],
         ),
     ]

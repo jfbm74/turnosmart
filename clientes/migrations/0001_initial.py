@@ -7,21 +7,28 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Cliente',
+            name="Cliente",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nombre', models.CharField(max_length=100)),
-                ('apellido', models.CharField(blank=True, max_length=100, null=True)),
-                ('documento', models.CharField(max_length=20, unique=True)),
-                ('email', models.EmailField(blank=True, max_length=254, null=True)),
-                ('direccion', models.CharField(blank=True, max_length=200, null=True)),
-                ('telefono', models.CharField(blank=True, max_length=20, null=True)),
-                ('estado', models.BooleanField(default=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nombre", models.CharField(max_length=100)),
+                ("apellido", models.CharField(blank=True, max_length=100, null=True)),
+                ("documento", models.CharField(max_length=20, unique=True)),
+                ("email", models.EmailField(blank=True, max_length=254, null=True)),
+                ("direccion", models.CharField(blank=True, max_length=200, null=True)),
+                ("telefono", models.CharField(blank=True, max_length=20, null=True)),
+                ("estado", models.BooleanField(default=True)),
             ],
         ),
     ]

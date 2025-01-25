@@ -31,7 +31,6 @@ from .serializers import (
 from rest_framework.viewsets import ModelViewSet
 
 
-
 User = get_user_model()
 
 
@@ -213,28 +212,32 @@ class PasswordResetConfirmView(APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class GrupoViewSet(viewsets.ModelViewSet):
-         """
-         API para gestionar grupos de ventanillas.
-         """
-         queryset = Grupo.objects.all()
-         serializer_class = GrupoSerializer
-         permission_classes = [IsAuthenticated]
+    """
+    API para gestionar grupos de ventanillas.
+    """
+
+    queryset = Grupo.objects.all()
+    serializer_class = GrupoSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class VentanillaViewSet(ModelViewSet):
     """
     API para gestionar ventanillas individuales.
     """
+
     queryset = Ventanilla.objects.all()
     serializer_class = VentanillaSerializer
     permission_classes = [IsAuthenticated]
 
 
 class TramiteViewSet(viewsets.ModelViewSet):
-     """
-       API para gestionar los trámites.
     """
-     queryset = Tramite.objects.all()
-     serializer_class = TramiteSerializer
-     permission_classes = [IsAuthenticated]
+    API para gestionar los trámites.
+    """
+
+    queryset = Tramite.objects.all()
+    serializer_class = TramiteSerializer
+    permission_classes = [IsAuthenticated]

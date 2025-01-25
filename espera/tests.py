@@ -7,8 +7,8 @@ from espera.models import Sala
 from espera.models import ColaEspera
 
 
-
 User = get_user_model()
+
 
 class EsperaAPITests(APITestCase):
     def setUp(self):
@@ -81,7 +81,9 @@ class EsperaAPITests(APITestCase):
         """Test para obtener una configuración específica de espera con autenticación."""
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["titulo_columna_turnos"], self.espera.titulo_columna_turnos)
+        self.assertEqual(
+            response.data["titulo_columna_turnos"], self.espera.titulo_columna_turnos
+        )
 
     def test_retrieve_espera_unauthenticated(self):
         """Test para obtener una configuración específica de espera sin autenticación."""
@@ -113,8 +115,8 @@ class EsperaAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def tearDown(self):
-         Espera.objects.all().delete()
-         User.objects.all().delete()
+        Espera.objects.all().delete()
+        User.objects.all().delete()
 
 
 class ColaEsperaAPITests(APITestCase):
@@ -132,16 +134,20 @@ class ColaEsperaAPITests(APITestCase):
         self.cola = ColaEspera.objects.create(
             sala=self.sala,
             max_turnos=10,
-            ordenar_por='prioridad',
+            ordenar_por="prioridad",
             mostrar_atendidos=True,
-            mostrar_anulados=False
+            mostrar_anulados=False,
         )
 
         # URLs
-        self.list_url = reverse('cola-espera-list')
-        self.detail_url = reverse('cola-espera-detail', kwargs={'pk': self.cola.id})
-        self.configurar_url = reverse('cola-espera-configurar-cola', kwargs={'pk': self.cola.id})
-        self.obtener_cola_url = reverse('cola-espera-get-cola', kwargs={'pk': self.cola.id})
+        self.list_url = reverse("cola-espera-list")
+        self.detail_url = reverse("cola-espera-detail", kwargs={"pk": self.cola.id})
+        self.configurar_url = reverse(
+            "cola-espera-configurar-cola", kwargs={"pk": self.cola.id}
+        )
+        self.obtener_cola_url = reverse(
+            "cola-espera-get-cola", kwargs={"pk": self.cola.id}
+        )
 
     def test_list_colas(self):
         """Test para listar todas las colas de espera."""
@@ -158,7 +164,7 @@ class ColaEsperaAPITests(APITestCase):
             "mostrar_atendidos": True,
             "mostrar_anulados": True,
         }
-        response = self.client.post(self.list_url, data, format='json')
+        response = self.client.post(self.list_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(ColaEspera.objects.count(), 2)
 
@@ -166,7 +172,7 @@ class ColaEsperaAPITests(APITestCase):
         """Test para obtener los detalles de una cola de espera."""
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['sala'], self.sala.id)
+        self.assertEqual(response.data["sala"], self.sala.id)
 
     def test_update_cola(self):
         """Test para actualizar una configuración de cola."""
@@ -177,7 +183,7 @@ class ColaEsperaAPITests(APITestCase):
             "mostrar_atendidos": False,
             "mostrar_anulados": True,
         }
-        response = self.client.put(self.detail_url, data, format='json')
+        response = self.client.put(self.detail_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.cola.refresh_from_db()
         self.assertEqual(self.cola.max_turnos, 15)
@@ -190,7 +196,7 @@ class ColaEsperaAPITests(APITestCase):
             "mostrar_atendidos": False,
             "mostrar_anulados": False,
         }
-        response = self.client.post(self.configurar_url, data, format='json')
+        response = self.client.post(self.configurar_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.cola.refresh_from_db()
         self.assertEqual(self.cola.max_turnos, 20)
