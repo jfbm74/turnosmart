@@ -16,9 +16,10 @@ from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from .models import Grupo, Ventanilla
+from .models import Grupo, Tramite, Ventanilla
 from .serializers import (
     GrupoSerializer,
+    TramiteSerializer,
     UserSerializer,
     UserRegisterSerializer,
     UserLoginSerializer,
@@ -228,3 +229,12 @@ class VentanillaViewSet(ModelViewSet):
     queryset = Ventanilla.objects.all()
     serializer_class = VentanillaSerializer
     permission_classes = [IsAuthenticated]
+
+
+class TramiteViewSet(viewsets.ModelViewSet):
+     """
+       API para gestionar los trámites.
+    """
+     queryset = Tramite.objects.all()
+     serializer_class = TramiteSerializer
+     permission_classes = [IsAuthenticated]

@@ -4,6 +4,7 @@ from .views import (
     PasswordChangeView,
     PasswordResetConfirmView,
     PasswordResetRequestView,
+    TramiteViewSet,
     UserRegister,
     UserLogin,
     UserProfileView,
@@ -17,6 +18,7 @@ from rest_framework import routers
 router = routers.DefaultRouter()
 router.register(r'grupos', GrupoViewSet, basename='grupos')
 router.register(r'ventanillas', VentanillaViewSet, basename='ventanilla')
+router.register(r'tramites', TramiteViewSet, basename='tramite')
 
 urlpatterns = [
     path("auth/register", UserRegister.as_view(), name="register"),

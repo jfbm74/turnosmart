@@ -6,7 +6,7 @@ from rest_framework.test import APITestCase, APIClient
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 
-from core.models import Ventanilla
+from core.models import Tramite, Ventanilla
 
 User = get_user_model()
 
@@ -280,3 +280,111 @@ class VentanillaAPITests(APITestCase):
         self.client.force_authenticate(user=None)  # Eliminar autenticación
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class TramiteAPITests(APITestCase):
+    def setUp(self):
+         self.client = APIClient()
+         self.user = User.objects.create_user(
+            username="testuser", password="testpassword", email="testuser@example.com"
+         )
+         self.client.force_authenticate(user=self.user)
+         self.ventanilla = Ventanilla.objects.create(id_ventanilla = 1, descripcion='Ventanilla 1')
+
+
+      # Crear un trámite inicial
+         self.tramite = Tramite.objects.create(
+              nombre="Consulta Medica",
+             iniciales="CM",
+              cliente_requerido="no",
+             ventanilla_atencion=self.ventanilla
+         )
+
+
+         self.list_url = reverse("tramite-list")
+         self.detail_url = reverse("tramite-detail", args=[self.tramite.id])
+
+    def test_list_tramites_authenticated(self):
+        """Test para listar trámites con autenticación."""
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+
+    def test_list_tramites_unauthenticated(self):
+        """Test para listar trámites sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_create_tramite_authenticated(self):
+        """Test para crear un trámite con autenticación."""
+        data = {
+            "nombre": "Pago de Factura",
+            "iniciales": "PF",
+             "cliente_requerido": "atender",
+            "ventanilla_atencion": self.ventanilla.id,
+            "ventanilla_transferencia_frecuente": [],
+            "grupo_transferencia_frecuente": [],
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Tramite.objects.count(), 2)
+
+    def test_create_tramite_unauthenticated(self):
+        """Test para crear un trámite sin autenticación."""
+        self.client.force_authenticate(user=None)
+        data = {
+              "nombre": "Pago de Factura",
+              "iniciales": "PF",
+              "cliente_requerido": "atender",
+             "ventanilla_atencion": self.ventanilla.id,
+             "ventanilla_transferencia_frecuente": [],
+             "grupo_transferencia_frecuente": [],
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_retrieve_tramite_authenticated(self):
+        """Test para obtener un trámite específico con autenticación."""
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["nombre"], self.tramite.nombre)
+
+    def test_retrieve_tramite_unauthenticated(self):
+        """Test para obtener un trámite específico sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_tramite_authenticated(self):
+        """Test para actualizar un trámite con autenticación."""
+        data = {
+            "nombre": "Trámite Actualizado",
+              "iniciales": "TA",
+             "cliente_requerido": "turno",
+             "ventanilla_atencion": self.ventanilla.id,
+            "ventanilla_transferencia_frecuente": [],
+             "grupo_transferencia_frecuente": [],
+        }
+        response = self.client.put(self.detail_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.tramite.refresh_from_db()
+        self.assertEqual(self.tramite.nombre, "Trámite Actualizado")
+    
+    def test_delete_tramite_authenticated(self):
+       """Test para eliminar un trámite con autenticación."""
+       response = self.client.delete(self.detail_url)
+       self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+       self.assertEqual(Tramite.objects.count(), 0)
+
+    def test_delete_tramite_unauthenticated(self):
+        """Test para eliminar un trámite sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def tearDown(self):
+        Tramite.objects.all().delete()
+        Ventanilla.objects.all().delete()
+        User.objects.all().delete()
+

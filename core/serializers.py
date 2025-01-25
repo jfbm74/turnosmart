@@ -11,7 +11,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .models import UserProfile, Grupo, Ventanilla
+from .models import Tramite, UserProfile, Grupo, Ventanilla
 
 
 User = get_user_model()
@@ -120,3 +120,18 @@ class VentanillaSerializer(serializers.ModelSerializer):
             'descripcion': {'help_text': 'Descripción de la ventanilla.'},
             'estado': {'help_text': 'Estado de la ventanilla (activo/inactivo).'},
         }
+
+
+class TramiteSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Tramite
+            fields = ['id', 'nombre', 'iniciales', 'cliente_requerido', 'ventanilla_atencion', 'ventanilla_transferencia_frecuente', 'grupo_transferencia_frecuente']
+            extra_kwargs = {
+               'id': {'read_only': True},
+                'nombre': {'help_text': 'Nombre del trámite.'},
+               'iniciales': {'help_text': 'Iniciales del trámite (para mostrar en el ticket).'},
+               'cliente_requerido': {'help_text': 'Define si se solicita información del cliente (no, al atender, al tomar turno).'},
+                 'ventanilla_atencion': {'help_text': 'Ventanilla por defecto para la atención de este trámite.'},
+                 'ventanilla_transferencia_frecuente': {'help_text': 'Ventanillas frecuentes a las que se puede transferir el trámite.'},
+                'grupo_transferencia_frecuente': {'help_text': 'Grupos frecuentes a los que se puede transferir el trámite.'},
+            }
