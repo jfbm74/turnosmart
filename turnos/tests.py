@@ -262,7 +262,7 @@ class TurneroAPITests(APITestCase):
         self.assertEqual(len(response.data), 2)
 
     def tearDown(self):
-        # Clean up objects to prevent interference between tests
+        
         Turnero.objects.all().delete()
         Menu.objects.all().delete()
         User.objects.all().delete()
