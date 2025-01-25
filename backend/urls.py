@@ -46,12 +46,12 @@ urlpatterns = [
         "api/",
         include(
             [
-                path("", include("core.urls")),
-                path("", include("configuracion.urls")),
-                path("", include("turnos.urls")),
-                path("", include("clientes.urls")),
-                # path('', include('encuestas.urls')),
-                path("", include("espera.urls")),
+                path("", include("backend.apps.core.urls")),
+                path("", include("backend.apps.configuracion.urls")),
+                path("", include("backend.apps.turnos.urls")),
+                path("", include("backend.apps.clientes.urls")),
+                # path('', include('backend.apps.encuestas.urls')),
+                path("", include("backend.apps.espera.urls")),
             ]
         ),
     ),

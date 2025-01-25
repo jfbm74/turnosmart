@@ -41,12 +41,13 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "drf_yasg",
-    "core",
-    "configuracion",
-    "turnos",
-    "clientes",
-    "encuestas",
-    "espera",
+    # Custom apps
+    'backend.apps.clientes',
+    'backend.apps.configuracion',
+    'backend.apps.core',
+    'backend.apps.encuestas',
+    'backend.apps.espera',
+    'backend.apps.turnos',
 ]
 
 MIDDLEWARE = [
