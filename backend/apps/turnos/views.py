@@ -1,6 +1,8 @@
+# apps/turnos/views.py
+
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
-from backend.apps.turnos.models import FranjaHoraria, Horario, Turnero, Menu, Sala
+from apps.turnos.models import FranjaHoraria, Horario, Turnero, Menu, Sala
 from .serializers import (
     FranjaHorariaSerializer,
     HorarioSerializer,

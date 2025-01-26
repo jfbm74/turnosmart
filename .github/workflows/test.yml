@@ -29,4 +29,6 @@ jobs:
       - name: Run Django Tests
         run: |
           source backend/venv/bin/activate # Ahora sin cd
-          python manage.py test
+          python manage.py test apps
+          
+          

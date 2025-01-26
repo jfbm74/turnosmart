@@ -3,7 +3,7 @@
 import os
 from rest_framework import viewsets
 
-from backend import settings
+from frontend.velzon import settings
 from .models import Institucion, Imagen, Video, Audio, Ticket, Sistema, Voz
 from .serializers import (
     InstitucionSerializer,
