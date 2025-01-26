@@ -1,0 +1,39 @@
+# Archivos de Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.env
+
+# Archivos de Django
+db.sqlite3
+/media/
+/staticfiles/
+
+# Archivos de Node.js
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Configuración de OS
+.DS_Store
+Thumbs.db
+
+# Archivos grandes de prueba
+frontend/chrome/mac_arm-132.0.6834.110/
+*.app
+*.log
+
+# IDEs/Edits
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Git LFS (si decides usarlo)
+.gitattributes
+
+# Otros
+*.lock
+*.bak
