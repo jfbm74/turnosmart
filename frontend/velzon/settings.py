@@ -1,3 +1,5 @@
+# velzon/settings.py
+
 """
 Django settings for velzon project.
 
@@ -38,12 +40,20 @@ DEFAULT_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    
+    "rest_framework",
+    "rest_framework.authtoken",
+    "drf_yasg",    
     ]
 LOCAL_APPS = [
     "dashboards",
     "layouts",
-    "pages"
+    "pages",
+    'apps.clientes',
+    'apps.configuracion',
+    'apps.core',
+    'apps.encuestas',
+    'apps.espera',
+    'apps.turnos',
     ]
 THIRDPARTY_APPS = [
     
@@ -226,4 +236,17 @@ SOCIALACCOUNT_PROVIDERS = {
             'access_type': 'online',
         }
     }
+}
+
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
 }
