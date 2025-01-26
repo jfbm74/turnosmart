@@ -21,14 +21,13 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd backend
+          cd frontend  # Cambiado a "frontend" porque "backend" ya no existe
           python3 -m venv venv
           source venv/bin/activate
-          pip install -r /home/runner/work/turnosmart/turnosmart/backend/requirements.txt # Ruta completa a requirements.txt
+          pip install -r requirements.txt
 
       - name: Run Django Tests
         run: |
-          source backend/venv/bin/activate
+          cd frontend  # Asegurarse de estar en el directorio correcto
+          source venv/bin/activate
           python manage.py test apps
-
-          
