@@ -6,3 +6,4 @@ __pycache__
 db.sqlite3
 *.log
 *.env
+frontend/chromedriver/mac_arm-132.0.6834.110/chromedriver-mac-arm64/chromedriver
