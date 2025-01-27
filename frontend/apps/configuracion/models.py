@@ -1,3 +1,5 @@
+# apps/configuracion/models.py
+
 import os
 from django.db import models
 

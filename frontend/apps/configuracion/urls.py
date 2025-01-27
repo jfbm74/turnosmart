@@ -1,7 +1,5 @@
-# configuracion/urls.py:
-
-
 from rest_framework.routers import DefaultRouter
+from django.urls import path
 from .views import (
     InstitucionViewSet,
     ImagenViewSet,
@@ -10,8 +8,10 @@ from .views import (
     TicketViewSet,
     SistemaViewSet,
     VozViewSet,
+    InstitucionListView,  # Importar la vista de plantilla
 )
 
+# Configurar el enrutador
 router = DefaultRouter()
 router.register(r'instituciones', InstitucionViewSet, basename='institucion')
 router.register(r'imagenes', ImagenViewSet, basename='imagen')
@@ -21,4 +21,7 @@ router.register(r'tickets', TicketViewSet, basename='ticket')
 router.register(r'sistemas', SistemaViewSet, basename='sistema')
 router.register(r'voces', VozViewSet, basename='voz')
 
-urlpatterns = router.urls
+# Agregar la URL de la vista de plantilla antes de las URLs generadas por el enrutador
+urlpatterns = [
+    path('configuracion/instituciones/', InstitucionListView.as_view(), name='instituciones-lista'),
+] + router.urls

@@ -1,8 +1,10 @@
-# configuracion/views.py
+#  apps/configuracion/views.py
 
 import os
 from rest_framework import viewsets
-
+from django.views.generic import ListView
+from django.shortcuts import render
+import requests
 from velzon import settings
 from .models import Institucion, Imagen, Video, Audio, Ticket, Sistema, Voz
 from .serializers import (
@@ -19,6 +21,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from rest_framework.generics import ListCreateAPIView
+
 
 
 
@@ -36,7 +40,47 @@ class InstitucionViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(operation_description="Crear una nueva institución.")
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        """
+        Create a new Institucion.
+        """
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+def instituciones_list_view(request):
+    """
+    Vista para consumir la API de instituciones y renderizar un template.
+    """
+    # URL de la API de instituciones
+    api_url = f"{settings.API_BASE_URL}/instituciones/"
+    headers = {
+        "Authorization": f"Token {settings.API_AUTH_TOKEN}"  # Asegúrate de configurar esto en settings.py
+    }
+
+    # Realizar la solicitud a la API
+    try:
+        response = requests.get(api_url, headers=headers)
+        if response.status_code == 200:
+            instituciones = response.json()  # Convertir la respuesta a JSON
+        else:
+            instituciones = []
+    except requests.RequestException as e:
+        instituciones = []  # Manejo de errores en caso de fallo de conexión
+        print(f"Error al conectar con la API: {e}")
+
+    # Renderizar el template con los datos
+    return render(
+        request,
+        "configuracion/app-institucion-list-view.html",
+        {"instituciones": instituciones}
+    )
+
+class InstitucionListView(ListView):
+    model = Institucion
+    template_name = "configuracion/app-institucion-list-view.html"  # Ruta del template
+    context_object_name = "instituciones"  # Nombre para acceder a las instituciones en el template
 
 
 class ImagenViewSet(viewsets.ModelViewSet):
@@ -149,3 +193,7 @@ class ImagenViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = ImagenSerializer
     queryset = Imagen.objects.all()
+
+
+
+

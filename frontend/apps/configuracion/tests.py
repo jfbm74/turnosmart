@@ -1,3 +1,5 @@
+# apps/configuracion/tests.py
+
 import os
 from django.urls import reverse
 from rest_framework import status

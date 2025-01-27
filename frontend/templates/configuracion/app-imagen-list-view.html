@@ -1,0 +1,307 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Listar Instituciones{% endblock title %}
+{% block extra_css %}
+<!-- Sweet Alert css-->
+<link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+{% block content %}
+        <!-- ============================================================== -->
+        <!-- Start right Content here -->
+        <!-- ============================================================== -->
+
+
+        <div class="main-content">
+
+            <div class="page-content">
+                <div class="container-fluid">
+
+                    {% block pagetitle %}
+                    {% include "partials/page-title.html" with pagetitle="Tasks" title="Lista de Instituciones" %}
+                    {% endblock pagetitle %}
+
+                    <div class="row">
+                        <div class="col-xxl-3 col-sm-6">
+                            <div class="card card-animate">
+                                
+                            </div> <!-- end card-->
+                        </div><!--end col-->
+                        <div class="col-xxl-3 col-sm-6">
+                            <div class="card card-animate">
+                                
+                            </div>
+                        </div><!--end col-->
+                        <div class="col-xxl-3 col-sm-6">
+                            <div class="card card-animate">
+                                
+                            </div>
+                        </div><!--end col-->
+                        <div class="col-xxl-3 col-sm-6">
+                            <div class="card card-animate">
+                                
+                            </div>
+                        </div><!--end col-->
+                    </div><!--end row-->
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card"  id="tasksList">
+                                <div class="card-header border-0">
+                                    <div class="d-flex align-items-center">
+                                        <h5 class="card-title mb-0 flex-grow-1">Instituciones</h5>
+                                        <div class="flex-shrink-0">
+                                            <div class="d-flex flex-wrap gap-2">
+                                            	<button class="btn btn-soft-primary add-btn" data-bs-toggle="modal" data-bs-target="#showModal"><i class="ri-add-line align-bottom me-1"></i> Agregar Institución</button>
+                                            	<button class="btn btn-soft-secondary" id="remove-actions" onClick="deleteMultiple()"><i class="ri-delete-bin-2-line"></i></button>
+                                           </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body border border-dashed border-end-0 border-start-0">
+                                    <form>
+                                        <div class="row g-3">
+                                            <div class="col-xxl-5 col-sm-12">
+                                                <div class="search-box">
+                                                    <input type="text" class="form-control search bg-light border-light" placeholder="Busqueda">
+                                                    <i class="ri-search-line search-icon"></i>
+                                                </div>
+                                            </div><!--end col-->
+                                            
+                                            
+
+                                            
+                                            <div class="col-xxl-1 col-sm-4">
+                                                <button type="button" class="btn btn-primary w-100" onclick="SearchData();"> <i class="ri-equalizer-fill me-1 align-bottom"></i>
+                                                    Filtros
+                                                </button>
+                                            </div><!--end col-->
+                                        </div><!--end row-->
+                                    </form>
+                                </div><!--end card-body-->
+                                <div class="card-body">
+                                    <div class="table-responsive table-card mb-4">
+                                        <table class="table align-middle table-nowrap mb-0" id="institucionesTable">
+                                            <thead class="table-light text-muted">
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Nombre</th>
+                                                    <th>Siglas</th>
+                                                    <th>Dirección</th>
+                                                    <th>Ubicación</th>
+                                                    <th>Teléfono</th>
+                                                    <th>Email</th>
+                                                    <th>Sitio Web</th>
+                                                    <th>Mensaje</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% if instituciones %}
+                                                    {% for institucion in instituciones %}
+                                                        <tr>
+                                                            <td>{{ institucion.id }}</td>
+                                                            <td>{{ institucion.nombre }}</td>
+                                                            <td>{{ institucion.siglas }}</td>
+                                                            <td>{{ institucion.direccion }}</td>
+                                                            <td>{{ institucion.ubicacion }}</td>
+                                                            <td>{{ institucion.telefono }}</td>
+                                                            <td>{{ institucion.email }}</td>
+                                                            <td>
+                                                                <a href="{{ institucion.sitio_web }}" target="_blank" class="link-primary">
+                                                                    {{ institucion.sitio_web }}
+                                                                </a>
+                                                            </td>
+                                                            <td>{{ institucion.mensaje }}</td>
+                                                            <td>
+                                                                <!-- Botón para editar -->
+                                                                <button class="btn btn-sm btn-outline-primary" 
+                                                                    data-bs-toggle="modal" 
+                                                                    data-bs-target="#editModal"
+                                                                    onclick="openEditModal({{ institucion.id }}, '{{ institucion.nombre }}', '{{ institucion.siglas }}', '{{ institucion.direccion }}', '{{ institucion.ubicacion }}', '{{ institucion.telefono }}', '{{ institucion.email }}', '{{ institucion.sitio_web }}', '{{ institucion.mensaje }}')">
+                                                                    <i class="ri-edit-2-line"></i>
+                                                                </button>
+                                            
+                                                                <!-- Botón para eliminar -->
+                                                                <button class="btn btn-sm btn-outline-danger" 
+                                                                    data-bs-toggle="modal" 
+                                                                    data-bs-target="#deleteModal" 
+                                                                    onclick="setDeleteId({{ institucion.id }})">
+                                                                    <i class="ri-delete-bin-6-line"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <tr>
+                                                        <td colspan="10" class="text-center">No hay instituciones disponibles.</td>
+                                                    </tr>
+                                                {% endif %}
+                                            </tbody>
+                                            
+                                        </table>
+                                    </div>
+                                </div>
+                                
+                            </div><!--end card-->
+                        </div><!--end col-->
+                    </div><!--end row-->
+
+                    <div class="modal fade flip" id="deleteOrder" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-body p-5 text-center">
+                                    <lord-icon src="https://cdn.lordicon.com/gsqxdxog.json" trigger="loop" colors="primary:#25a0e2,secondary:#00bd9d" style="width:90px;height:90px"></lord-icon>
+                                    <div class="mt-4 text-center">
+                                        <h4>You are about to delete a task ?</h4>
+                                        <p class="text-muted fs-14 mb-4">Deleting your task will remove all of
+                                            your information from our database.</p>
+                                        <div class="hstack gap-2 justify-content-center remove">
+                                            <button class="btn btn-link btn-ghost-primary fw-medium text-decoration-none" id="deleteRecord-close" data-bs-dismiss="modal"><i class="ri-close-line me-1 align-middle"></i> Close</button>
+                                            <button class="btn btn-primary" id="delete-record">Yes, Delete It</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!--end delete modal -->
+
+                    <div class="modal fade zoomIn" id="showModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content border-0">
+                                <div class="modal-header p-3 bg-primary-subtle">
+                                    <h5 class="modal-title" id="exampleModalLabel">Crear Nueva Institución</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-modal"></button>
+                                </div>
+                                <form id="institucionForm" method="POST" action="/api/instituciones/">
+                                    {% csrf_token %}
+                                    <div class="modal-body">
+                                        <div class="row g-3">
+                                            <div class="col-lg-6">
+                                                <label for="nombre" class="form-label">Nombre</label>
+                                                <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Nombre de la institución" required />
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <label for="siglas" class="form-label">Siglas</label>
+                                                <input type="text" id="siglas" name="siglas" class="form-control" placeholder="Siglas de la institución" />
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <label for="direccion" class="form-label">Dirección</label>
+                                                <input type="text" id="direccion" name="direccion" class="form-control" placeholder="Dirección de la institución" />
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <label for="ubicacion" class="form-label">Ubicación</label>
+                                                <input type="text" id="ubicacion" name="ubicacion" class="form-control" placeholder="Ubicación (Ciudad)" />
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <label for="telefono" class="form-label">Teléfono</label>
+                                                <input type="text" id="telefono" name="telefono" class="form-control" placeholder="Teléfono de contacto" />
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <label for="email" class="form-label">Email</label>
+                                                <input type="email" id="email" name="email" class="form-control" placeholder="Correo electrónico" />
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <label for="sitio_web" class="form-label">Sitio Web</label>
+                                                <input type="url" id="sitio_web" name="sitio_web" class="form-control" placeholder="URL del sitio web" />
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <label for="mensaje" class="form-label">Mensaje</label>
+                                                <textarea id="mensaje" name="mensaje" class="form-control" rows="3" placeholder="Mensaje de la institución"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+                                        <button type="submit" class="btn btn-success">Guardar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                </div>
+                <!-- container-fluid -->
+            </div>
+            <!-- End Page-content -->
+
+        {% block footer %}
+        {% include "partials/footer.html" %}
+        {% endblock footer %}
+        </div>
+        <!-- end main content-->
+{% endblock content %}
+{% block extra_js %}
+    <!-- list.js min js -->
+    <script src="{% static 'libs/list.js/dist/list.min.js' %}"></script>
+
+    <!--list pagination js-->
+    <script src="{% static 'libs/list.pagination.js/list.pagination.min.js' %}"></script>
+
+    <!-- titcket init js -->
+    <script src="{% static 'libs/pages/tasks-list.init.js' %}"></script>
+
+    <!-- Sweet Alerts js -->
+    <script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>   
+    
+    <!-- Agregar aquí el nuevo script -->
+    <script>
+        
+        document.getElementById('institucionForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+        
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            if (!csrftoken) {
+                console.error('No se encontró el token CSRF');
+                return;
+            }
+        
+            const formData = new FormData(this);
+            const jsonData = {};
+            formData.forEach((value, key) => {
+                if (key !== 'csrfmiddlewaretoken') {
+                    jsonData[key] = value;
+                }
+            });
+        
+            const authToken = 'd07c91f369e145647caec709beac1278761a353d'; // Reemplaza con un token válido
+            
+            fetch(`${window.location.origin}/api/instituciones/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                    'Authorization': 'Token ' + authToken,
+                },
+                body: JSON.stringify(jsonData),
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error(`Error: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Éxito:', data);
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        text: 'Institución creada exitosamente.',
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                    }).then(() => {
+                        location.reload();
+                    });
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud fetch:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: `Error al crear la institución: ${error.message}`,
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                    });
+                });
+        });
+        
+        
+    </script>
+
+{% endblock extra_js %}
