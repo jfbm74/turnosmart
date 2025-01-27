@@ -22,6 +22,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView
+from rest_framework.parsers import MultiPartParser, FormParser
+
 
 
 
@@ -89,12 +91,14 @@ class ImagenViewSet(viewsets.ModelViewSet):
     """
     queryset = Imagen.objects.all()
     serializer_class = ImagenSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        images_dir = os.path.join(settings.MEDIA_ROOT, 'images')
-        if not os.path.exists(images_dir):
-            os.makedirs(images_dir)
+class ImagenListView(ListView):
+    model = Imagen
+    template_name = "configuracion/app-imagen-list-view.html"  # Ruta de la plantilla
+    context_object_name = "imagenes"
+
 
 
 class VideoViewSet(viewsets.ModelViewSet):
