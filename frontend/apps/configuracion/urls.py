@@ -9,8 +9,11 @@ from .views import (
     TicketViewSet,
     SistemaViewSet,
     VozViewSet,
-    InstitucionListView,  # Importar la vista de plantilla
+    InstitucionListView,
+    VideoListView,
+    AudioListView
 )
+
 
 
 
@@ -28,4 +31,6 @@ router.register(r'voces', VozViewSet, basename='voz')
 urlpatterns = [
     path('configuracion/instituciones/', InstitucionListView.as_view(), name='instituciones-lista'),
     path('configuracion/imagenes/', ImagenListView.as_view(), name='imagenes-lista'),
+    path('configuracion/videos/', VideoListView.as_view(), name='videos-lista'),
+    path('configuracion/audios/', AudioListView.as_view(), name='audios-lista'),
 ] + router.urls

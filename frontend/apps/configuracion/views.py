@@ -21,8 +21,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView
 from rest_framework.parsers import MultiPartParser, FormParser
+
+
 
 
 
@@ -160,12 +161,27 @@ class VideoViewSet(viewsets.ModelViewSet):
             return Response({"mensaje": "URL válida."}, status=200)
 
 
+class VideoListView(ListView):
+    model = Video
+    template_name = "configuracion/app-video-list-view.html" 
+    context_object_name = "videos"
+
+
+
 class AudioViewSet(viewsets.ModelViewSet):
     """
     API para gestionar audios.
     """
     queryset = Audio.objects.all()
     serializer_class = AudioSerializer
+
+
+class AudioListView(ListView):
+    model = Audio
+    template_name = "configuracion/app-audio-list-view.html"  # Ruta del template
+    context_object_name = "audios"
+
+
 
 
 class TicketViewSet(viewsets.ModelViewSet):
