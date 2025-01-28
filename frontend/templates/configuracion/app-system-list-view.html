@@ -1,6 +1,6 @@
 {% extends "partials/base.html" %}
 {% load static %}
-{% block title %}Listar Audios{% endblock title %}
+{% block title %}Listar Configuración Sistema{% endblock title %}
 {% block extra_css %}
 <!-- Sweet Alert css-->
 <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
@@ -17,7 +17,7 @@
                 <div class="container-fluid">
 
                     {% block pagetitle %}
-                    {% include "partials/page-title.html" with pagetitle="Configuración" title="Lista de Audios" %}
+                    {% include "partials/page-title.html" with pagetitle="Configuración" title="Lista de Configuración Sistema" %}
                     {% endblock pagetitle %}
 
                     <div class="row">
@@ -48,10 +48,10 @@
                             <div class="card"  id="tasksList">
                                 <div class="card-header border-0">
                                     <div class="d-flex align-items-center">
-                                        <h5 class="card-title mb-0 flex-grow-1">Audios</h5>
+                                        <h5 class="card-title mb-0 flex-grow-1">Configuración Sistema</h5>
                                         <div class="flex-shrink-0">
                                             <div class="d-flex flex-wrap gap-2">
-                                            	<button class="btn btn-soft-primary add-btn" data-bs-toggle="modal" data-bs-target="#showModal"><i class="ri-add-line align-bottom me-1"></i> Agregar Audio</button>
+                                            	<button class="btn btn-soft-primary add-btn" data-bs-toggle="modal" data-bs-target="#showModal"><i class="ri-add-line align-bottom me-1"></i> Agregar Video</button>
                                             	<button class="btn btn-soft-secondary" id="remove-actions" onClick="deleteMultiple()"><i class="ri-delete-bin-2-line"></i></button>
                                            </div>
                                         </div>
@@ -84,30 +84,39 @@
                                             <thead>
                                                 <tr>
                                                     <th>ID</th>
-                                                    <th>Archivo de Audio</th>
+                                                    <th>Origen</th>
+                                                    <th>URL Video</th>
+                                                    <th>Archivo</th>
+                                                    <th>Estado</th>
                                                     <th>Acciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {% for audio in audios %}
+                                                {% for video in Configuración Sistema %}
                                                 <tr>
-                                                    <td>{{ audio.id }}</td>
+                                                    <td>{{ video.id }}</td>
+                                                    <td>{{ video.origen }}</td>
                                                     <td>
-                                                        {% if audio.timbre %}
-                                                            <audio controls>
-                                                                <source src="{{ audio.timbre.url }}" type="audio/mpeg">
-                                                                Tu navegador no soporta el elemento de audio.
-                                                            </audio>
+                                                        {% if video.origen == "URL" %}
+                                                            <a href="{{ video.url_video }}" target="_blank">{{ video.url_video }}</a>
                                                         {% else %}
-                                                            Sin archivo
+                                                            N/A
                                                         {% endif %}
                                                     </td>
                                                     <td>
+                                                        {% if video.origen == "SISTEMA" %}
+                                                            <a href="{{ video.video.url }}" target="_blank">Descargar Video</a>
+                                                        {% else %}
+                                                            N/A
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ video.estado|yesno:"Activo,Inactivo" }}</td>
+                                                    <td>
                                                         <div class="d-flex gap-2">
-                                                            <button class="btn btn-sm btn-soft-primary" onclick="editAudio({{ audio.id }})">
+                                                            <button class="btn btn-sm btn-soft-primary" onclick="editImage({{ video.id }})">
                                                                 <i class="ri-edit-line"></i>
                                                             </button>
-                                                            <button class="btn btn-sm btn-soft-danger" onclick="deleteAudio({{ audio.id }})">
+                                                            <button class="btn btn-sm btn-soft-danger" onclick="deleteImage({{ video.id }})">
                                                                 <i class="ri-delete-bin-line"></i>
                                                             </button>
                                                         </div>
@@ -147,16 +156,34 @@
                         <div class="modal-dialog modal-dialog-centered modal-lg">
                             <div class="modal-content border-0">
                                 <div class="modal-header p-3 bg-primary-subtle">
-                                    <h5 class="modal-title" id="exampleModalLabel">Crear Nuevo Audio</h5>
+                                    <h5 class="modal-title" id="exampleModalLabel">Crear Nuevo Video</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-modal"></button>
                                 </div>
-                                <form id="audioForm" method="POST" action="/api/audios/" enctype="multipart/form-data">
+                                <form id="videoForm" method="POST" action="/api/configuracion/Configuración Sistema/" enctype="multipart/form-data">
                                     {% csrf_token %}
                                     <div class="modal-body">
                                         <div class="row g-3">
-                                            <div class="col-lg-12">
-                                                <label for="timbre" class="form-label">Subir Archivo de Audio</label>
-                                                <input type="file" id="timbre" name="timbre" class="form-control" accept="audio/*" required />
+                                            <div class="col-lg-6">
+                                                <label for="origen" class="form-label">Origen</label>
+                                                <select id="origen" name="origen" class="form-control" required>
+                                                    <option value="URL">URL</option>
+                                                    <option value="SISTEMA">Sistema</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <label for="url_video" class="form-label">URL del Video</label>
+                                                <input type="url" id="url_video" name="url_video" class="form-control" placeholder="http://example.com/video.mp4" />
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <label for="video" class="form-label">Subir Archivo</label>
+                                                <input type="file" id="video" name="video" class="form-control" />
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <label for="estado" class="form-label">Estado</label>
+                                                <select id="estado" name="estado" class="form-control" required>
+                                                    <option value="True">Activo</option>
+                                                    <option value="False">Inactivo</option>
+                                                </select>
                                             </div>
                                         </div>
                                     </div>
@@ -168,7 +195,6 @@
                             </div>
                         </div>
                     </div>
-                    
                     
                     
                     
@@ -199,7 +225,7 @@
     
     <!-- Agregar aquí el nuevo script -->
     <script>
-        document.getElementById('audioForm').addEventListener('submit', function (e) {
+        document.getElementById('videoForm').addEventListener('submit', function (e) {
             e.preventDefault();
     
             const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -211,13 +237,13 @@
             const formData = new FormData(this); // Captura los datos del formulario
             const authToken = 'd07c91f369e145647caec709beac1278761a353d'; // Reemplaza con un token válido
     
-            fetch(`${window.location.origin}/api/audios/`, {
+            fetch(`${window.location.origin}/api/Configuración Sistema/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrftoken, // Token CSRF
                     'Authorization': 'Token ' + authToken, // Token de autenticación
                 },
-                body: formData, // Enviar los datos como FormData
+                body: formData, // Usar FormData para manejar datos de archivos y campos
             })
                 .then(response => {
                     if (!response.ok) throw new Error(`Error: ${response.status}`);
@@ -227,7 +253,7 @@
                     console.log('Éxito:', data);
                     Swal.fire({
                         title: '¡Éxito!',
-                        text: 'Audio creado exitosamente.',
+                        text: 'Video creado exitosamente.',
                         icon: 'success',
                         confirmButtonText: 'OK',
                     }).then(() => {
@@ -238,11 +264,15 @@
                     console.error('Error en la solicitud fetch:', error);
                     Swal.fire({
                         title: 'Error',
-                        text: `Error al crear el audio: ${error.message}`,
+                        text: `Error al crear el video: ${error.message}`,
                         icon: 'error',
                         confirmButtonText: 'OK',
                     });
                 });
         });
     </script>
+    
+    
+    
+
 {% endblock extra_js %}
