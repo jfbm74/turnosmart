@@ -1,0 +1,552 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Listar Configuración Tickets{% endblock title %}
+{% block extra_css %}
+<!-- Sweet Alert css-->
+<link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+{% block content %}
+<style>
+    /* Estilos base del ticket */
+   
+    /* Oculta elementos a nivel CSS (se sobreescribe vía JS cuando visible = false) */
+    .hidden {
+      display: none !important;
+    }
+    /* Oculta la columna de configuración y cualquier elemento con .no-print en la vista de impresión */
+    @media print {
+      .config-column,
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+    .ticket-preview {
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+        width: 200px; /* Se ajusta dinámicamente vía JS */
+        overflow: hidden;
+        background-color: #fff; /* ← Agrega esta línea */
+      }
+
+      .ticket-preview img {
+        display: block;
+        margin: 0 auto;
+      }
+
+      .main-content {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .page-content {
+        flex: 1 0 auto;
+    }
+
+    /* Ajuste para el footer */
+    footer {
+        flex-shrink: 0;
+        width: 100%;
+    }
+  </style>
+  <div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Tasks" title="Previsualizar Tickets" %}
+            {% endblock pagetitle %}
+
+    <div class="container my-4">
+        <div class="row">
+            <!-- COLUMNA: PREVIEW DEL TICKET -->
+            <div class="col-md-6 d-flex flex-column align-items-center">
+            <h4>Vista previa del Ticket</h4>
+            <div id="ticketPreview" class="ticket-preview">
+            <!-- Logo -->
+            <img
+                id="logoImg"
+                src="https://via.placeholder.com/150" 
+                alt="Logo"
+            />
+            <!-- Turno -->
+            <h2 id="turnoText">S27</h2>
+            <!-- Trámite -->
+            <p id="tramiteText">CONSULTA MEDICINA INTERNA</p>
+            <!-- Prioridad -->
+            <span id="prioridadText">Prioridad: Normal</span><br />
+            <!-- Nombre paciente (ejemplo) -->
+            <strong id="nombreText">Juan Pérez</strong><br />
+            <!-- Tiempo de espera -->
+            <span id="esperaText">Tiempo de espera: ~10min</span><br />
+            <!-- Hora -->
+            <span id="horaText">Hora: 11:00 AM</span><br />
+            <!-- Fecha -->
+            <span id="fechaText">Fecha: 24/02/2017</span><br />
+            <!-- Sitio web -->
+            <span id="sitioWebText">www.clinicaejemplo.com</span><br />
+            <!-- Nombre Cliente -->
+            <span id="nombreClienteText">Cliente: ACME Corp.</span><br />
+            <!-- Cédula Cliente -->
+            <span id="cedulaClienteText">Cédula/RUC: 12345678-9</span><br />
+        </div>
+  
+        <!-- Botón Imprimir -->
+        <button class="btn btn-primary no-print" onclick="window.print()">Imprimir Ticket</button>
+    </div>
+  
+
+
+    <!-- COLUMNA: FORMULARIO DE CONFIGURACIÓN -->
+    <div class="col-md-6 config-column">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Configuración del Ticket</h4>
+            </div>
+            <div class="card-body">
+                <form id="configForm">
+                    <!-- Información Básica -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Información Básica</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="idInput" class="form-label">ID</label>
+                                    <input type="text" class="form-control-plaintext" id="idInput" name="id"
+                                        value="{{ ticket.id }}" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="ancho_ticket" class="form-label">Ancho Ticket (px)</label>
+                                    <input type="number" class="form-control" id="ancho_ticket" name="ancho_ticket"
+                                        value="{{ ticket.ancho_ticket }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Configuración del Logo -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Configuración del Logo</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-4">
+                                    <div class="form-check mb-3">
+                                        <input type="checkbox" class="form-check-input" id="logo_visible" name="logo_visible"
+                                            {% if ticket.logo_visible %}checked{% endif %}>
+                                        <label for="logo_visible" class="form-check-label">Mostrar Logo</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="ancho_logo" class="form-label">Ancho Logo (px)</label>
+                                    <input type="number" class="form-control" id="ancho_logo" name="ancho_logo"
+                                        value="{{ ticket.ancho_logo }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="alto_logo" class="form-label">Alto Logo (px)</label>
+                                    <input type="number" class="form-control" id="alto_logo" name="alto_logo"
+                                        value="{{ ticket.alto_logo }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Configuración de Elementos -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Configuración de Elementos</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Elemento</th>
+                                            <th>Tamaño Fuente</th>
+                                            <th>Visibilidad</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Turno</td>
+                                            <td>
+                                                <input type="number" class="form-control" id="fuente_turno" name="fuente_turno"
+                                                    value="{{ ticket.fuente_turno }}">
+                                            </td>
+                                            <td class="text-center">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Trámite</td>
+                                            <td>
+                                                <input type="number" class="form-control" id="fuente_tramite" name="fuente_tramite"
+                                                    value="{{ ticket.fuente_tramite }}">
+                                            </td>
+                                            <td>
+                                                <div class="form-check d-flex justify-content-center">
+                                                    <input type="checkbox" class="form-check-input" id="tramite_visible"
+                                                        name="tramite_visible" {% if ticket.tramite_visible %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Prioridad</td>
+                                            <td>
+                                                <input type="number" class="form-control" id="fuente_prioridad" name="fuente_prioridad"
+                                                    value="{{ ticket.fuente_prioridad }}">
+                                            </td>
+                                            <td>
+                                                <div class="form-check d-flex justify-content-center">
+                                                    <input type="checkbox" class="form-check-input" id="prioridad_visible"
+                                                        name="prioridad_visible" {% if ticket.prioridad_visible %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Nombre</td>
+                                            <td>
+                                                <input type="number" class="form-control" id="fuente_nombre" name="fuente_nombre"
+                                                    value="{{ ticket.fuente_nombre }}">
+                                            </td>
+                                            <td>
+                                                <div class="form-check d-flex justify-content-center">
+                                                    <input type="checkbox" class="form-check-input" id="nombre_visible"
+                                                        name="nombre_visible" {% if ticket.nombre_visible %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Hora</td>
+                                            <td>
+                                                <input type="number" class="form-control" id="fuente_hora" name="fuente_hora"
+                                                    value="{{ ticket.fuente_hora }}">
+                                            </td>
+                                            <td>
+                                                <div class="form-check d-flex justify-content-center">
+                                                    <input type="checkbox" class="form-check-input" id="hora_visible"
+                                                        name="hora_visible" {% if ticket.hora_visible %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Fecha</td>
+                                            <td>
+                                                <input type="number" class="form-control" id="fuente_fecha" name="fuente_fecha"
+                                                    value="{{ ticket.fuente_fecha }}">
+                                            </td>
+                                            <td>
+                                                <div class="form-check d-flex justify-content-center">
+                                                    <input type="checkbox" class="form-check-input" id="fecha_visible"
+                                                        name="fecha_visible" {% if ticket.fecha_visible %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sitio Web</td>
+                                            <td>
+                                                <input type="number" class="form-control" id="fuente_sitio_web" name="fuente_sitio_web"
+                                                    value="{{ ticket.fuente_sitio_web }}">
+                                            </td>
+                                            <td>
+                                                <div class="form-check d-flex justify-content-center">
+                                                    <input type="checkbox" class="form-check-input" id="sitio_web_visible"
+                                                        name="sitio_web_visible" {% if ticket.sitio_web_visible %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Cliente</td>
+                                            <td>
+                                                <input type="number" class="form-control" id="fuente_nombre_cliente"
+                                                    name="fuente_nombre_cliente" value="{{ ticket.fuente_nombre_cliente }}">
+                                            </td>
+                                            <td>
+                                                <div class="form-check d-flex justify-content-center">
+                                                    <input type="checkbox" class="form-check-input" id="nombre_cliente_visible"
+                                                        name="nombre_cliente_visible"
+                                                        {% if ticket.nombre_cliente_visible %}checked{% endif %}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Botones de acción -->
+                    <div class="d-flex justify-content-end gap-2">
+                        
+                        <button type="reset" class="btn btn-secondary">
+                            <i class="bi bi-arrow-counterclockwise"></i> Restablecer
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% block footer %}
+    {% include "partials/footer.html" %}
+    {% endblock footer %}
+</div>
+<!-- end main content-->
+
+{% endblock content %}
+
+
+
+
+{% block extra_js %}
+    <!-- list.js min js -->
+    <script src="{% static 'libs/list.js/dist/list.min.js' %}"></script>
+
+    <!--list pagination js-->
+    <script src="{% static 'libs/list.pagination.js/list.pagination.min.js' %}"></script>
+
+    <!-- titcket init js -->
+    <script src="{% static 'libs/pages/tasks-list.init.js' %}"></script>
+
+    <!-- Sweet Alerts js -->
+    <script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>  
+
+
+    <!-- Get Data -->
+    <script>
+        // Objeto inicial de configuración
+        // Reemplazar configuración inicial con datos obtenidos del backend
+      let ticketConfig = {
+          id: {{ ticket.id }},
+          ancho_ticket: {{ ticket.ancho_ticket }},
+          ancho_logo: {{ ticket.ancho_logo }},
+          alto_logo: {{ ticket.alto_logo }},
+          logo_visible: {{ ticket.logo_visible|yesno:"true,false" }},
+          fuente_turno: {{ ticket.fuente_turno }},
+          fuente_tramite: {{ ticket.fuente_tramite }},
+          tramite_visible: {{ ticket.tramite_visible|yesno:"true,false" }},
+          fuente_prioridad: {{ ticket.fuente_prioridad }},
+          prioridad_visible: {{ ticket.prioridad_visible|yesno:"true,false" }},
+          fuente_nombre: {{ ticket.fuente_nombre }},
+          nombre_visible: {{ ticket.nombre_visible|yesno:"true,false" }},
+          fuente_espera: {{ ticket.fuente_espera }},
+          espera_visible: {{ ticket.espera_visible|yesno:"true,false" }},
+          fuente_hora: {{ ticket.fuente_hora }},
+          hora_visible: {{ ticket.hora_visible|yesno:"true,false" }},
+          fuente_fecha: {{ ticket.fuente_fecha }},
+          fecha_visible: {{ ticket.fecha_visible|yesno:"true,false" }},
+          fuente_sitio_web: {{ ticket.fuente_sitio_web }},
+          sitio_web_visible: {{ ticket.sitio_web_visible|yesno:"true,false" }},
+          fuente_nombre_cliente: {{ ticket.fuente_nombre_cliente }},
+          nombre_cliente_visible: {{ ticket.nombre_cliente_visible|yesno:"true,false" }},
+          fuente_cedula_cliente: {{ ticket.fuente_cedula_cliente }},
+          cedula_cliente_visible: {{ ticket.cedula_cliente_visible|yesno:"true,false" }}
+      };
+      
+      
+        // Referencias a elementos del DOM
+        const ticketPreview = document.getElementById("ticketPreview");
+        const logoImg       = document.getElementById("logoImg");
+        const turnoText     = document.getElementById("turnoText");
+        const tramiteText   = document.getElementById("tramiteText");
+        const prioridadText = document.getElementById("prioridadText");
+        const nombreText    = document.getElementById("nombreText");
+        const esperaText    = document.getElementById("esperaText");
+        const horaText      = document.getElementById("horaText");
+        const fechaText     = document.getElementById("fechaText");
+        const sitioWebText  = document.getElementById("sitioWebText");
+        const nombreClienteText = document.getElementById("nombreClienteText");
+        const cedulaClienteText = document.getElementById("cedulaClienteText");
+      
+        const configForm = document.getElementById("configForm");
+      
+        // Función para aplicar la configuración del objeto ticketConfig al ticket
+        function applyConfig() {
+          // Ajustar ancho del ticket
+          ticketPreview.style.width = ticketConfig.ancho_ticket + "px";
+      
+          // Logo: tamaño y visibilidad
+          logoImg.style.width  = ticketConfig.ancho_logo + "px";
+          logoImg.style.height = ticketConfig.alto_logo + "px";
+          logoImg.classList.toggle("hidden", !ticketConfig.logo_visible);
+      
+          // Turno
+          turnoText.style.fontSize = ticketConfig.fuente_turno + "px";
+      
+          // Trámite
+          tramiteText.style.fontSize = ticketConfig.fuente_tramite + "px";
+          tramiteText.classList.toggle("hidden", !ticketConfig.tramite_visible);
+      
+          // Prioridad
+          prioridadText.style.fontSize = ticketConfig.fuente_prioridad + "px";
+          prioridadText.classList.toggle("hidden", !ticketConfig.prioridad_visible);
+      
+          // Nombre
+          nombreText.style.fontSize = ticketConfig.fuente_nombre + "px";
+          nombreText.classList.toggle("hidden", !ticketConfig.nombre_visible);
+      
+          // Espera
+          esperaText.style.fontSize = ticketConfig.fuente_espera + "px";
+          esperaText.classList.toggle("hidden", !ticketConfig.espera_visible);
+      
+          // Hora
+          horaText.style.fontSize = ticketConfig.fuente_hora + "px";
+          horaText.classList.toggle("hidden", !ticketConfig.hora_visible);
+      
+          // Fecha
+          fechaText.style.fontSize = ticketConfig.fuente_fecha + "px";
+          fechaText.classList.toggle("hidden", !ticketConfig.fecha_visible);
+      
+          // Sitio Web
+          sitioWebText.style.fontSize = ticketConfig.fuente_sitio_web + "px";
+          sitioWebText.classList.toggle("hidden", !ticketConfig.sitio_web_visible);
+      
+          // Nombre Cliente
+          nombreClienteText.style.fontSize = ticketConfig.fuente_nombre_cliente + "px";
+          nombreClienteText.classList.toggle("hidden", !ticketConfig.nombre_cliente_visible);
+      
+          // Cédula Cliente
+          cedulaClienteText.style.fontSize = ticketConfig.fuente_cedula_cliente + "px";
+          cedulaClienteText.classList.toggle("hidden", !ticketConfig.cedula_cliente_visible);
+        }
+      
+        // Cargar en el formulario los valores iniciales
+        function loadFormValues() {
+          for (let key in ticketConfig) {
+            const input = document.querySelector(`#configForm [name="${key}"]`);
+            if (input) {
+              if (input.type === "checkbox") {
+                input.checked = ticketConfig[key];
+              } else {
+                input.value = ticketConfig[key];
+              }
+            }
+          }
+        }
+      
+        // Asignar listener de cambios a todos los inputs del formulario
+        configForm.addEventListener("input", (e) => {
+          const { name, type, value, checked } = e.target;
+          if (ticketConfig.hasOwnProperty(name)) {
+            ticketConfig[name] = type === "checkbox" ? checked : Number(value);
+            applyConfig();
+          }
+        });
+      
+        // Al cargar la página
+        window.addEventListener("DOMContentLoaded", () => {
+          loadFormValues();
+          applyConfig();
+        });
+    </script>
+
+{# Formulario correcto #}
+<form id="configForm" action="/api/tickets/{{ ticket.id }}/" method="POST">
+    {% csrf_token %}
+    <!-- Resto del formulario se mantiene igual -->
+</form>
+
+<!-- Script corregido -->
+<script>
+document.getElementById('configForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Obtener el token CSRF
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    if (!csrftoken) {
+        console.error('No se encontró el token CSRF');
+        return;
+    }
+
+    // Obtener el ID del ticket
+    const ticketId = document.getElementById('idInput').value;
+    
+    // Crear FormData con todos los campos del formulario
+    const formData = new FormData(this);
+    
+    // Asegurarse de que los checkboxes no marcados también se envíen
+    const checkboxes = ['logo_visible', 'tramite_visible', 'prioridad_visible', 
+                       'nombre_visible', 'hora_visible', 'fecha_visible', 
+                       'sitio_web_visible', 'nombre_cliente_visible'];
+                       
+    checkboxes.forEach(checkbox => {
+        if (!formData.has(checkbox)) {
+            formData.append(checkbox, 'false');
+        }
+    });
+
+    // Token de autorización
+    const authToken = 'd07c91f369e145647caec709beac1278761a353d';
+
+    // Realizar la petición a la API usando la misma ruta que en el ejemplo funcional
+    fetch(`${window.location.origin}/api/tickets/${ticketId}/`, {
+        method: 'PUT',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Authorization': `Token ${authToken}`,
+        },
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Éxito:', data);
+        Swal.fire({
+            title: '¡Actualización Exitosa!',
+            text: 'La configuración del ticket ha sido actualizada correctamente.',
+            icon: 'success',
+            confirmButtonText: 'OK'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.reload();
+            }
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            title: 'Error',
+            text: 'Hubo un error al actualizar la configuración del ticket. ' + error.message,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    });
+});</script>
+
+{% endblock extra_js %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

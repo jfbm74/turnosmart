@@ -1,0 +1,341 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Listar Configuración Tickets{% endblock title %}
+{% block extra_css %}
+<!-- Sweet Alert css-->
+<link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+{% block content %}
+        <!-- ============================================================== -->
+        <!-- Start right Content here -->
+        <!-- ============================================================== -->
+
+
+        <div class="main-content">
+
+            <div class="page-content">
+                <div class="container-fluid">
+
+                    {% block pagetitle %}
+                    {% include "partials/page-title.html" with pagetitle="Tasks" title="Lista de Configuración Tickets" %}
+                    {% endblock pagetitle %}
+
+                    <div class="row">
+                        <div class="col-xxl-3 col-sm-6">
+                            <div class="card card-animate">
+                                
+                            </div> <!-- end card-->
+                        </div><!--end col-->
+                        <div class="col-xxl-3 col-sm-6">
+                            <div class="card card-animate">
+                                
+                            </div>
+                        </div><!--end col-->
+                        <div class="col-xxl-3 col-sm-6">
+                            <div class="card card-animate">
+                                
+                            </div>
+                        </div><!--end col-->
+                        <div class="col-xxl-3 col-sm-6">
+                            <div class="card card-animate">
+                                
+                            </div>
+                        </div><!--end col-->
+                    </div><!--end row-->
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card"  id="tasksList">
+                                <div class="card-header border-0">
+                                    <div class="d-flex align-items-center">
+                                        <h5 class="card-title mb-0 flex-grow-1">Configuración Tickets</h5>
+                                        <div class="flex-shrink-0">
+                                            <div class="d-flex flex-wrap gap-2">
+                                            	<button class="btn btn-soft-primary add-btn" data-bs-toggle="modal" data-bs-target="#showModal"><i class="ri-add-line align-bottom me-1"></i> Agregar Configuración Tickets</button>
+                                            	<button class="btn btn-soft-secondary" id="remove-actions" onClick="deleteMultiple()"><i class="ri-delete-bin-2-line"></i></button>
+                                           </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body border border-dashed border-end-0 border-start-0">
+                                    <form>
+                                        <div class="row g-3">
+                                            <div class="col-xxl-5 col-sm-12">
+                                                <div class="search-box">
+                                                    <input type="text" class="form-control search bg-light border-light" placeholder="Busqueda">
+                                                    <i class="ri-search-line search-icon"></i>
+                                                </div>
+                                            </div><!--end col-->
+                                            
+                                            
+
+                                            
+                                            <div class="col-xxl-1 col-sm-4">
+                                                <button type="button" class="btn btn-primary w-100" onclick="SearchData();"> <i class="ri-equalizer-fill me-1 align-bottom"></i>
+                                                    Filtros
+                                                </button>
+                                            </div><!--end col-->
+                                        </div><!--end row-->
+                                    </form>
+                                </div><!--end card-body-->
+                                <div class="card-body">
+                                    <div class="table-responsive table-card mb-4">
+                                        <table class="table align-middle table-nowrap mb-0" id="institucionesTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Nombre</th>
+                                                    <th>Ancho del Ticket</th>
+                                                    <th>Logo Visible</th>
+                                                    <th>Trámite Visible</th>
+                                                    <th>Prioridad Visible</th>
+                                                    <th>Estado</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for ticket in tickets %}
+                                                <tr>
+                                                    <td>{{ ticket.id }}</td>
+                                                    <td>{{ ticket.nombre }}</td>
+                                                    <td>{{ ticket.ancho_ticket }}</td>
+                                                    <td>{{ ticket.logo_visible|yesno:"Sí,No" }}</td>
+                                                    <td>{{ ticket.tramite_visible|yesno:"Sí,No" }}</td>
+                                                    <td>{{ ticket.prioridad_visible|yesno:"Sí,No" }}</td>
+                                                    <td>{{ ticket.estado|yesno:"Activo,Inactivo" }}</td>
+                                                    <td>
+                                                        <div class="d-flex gap-2">
+                                                            <button class="btn btn-sm btn-soft-primary" onclick="editTicket({{ ticket.id }})">
+                                                                <i class="ri-edit-line"></i>
+                                                            </button>
+                                                            <button class="btn btn-sm btn-soft-success" onclick="window.location.href='{% url 'ticket-preview' ticket.id %}'">
+                                                                <i class="ri-eye-line"></i>
+                                                            </button>
+                                                            <button class="btn btn-sm btn-soft-danger" onclick="deleteTicket({{ ticket.id }})">
+                                                                <i class="ri-delete-bin-line"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                            
+                                            
+                                        </table>
+                                    </div>
+                                </div>
+                                
+                            </div><!--end card-->
+                        </div><!--end col-->
+                    </div><!--end row-->
+
+                    <div class="modal fade flip" id="deleteOrder" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-body p-5 text-center">
+                                    <lord-icon src="https://cdn.lordicon.com/gsqxdxog.json" trigger="loop" colors="primary:#25a0e2,secondary:#00bd9d" style="width:90px;height:90px"></lord-icon>
+                                    <div class="mt-4 text-center">
+                                        <h4>You are about to delete a task ?</h4>
+                                        <p class="text-muted fs-14 mb-4">Deleting your task will remove all of
+                                            your information from our database.</p>
+                                        <div class="hstack gap-2 justify-content-center remove">
+                                            <button class="btn btn-link btn-ghost-primary fw-medium text-decoration-none" id="deleteRecord-close" data-bs-dismiss="modal"><i class="ri-close-line me-1 align-middle"></i> Close</button>
+                                            <button class="btn btn-primary" id="delete-record">Yes, Delete It</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!--end delete modal -->
+
+                    <div class="modal fade zoomIn" id="showModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content border-0">
+                                <div class="modal-header p-3 bg-primary-subtle">
+                                    <h5 class="modal-title" id="exampleModalLabel">Crear Nueva Configuración de Ticket</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-modal"></button>
+                                </div>
+                                <form id="ticketForm" method="POST" action="/api/configuracion/tickets/" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="modal-body">
+                                        <div class="row g-4">
+                                            <!-- Layout and Size -->
+                                            <div class="col-lg-6">
+                                                <div>
+                                                    <label for="ancho_ticket" class="form-label">Ancho del Ticket</label>
+                                                    <input type="number" id="ancho_ticket" name="ancho_ticket" class="form-control border-dashed" placeholder="Ingrese el ancho del ticket" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div>
+                                                    <label for="alto_logo" class="form-label">Alto del Logo</label>
+                                                    <input type="number" id="alto_logo" name="alto_logo" class="form-control border-dashed" placeholder="Ingrese el alto del logo">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div>
+                                                    <label for="ancho_logo" class="form-label">Ancho del Logo</label>
+                                                    <input type="number" id="ancho_logo" name="ancho_logo" class="form-control border-dashed" placeholder="Ingrese el ancho del logo">
+                                                </div>
+                                            </div>
+                    
+                                            <!-- Visibility Options -->
+                                            <div class="col-lg-6">
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" id="logo_visible" name="logo_visible">
+                                                    <label class="form-check-label" for="logo_visible">Mostrar Logo</label>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" id="tramite_visible" name="tramite_visible">
+                                                    <label class="form-check-label" for="tramite_visible">Mostrar Trámite</label>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" id="prioridad_visible" name="prioridad_visible">
+                                                    <label class="form-check-label" for="prioridad_visible">Mostrar Prioridad</label>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" id="nombre_visible" name="nombre_visible">
+                                                    <label class="form-check-label" for="nombre_visible">Mostrar Nombre</label>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" id="espera_visible" name="espera_visible">
+                                                    <label class="form-check-label" for="espera_visible">Mostrar Tiempo de Espera</label>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input type="checkbox" class="form-check-input" id="hora_visible" name="hora_visible">
+                                                    <label class="form-check-label" for="hora_visible">Mostrar Hora</label>
+                                                </div>
+                                            </div>
+                    
+                                            <!-- Font Sizes -->
+                                            <div class="col-lg-6">
+                                                <div>
+                                                    <label for="fuente_turno" class="form-label">Fuente del Turno</label>
+                                                    <input type="number" id="fuente_turno" name="fuente_turno" class="form-control border-dashed" placeholder="Tamaño de fuente para el turno">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div>
+                                                    <label for="fuente_tramite" class="form-label">Fuente del Trámite</label>
+                                                    <input type="number" id="fuente_tramite" name="fuente_tramite" class="form-control border-dashed" placeholder="Tamaño de fuente para el trámite">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div>
+                                                    <label for="fuente_prioridad" class="form-label">Fuente de la Prioridad</label>
+                                                    <input type="number" id="fuente_prioridad" name="fuente_prioridad" class="form-control border-dashed" placeholder="Tamaño de fuente para la prioridad">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div>
+                                                    <label for="fuente_nombre" class="form-label">Fuente del Nombre</label>
+                                                    <input type="number" id="fuente_nombre" name="fuente_nombre" class="form-control border-dashed" placeholder="Tamaño de fuente para el nombre">
+                                                </div>
+                                            </div>
+                    
+                                            <!-- Other Settings -->
+                                            <div class="col-lg-6">
+                                                <div>
+                                                    <label for="estado" class="form-label">Estado</label>
+                                                    <select id="estado" name="estado" class="form-select">
+                                                        <option value="True">Activo</option>
+                                                        <option value="False">Inactivo</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                    
+                                            <!-- Submit Buttons -->
+                                            <div class="col-lg-12 mt-4">
+                                                <div class="d-flex gap-2">
+                                                    <button type="button" class="btn btn-primary" onclick="previewTicket()">Previsualizar Configuración</button>
+                                                    <button type="submit" class="btn btn-success">Guardar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </div>
+                <!-- container-fluid -->
+            </div>
+            <!-- End Page-content -->
+
+        {% block footer %}
+        {% include "partials/footer.html" %}
+        {% endblock footer %}
+        </div>
+        <!-- end main content-->
+{% endblock content %}
+{% block extra_js %}
+    <!-- list.js min js -->
+    <script src="{% static 'libs/list.js/dist/list.min.js' %}"></script>
+
+    <!--list pagination js-->
+    <script src="{% static 'libs/list.pagination.js/list.pagination.min.js' %}"></script>
+
+    <!-- titcket init js -->
+    <script src="{% static 'libs/pages/tasks-list.init.js' %}"></script>
+
+    <!-- Sweet Alerts js -->
+    <script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>   
+    
+    <!-- Agregar aquí el nuevo script -->
+    <script>
+        document.getElementById('ticketForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+    
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            if (!csrftoken) {
+                console.error('No se encontró el token CSRF');
+                return;
+            }
+    
+            const formData = new FormData(this); // Captura los datos del formulario
+            const authToken = 'd07c91f369e145647caec709beac1278761a353d'; // Reemplaza con un token válido
+    
+            fetch(`${window.location.origin}/api/tickets/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken, // Token CSRF
+                    'Authorization': 'Token ' + authToken, // Token de autenticación
+                },
+                body: formData, // Enviar los datos como FormData
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error(`Error: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Éxito:', data);
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        text: 'Configuración de Ticket creada exitosamente.',
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                    }).then(() => {
+                        location.reload(); // Recargar la página
+                    });
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud fetch:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: `Error al crear la configuración del ticket: ${error.message}`,
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                    });
+                });
+        });
+    </script>
+    
+{% endblock extra_js %}

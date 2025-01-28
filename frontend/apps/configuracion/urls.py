@@ -1,9 +1,12 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path
+
 from .views import (
     ImagenListView,
     InstitucionViewSet,
     ImagenViewSet,
+    TicketListView,
+    TicketPreviewView,
     VideoViewSet,
     AudioViewSet,
     TicketViewSet,
@@ -11,8 +14,10 @@ from .views import (
     VozViewSet,
     InstitucionListView,
     VideoListView,
-    AudioListView
+    AudioListView,
+    TicketListView,
 )
+from . import views
 
 
 
@@ -33,4 +38,8 @@ urlpatterns = [
     path('configuracion/imagenes/', ImagenListView.as_view(), name='imagenes-lista'),
     path('configuracion/videos/', VideoListView.as_view(), name='videos-lista'),
     path('configuracion/audios/', AudioListView.as_view(), name='audios-lista'),
+    path('configuracion/tickets/', TicketListView.as_view(), name='tickets-lista'),
+    path('configuracion/tickets/preview/<int:pk>/', TicketPreviewView.as_view(), name='ticket-preview'),
+    # path('api/ticket-preview/<int:ticket_id>/', views.ticket_preview, name='ticket-preview'),
+    path('ticket-preview/<int:pk>/', TicketPreviewView.as_view(), name='ticket-preview'),
 ] + router.urls

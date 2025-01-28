@@ -22,9 +22,9 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
-
-
-
+from django.shortcuts import get_object_or_404
+from django.views.generic import TemplateView
+from django.http import JsonResponse
 
 
 
@@ -182,14 +182,31 @@ class AudioListView(ListView):
     context_object_name = "audios"
 
 
-
-
 class TicketViewSet(viewsets.ModelViewSet):
     """
     API para gestionar configuración de tickets.
     """
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
+
+
+class TicketListView(ListView):
+    model = Ticket
+    template_name = "configuracion/app-ticket-list-view.html"  # Corregido
+    context_object_name = "tickets"
+
+
+
+
+class TicketPreviewView(TemplateView):
+    template_name = 'configuracion/app-ticket-preview.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        ticket_id = self.kwargs.get('pk')  # Obtenemos el ID del ticket desde la URL
+        ticket = get_object_or_404(Ticket, pk=ticket_id)
+        context['ticket'] = ticket
+        return context
 
 
 class SistemaViewSet(viewsets.ModelViewSet):

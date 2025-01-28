@@ -59,6 +59,7 @@ class Ticket(models.Model):
   """
   Modelo para configurar los tickets.
   """
+  nombre = models.CharField(max_length=255)
   ancho_ticket = models.IntegerField(default=80)
   ancho_logo = models.IntegerField(default=35)
   alto_logo = models.IntegerField(default=38)
