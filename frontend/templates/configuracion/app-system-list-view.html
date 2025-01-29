@@ -21,7 +21,7 @@
             <div class="row justify-content-center">
                 <div class="col-xxl-9">
                     <div class="card">
-                        <form id="systemConfigForm" method="PUT" action="/api/sistemas/" class="needs-validation">
+                        <form id="systemConfigForm" method="PUT" action="/api/sistemas/" class="needs-validation" novalidate>
                             {% csrf_token %}
                             <!-- Sección 1: Gestión de Cola y Límites de Cliente -->
                             <div class="card-body border-bottom border-bottom-dashed p-4">
@@ -259,7 +259,7 @@
                                         <i class="ri-eye-line align-bottom me-1"></i>
                                         Vista Previa
                                     </button>
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" id="btnGuardarCambios" class="btn btn-primary">
                                         <i class="ri-save-line align-bottom me-1"></i>
                                         Guardar Cambios
                                     </button>
@@ -282,93 +282,73 @@
     
         const form = this;
         const formData = new FormData(form);
-        
-        // Crear un objeto para almacenar todos los datos
         const data = {};
         
         // Procesar todos los campos del formulario
         formData.forEach((value, key) => {
-            // No procesar el token CSRF
             if (key === 'csrfmiddlewaretoken') return;
             
-            // Manejar checkboxes
             if (form.elements[key].type === 'checkbox') {
                 data[key] = form.elements[key].checked;
             }
-            // Manejar campos numéricos
             else if (form.elements[key].type === 'number') {
                 data[key] = value === '' ? null : Number(value);
             }
-            // Otros campos
             else {
                 data[key] = value === '' ? null : value;
             }
         });
     
-        // Asegurarse de que todos los campos requeridos tengan un valor
-        if (!data.tiempo_espera || !data.umbral_espera || 
-            !data.num_max_turnos_cedula || !data.digitos_max_cedula_turnero) {
+        // Validación manual de campos requeridos
+        const camposRequeridos = ['tiempo_espera', 'umbral_espera', 
+                                'num_max_turnos_cedula', 'digitos_max_cedula_turnero'];
+        const camposFaltantes = camposRequeridos.filter(campo => !data[campo]);
+    
+        if (camposFaltantes.length > 0) {
             Swal.fire({
-                title: 'Error',
-                text: 'Por favor complete todos los campos requeridos',
+                title: 'Error de Validación',
+                text: 'Por favor complete los siguientes campos: ' + 
+                      camposFaltantes.map(campo => campo.replace(/_/g, ' ')).join(', '),
                 icon: 'error',
-                confirmButtonText: 'Ok'
+                confirmButtonText: 'Entendido'
+            });
+            // Resaltar campos con error
+            camposFaltantes.forEach(campo => {
+                document.getElementById(campo).classList.add('is-invalid');
             });
             return;
         }
     
-        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
-        // Mostrar indicador de carga
-        Swal.fire({
-            title: 'Guardando...',
-            text: 'Por favor espere',
-            allowOutsideClick: false,
-            showConfirmButton: false,
-            willOpen: () => {
-                Swal.showLoading();
-            }
-        });
-    
-        fetch('/api/sistemas/1/', {  // Añadido el ID 1
-            method: 'PUT',  // Cambiado a PUT ya que estamos actualizando
+        // Enviar datos al servidor
+        fetch('/api/sistemas/1/', {
+            method: 'PUT',
             headers: {
-                'X-CSRFToken': csrftoken,
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
             },
             body: JSON.stringify(data)
         })
         .then(response => {
-            // Primero verificamos si la respuesta es JSON
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                return response.json().then(data => {
-                    if (!response.ok) {
-                        throw data;
-                    }
-                    return data;
-                });
+            if (!response.ok) {
+                throw new Error('Error al guardar la configuración');
             }
-            throw new Error('Respuesta no válida del servidor');
+            return response.json();
         })
-        .then(data => {
+        .then(() => {
+            // Mostrar mensaje de éxito
             Swal.fire({
                 title: 'Éxito',
-                text: data.message || 'La configuración se guardó exitosamente',
+                text: 'La configuración se ha guardado correctamente',
                 icon: 'success',
-                confirmButtonText: 'Ok'
-            }).then(() => {
-                window.location.reload();
+                confirmButtonText: 'Aceptar'
             });
         })
         .catch(error => {
-            console.error('Error:', error);
             Swal.fire({
                 title: 'Error',
-                text: error.message || 'Error al guardar la configuración',
+                text: error.message,
                 icon: 'error',
-                confirmButtonText: 'Ok'
+                confirmButtonText: 'Aceptar'
             });
         });
     });
