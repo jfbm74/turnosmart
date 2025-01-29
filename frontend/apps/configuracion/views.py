@@ -1,6 +1,7 @@
 #  apps/configuracion/views.py
 
 import os
+from django.views import View
 from rest_framework import viewsets
 from django.views.generic import ListView
 from django.shortcuts import render
@@ -25,6 +26,9 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
 from django.http import JsonResponse
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+
 
 
 
@@ -51,12 +55,13 @@ class InstitucionViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+@login_required(login_url='/login/')
 def instituciones_list_view(request):
     """
     Vista para consumir la API de instituciones y renderizar un template.
     """
     # URL de la API de instituciones
+    permission_classes = [IsAuthenticated] 
     api_url = f"{settings.API_BASE_URL}/instituciones/"
     headers = {
         "Authorization": f"Token {settings.API_AUTH_TOKEN}"  # Asegúrate de configurar esto en settings.py
@@ -80,10 +85,10 @@ def instituciones_list_view(request):
         {"instituciones": instituciones}
     )
 
-class InstitucionListView(ListView):
+class InstitucionListView(LoginRequiredMixin, ListView):
     model = Institucion
-    template_name = "configuracion/app-institucion-list-view.html"  # Ruta del template
-    context_object_name = "instituciones"  # Nombre para acceder a las instituciones en el template
+    template_name = "configuracion/app-institucion-list-view.html"
+    context_object_name = "instituciones"
 
 
 class ImagenViewSet(viewsets.ModelViewSet):
@@ -95,7 +100,7 @@ class ImagenViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-class ImagenListView(ListView):
+class ImagenListView(LoginRequiredMixin, ListView):
     model = Imagen
     template_name = "configuracion/app-imagen-list-view.html"  # Ruta de la plantilla
     context_object_name = "imagenes"
@@ -161,7 +166,7 @@ class VideoViewSet(viewsets.ModelViewSet):
             return Response({"mensaje": "URL válida."}, status=200)
 
 
-class VideoListView(ListView):
+class VideoListView(LoginRequiredMixin, ListView):
     model = Video
     template_name = "configuracion/app-video-list-view.html" 
     context_object_name = "videos"
@@ -176,7 +181,7 @@ class AudioViewSet(viewsets.ModelViewSet):
     serializer_class = AudioSerializer
 
 
-class AudioListView(ListView):
+class AudioListView(LoginRequiredMixin, ListView):
     model = Audio
     template_name = "configuracion/app-audio-list-view.html"  # Ruta del template
     context_object_name = "audios"
@@ -215,6 +220,19 @@ class SistemaViewSet(viewsets.ModelViewSet):
     """
     queryset = Sistema.objects.all()
     serializer_class = SistemaSerializer
+
+
+class SistemaListView(LoginRequiredMixin, ListView):
+    model = Sistema
+    template_name = "configuracion/app-system-list-view.html"
+    context_object_name = "sistema"  # Cambiado de sistema_config
+    
+    def get_queryset(self):
+        """
+        Returns the single existing object or creates one if it doesn't exist
+        """
+        sistema, created = Sistema.objects.get_or_create(pk=1)
+        return sistema  # Retornamos el objeto directamente, no una lista
 
 
 class VozViewSet(viewsets.ModelViewSet):

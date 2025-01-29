@@ -5,6 +5,7 @@ from .views import (
     ImagenListView,
     InstitucionViewSet,
     ImagenViewSet,
+    SistemaListView,
     TicketListView,
     TicketPreviewView,
     VideoViewSet,
@@ -40,6 +41,6 @@ urlpatterns = [
     path('configuracion/audios/', AudioListView.as_view(), name='audios-lista'),
     path('configuracion/tickets/', TicketListView.as_view(), name='tickets-lista'),
     path('configuracion/tickets/preview/<int:pk>/', TicketPreviewView.as_view(), name='ticket-preview'),
-    # path('api/ticket-preview/<int:ticket_id>/', views.ticket_preview, name='ticket-preview'),
     path('ticket-preview/<int:pk>/', TicketPreviewView.as_view(), name='ticket-preview'),
+    path('configuracion/sistemas/', SistemaListView.as_view(), name='sistemas-lista'), #add this url
 ] + router.urls

@@ -97,7 +97,7 @@ class Sistema(models.Model):
     digitos_max_cedula_turnero = models.IntegerField(default=15)
     enviar_encuesta_cliente = models.BooleanField(default=False)
     asignacion_automatica = models.BooleanField(default=False)
-    version_sistema = models.CharField(max_length=20, default='4.0.1')
+    version_sistema = models.CharField(max_length=20, default='1.0.0')
     copyright = models.CharField(max_length=200, default='Juan Felipe Bustamante')
     contrasena_email_notificaciones = models.CharField(max_length=200, default='a', blank=True, null=True)
     puerto_notificaciones = models.IntegerField(default=587, blank=True, null=True)

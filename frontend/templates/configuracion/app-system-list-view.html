@@ -1,278 +1,376 @@
 {% extends "partials/base.html" %}
 {% load static %}
-{% block title %}Listar Configuración Sistema{% endblock title %}
+
+{% block title %}Configuración Sistema{% endblock title %}
+
 {% block extra_css %}
-<!-- Sweet Alert css-->
+<!-- Sweet Alert css -->
 <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
 {% endblock extra_css %}
+
 {% block content %}
-        <!-- ============================================================== -->
-        <!-- Start right Content here -->
-        <!-- ============================================================== -->
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            <!-- Encabezado parecido al del template de Invoice -->
+            {% include "partials/page-title.html" with pagetitle="Configuración" title="Configuración del Sistema" %}
+            {% endblock pagetitle %}
 
-
-        <div class="main-content">
-
-            <div class="page-content">
-                <div class="container-fluid">
-
-                    {% block pagetitle %}
-                    {% include "partials/page-title.html" with pagetitle="Configuración" title="Lista de Configuración Sistema" %}
-                    {% endblock pagetitle %}
-
-                    <div class="row">
-                        <div class="col-xxl-3 col-sm-6">
-                            <div class="card card-animate">
-                                
-                            </div> <!-- end card-->
-                        </div><!--end col-->
-                        <div class="col-xxl-3 col-sm-6">
-                            <div class="card card-animate">
-                                
-                            </div>
-                        </div><!--end col-->
-                        <div class="col-xxl-3 col-sm-6">
-                            <div class="card card-animate">
-                                
-                            </div>
-                        </div><!--end col-->
-                        <div class="col-xxl-3 col-sm-6">
-                            <div class="card card-animate">
-                                
-                            </div>
-                        </div><!--end col-->
-                    </div><!--end row-->
-
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="card"  id="tasksList">
-                                <div class="card-header border-0">
-                                    <div class="d-flex align-items-center">
-                                        <h5 class="card-title mb-0 flex-grow-1">Configuración Sistema</h5>
-                                        <div class="flex-shrink-0">
-                                            <div class="d-flex flex-wrap gap-2">
-                                            	<button class="btn btn-soft-primary add-btn" data-bs-toggle="modal" data-bs-target="#showModal"><i class="ri-add-line align-bottom me-1"></i> Agregar Video</button>
-                                            	<button class="btn btn-soft-secondary" id="remove-actions" onClick="deleteMultiple()"><i class="ri-delete-bin-2-line"></i></button>
-                                           </div>
+            <!-- NUEVA ESTRUCTURA SIMILAR AL 'CREATE INVOICE' -->
+            <div class="row justify-content-center">
+                <div class="col-xxl-9">
+                    <div class="card">
+                        <form id="systemConfigForm" method="PUT" action="/api/sistemas/" class="needs-validation">
+                            {% csrf_token %}
+                            <!-- Sección 1: Gestión de Cola y Límites de Cliente -->
+                            <div class="card-body border-bottom border-bottom-dashed p-4">
+                                <div class="row g-4">
+                                    <!-- Gestión de Cola -->
+                                    <div class="col-12 col-lg-6">
+                                        <h5 class="text-muted text-uppercase fw-semibold mb-3">
+                                            <i class="ri-play-list-add-line align-middle me-1"></i>
+                                            Gestión de Cola
+                                        </h5>
+                                        <div class="mb-3">
+                                            <label for="tiempo_espera" class="form-label">Tiempo de Espera (Minutos)</label>
+                                            <input
+                                                type="number"
+                                                id="tiempo_espera"
+                                                name="tiempo_espera"
+                                                class="form-control bg-light border-0"
+                                                min="1"
+                                                value="{{ sistema.tiempo_espera }}"
+                                                required
+                                            >
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="umbral_espera" class="form-label">Umbral de Espera</label>
+                                            <input
+                                                type="number"
+                                                id="umbral_espera"
+                                                name="umbral_espera"
+                                                class="form-control bg-light border-0"
+                                                min="1"
+                                                value="{{ sistema.umbral_espera }}"
+                                                required
+                                            >
+                                        </div>
+                                        <div class="form-check form-switch form-switch-success mb-2">
+                                            <input
+                                                type="checkbox"
+                                                id="mostrar_turnos_anulados"
+                                                name="mostrar_turnos_anulados"
+                                                class="form-check-input"
+                                                {% if sistema.mostrar_turnos_anulados %}checked{% endif %}
+                                            >
+                                            <label class="form-check-label" for="mostrar_turnos_anulados">
+                                                Mostrar Turnos Anulados
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch form-switch-success">
+                                            <input
+                                                type="checkbox"
+                                                id="mostrar_turnos_atendidos"
+                                                name="mostrar_turnos_atendidos"
+                                                class="form-check-input"
+                                                {% if sistema.mostrar_turnos_atendidos %}checked{% endif %}
+                                            >
+                                            <label class="form-check-label" for="mostrar_turnos_atendidos">
+                                                Mostrar Turnos Atendidos
+                                            </label>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="card-body border border-dashed border-end-0 border-start-0">
-                                    <form>
-                                        <div class="row g-3">
-                                            <div class="col-xxl-5 col-sm-12">
-                                                <div class="search-box">
-                                                    <input type="text" class="form-control search bg-light border-light" placeholder="Busqueda">
-                                                    <i class="ri-search-line search-icon"></i>
-                                                </div>
-                                            </div><!--end col-->
-                                            
-                                            
 
-                                            
-                                            <div class="col-xxl-1 col-sm-4">
-                                                <button type="button" class="btn btn-primary w-100" onclick="SearchData();"> <i class="ri-equalizer-fill me-1 align-bottom"></i>
-                                                    Filtros
-                                                </button>
-                                            </div><!--end col-->
-                                        </div><!--end row-->
-                                    </form>
-                                </div><!--end card-body-->
-                                <div class="card-body">
-                                    <div class="table-responsive table-card mb-4">
-                                        <table class="table align-middle table-nowrap mb-0" id="institucionesTable">
-                                            <thead>
-                                                <tr>
-                                                    <th>ID</th>
-                                                    <th>Origen</th>
-                                                    <th>URL Video</th>
-                                                    <th>Archivo</th>
-                                                    <th>Estado</th>
-                                                    <th>Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for video in Configuración Sistema %}
-                                                <tr>
-                                                    <td>{{ video.id }}</td>
-                                                    <td>{{ video.origen }}</td>
-                                                    <td>
-                                                        {% if video.origen == "URL" %}
-                                                            <a href="{{ video.url_video }}" target="_blank">{{ video.url_video }}</a>
-                                                        {% else %}
-                                                            N/A
-                                                        {% endif %}
-                                                    </td>
-                                                    <td>
-                                                        {% if video.origen == "SISTEMA" %}
-                                                            <a href="{{ video.video.url }}" target="_blank">Descargar Video</a>
-                                                        {% else %}
-                                                            N/A
-                                                        {% endif %}
-                                                    </td>
-                                                    <td>{{ video.estado|yesno:"Activo,Inactivo" }}</td>
-                                                    <td>
-                                                        <div class="d-flex gap-2">
-                                                            <button class="btn btn-sm btn-soft-primary" onclick="editImage({{ video.id }})">
-                                                                <i class="ri-edit-line"></i>
-                                                            </button>
-                                                            <button class="btn btn-sm btn-soft-danger" onclick="deleteImage({{ video.id }})">
-                                                                <i class="ri-delete-bin-line"></i>
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                            
-                                        </table>
-                                    </div>
-                                </div>
-                                
-                            </div><!--end card-->
-                        </div><!--end col-->
-                    </div><!--end row-->
-
-                    <div class="modal fade flip" id="deleteOrder" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-body p-5 text-center">
-                                    <lord-icon src="https://cdn.lordicon.com/gsqxdxog.json" trigger="loop" colors="primary:#25a0e2,secondary:#00bd9d" style="width:90px;height:90px"></lord-icon>
-                                    <div class="mt-4 text-center">
-                                        <h4>You are about to delete a task ?</h4>
-                                        <p class="text-muted fs-14 mb-4">Deleting your task will remove all of
-                                            your information from our database.</p>
-                                        <div class="hstack gap-2 justify-content-center remove">
-                                            <button class="btn btn-link btn-ghost-primary fw-medium text-decoration-none" id="deleteRecord-close" data-bs-dismiss="modal"><i class="ri-close-line me-1 align-middle"></i> Close</button>
-                                            <button class="btn btn-primary" id="delete-record">Yes, Delete It</button>
+                                    <!-- Límites de Cliente -->
+                                    <div class="col-12 col-lg-6">
+                                        <h5 class="text-muted text-uppercase fw-semibold mb-3">
+                                            <i class="ri-user-add-line align-middle me-1"></i>
+                                            Límites de Cliente
+                                        </h5>
+                                        <div class="mb-3">
+                                            <label for="num_max_turnos_cedula" class="form-label">
+                                                Número Máximo de Turnos por Cédula
+                                            </label>
+                                            <input
+                                                type="number"
+                                                id="num_max_turnos_cedula"
+                                                name="num_max_turnos_cedula"
+                                                class="form-control bg-light border-0"
+                                                min="1"
+                                                value="{{ sistema.num_max_turnos_cedula }}"
+                                                required
+                                            >
+                                        </div>
+                                        <div>
+                                            <label for="digitos_max_cedula_turnero" class="form-label">
+                                                Dígitos Máximos por Cédula
+                                            </label>
+                                            <input
+                                                type="number"
+                                                id="digitos_max_cedula_turnero"
+                                                name="digitos_max_cedula_turnero"
+                                                class="form-control bg-light border-0"
+                                                min="1"
+                                                value="{{ sistema.digitos_max_cedula_turnero }}"
+                                                required
+                                            >
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div><!--end delete modal -->
-
-                    <div class="modal fade zoomIn" id="showModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered modal-lg">
-                            <div class="modal-content border-0">
-                                <div class="modal-header p-3 bg-primary-subtle">
-                                    <h5 class="modal-title" id="exampleModalLabel">Crear Nuevo Video</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-modal"></button>
+                            
+                            <!-- Sección 2: Experiencia del Cliente -->
+                            <div class="card-body border-bottom border-bottom-dashed p-4">
+                                <h5 class="text-muted text-uppercase fw-semibold mb-3">
+                                    <i class="ri-service-line align-middle me-1"></i>
+                                    Experiencia del Cliente
+                                </h5>
+                                <div class="form-check form-switch form-switch-warning mb-2">
+                                    <input
+                                        type="checkbox"
+                                        id="solicitar_confirmacion_obtener_turnos"
+                                        name="solicitar_confirmacion_obtener_turnos"
+                                        class="form-check-input"
+                                        {% if sistema.solicitar_confirmacion_obtener_turnos %}checked{% endif %}
+                                    >
+                                    <label class="form-check-label" for="solicitar_confirmacion_obtener_turnos">
+                                        Solicitar Confirmación al Obtener Turnos
+                                    </label>
                                 </div>
-                                <form id="videoForm" method="POST" action="/api/configuracion/Configuración Sistema/" enctype="multipart/form-data">
-                                    {% csrf_token %}
-                                    <div class="modal-body">
-                                        <div class="row g-3">
-                                            <div class="col-lg-6">
-                                                <label for="origen" class="form-label">Origen</label>
-                                                <select id="origen" name="origen" class="form-control" required>
-                                                    <option value="URL">URL</option>
-                                                    <option value="SISTEMA">Sistema</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-lg-6">
-                                                <label for="url_video" class="form-label">URL del Video</label>
-                                                <input type="url" id="url_video" name="url_video" class="form-control" placeholder="http://example.com/video.mp4" />
-                                            </div>
-                                            <div class="col-lg-6">
-                                                <label for="video" class="form-label">Subir Archivo</label>
-                                                <input type="file" id="video" name="video" class="form-control" />
-                                            </div>
-                                            <div class="col-lg-6">
-                                                <label for="estado" class="form-label">Estado</label>
-                                                <select id="estado" name="estado" class="form-control" required>
-                                                    <option value="True">Activo</option>
-                                                    <option value="False">Inactivo</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
-                                        <button type="submit" class="btn btn-success">Guardar</button>
-                                    </div>
-                                </form>
+                                <div class="form-check form-switch form-switch-warning mb-2">
+                                    <input
+                                        type="checkbox"
+                                        id="abrir_encuesta_atencion"
+                                        name="abrir_encuesta_atencion"
+                                        class="form-check-input"
+                                        {% if sistema.abrir_encuesta_atencion %}checked{% endif %}
+                                    >
+                                    <label class="form-check-label" for="abrir_encuesta_atencion">
+                                        Abrir Encuesta en Atención
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch form-switch-warning">
+                                    <input
+                                        type="checkbox"
+                                        id="enviar_encuesta_cliente"
+                                        name="enviar_encuesta_cliente"
+                                        class="form-check-input"
+                                        {% if sistema.enviar_encuesta_cliente %}checked{% endif %}
+                                    >
+                                    <label class="form-check-label" for="enviar_encuesta_cliente">
+                                        Enviar Encuesta al Cliente
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    
-                    
-                    
-                    
-                </div>
-                <!-- container-fluid -->
-            </div>
-            <!-- End Page-content -->
 
-        {% block footer %}
-        {% include "partials/footer.html" %}
-        {% endblock footer %}
+                            <!-- Sección 3: Configuración de Notificaciones -->
+                            <div class="card-body border-bottom border-bottom-dashed p-4">
+                                <h5 class="text-muted text-uppercase fw-semibold mb-3">
+                                    <i class="ri-notification-3-line align-middle me-1"></i>
+                                    Configuración de Notificaciones
+                                </h5>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6">
+                                        <label for="email_notificaciones" class="form-label">Email de Notificaciones</label>
+                                        <input
+                                            type="email"
+                                            id="email_notificaciones"
+                                            name="email_notificaciones"
+                                            class="form-control bg-light border-0"
+                                            value="{{ sistema.email_notificaciones }}"
+                                        >
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label for="host_notificaciones" class="form-label">Host de Notificaciones</label>
+                                        <input
+                                            type="text"
+                                            id="host_notificaciones"
+                                            name="host_notificaciones"
+                                            class="form-control bg-light border-0"
+                                            value="{{ sistema.host_notificaciones }}"
+                                        >
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label for="puerto_notificaciones" class="form-label">Puerto de Notificaciones</label>
+                                        <input
+                                            type="number"
+                                            id="puerto_notificaciones"
+                                            name="puerto_notificaciones"
+                                            class="form-control bg-light border-0"
+                                            value="{{ sistema.puerto_notificaciones }}"
+                                        >
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label for="remitente_notificaciones" class="form-label">Remitente</label>
+                                        <input
+                                            type="text"
+                                            id="remitente_notificaciones"
+                                            name="remitente_notificaciones"
+                                            class="form-control bg-light border-0"
+                                            value="{{ sistema.remitente_notificaciones }}"
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección 4: Información del Sistema -->
+                            <div class="card-body p-4">
+                                <h5 class="text-muted text-uppercase fw-semibold mb-3">
+                                    <i class="ri-information-line align-middle me-1"></i>
+                                    Información del Sistema
+                                </h5>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6">
+                                        <label for="version_sistema" class="form-label">Versión del Sistema</label>
+                                        <input
+                                            type="text"
+                                            id="version_sistema"
+                                            class="form-control bg-light border-0"
+                                            value="{{ sistema.version_sistema }}"
+                                            readonly
+                                        >
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label for="copyright" class="form-label">Copyright</label>
+                                        <input
+                                            type="text"
+                                            id="copyright"
+                                            class="form-control bg-light border-0"
+                                            value="{{ sistema.copyright }}"
+                                        >
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="url_copyright" class="form-label">
+                                            URL de Copyright
+                                        </label>
+                                        <input
+                                            type="url"
+                                            id="url_copyright"
+                                            class="form-control bg-light border-0"
+                                            value="{{ sistema.url_copyright }}"
+                                        >
+                                    </div>
+                                </div>
+
+                                <!-- BOTONES DE ACCIÓN -->
+                                <div class="mt-4 d-flex gap-2 justify-content-end">
+                                    <button type="button" class="btn btn-soft-secondary">
+                                        <i class="ri-eye-line align-bottom me-1"></i>
+                                        Vista Previa
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="ri-save-line align-bottom me-1"></i>
+                                        Guardar Cambios
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div> <!-- end card -->
+                </div> <!-- end col-xxl-9 -->
+            </div> <!-- end row justify-content-center -->
         </div>
-        <!-- end main content-->
+    </div>
+</div>
 {% endblock content %}
+
 {% block extra_js %}
-    <!-- list.js min js -->
-    <script src="{% static 'libs/list.js/dist/list.min.js' %}"></script>
-
-    <!--list pagination js-->
-    <script src="{% static 'libs/list.pagination.js/list.pagination.min.js' %}"></script>
-
-    <!-- titcket init js -->
-    <script src="{% static 'libs/pages/tasks-list.init.js' %}"></script>
-
-    <!-- Sweet Alerts js -->
-    <script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>   
+<script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+<script>
+    document.getElementById('systemConfigForm').addEventListener('submit', function (e) {
+        e.preventDefault();
     
-    <!-- Agregar aquí el nuevo script -->
-    <script>
-        document.getElementById('videoForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-    
-            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            if (!csrftoken) {
-                console.error('No se encontró el token CSRF');
-                return;
+        const form = this;
+        const formData = new FormData(form);
+        
+        // Crear un objeto para almacenar todos los datos
+        const data = {};
+        
+        // Procesar todos los campos del formulario
+        formData.forEach((value, key) => {
+            // No procesar el token CSRF
+            if (key === 'csrfmiddlewaretoken') return;
+            
+            // Manejar checkboxes
+            if (form.elements[key].type === 'checkbox') {
+                data[key] = form.elements[key].checked;
             }
-    
-            const formData = new FormData(this); // Captura los datos del formulario
-            const authToken = 'd07c91f369e145647caec709beac1278761a353d'; // Reemplaza con un token válido
-    
-            fetch(`${window.location.origin}/api/Configuración Sistema/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken, // Token CSRF
-                    'Authorization': 'Token ' + authToken, // Token de autenticación
-                },
-                body: formData, // Usar FormData para manejar datos de archivos y campos
-            })
-                .then(response => {
-                    if (!response.ok) throw new Error(`Error: ${response.status}`);
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Éxito:', data);
-                    Swal.fire({
-                        title: '¡Éxito!',
-                        text: 'Video creado exitosamente.',
-                        icon: 'success',
-                        confirmButtonText: 'OK',
-                    }).then(() => {
-                        location.reload(); // Recargar la página
-                    });
-                })
-                .catch(error => {
-                    console.error('Error en la solicitud fetch:', error);
-                    Swal.fire({
-                        title: 'Error',
-                        text: `Error al crear el video: ${error.message}`,
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                    });
-                });
+            // Manejar campos numéricos
+            else if (form.elements[key].type === 'number') {
+                data[key] = value === '' ? null : Number(value);
+            }
+            // Otros campos
+            else {
+                data[key] = value === '' ? null : value;
+            }
         });
-    </script>
     
+        // Asegurarse de que todos los campos requeridos tengan un valor
+        if (!data.tiempo_espera || !data.umbral_espera || 
+            !data.num_max_turnos_cedula || !data.digitos_max_cedula_turnero) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Por favor complete todos los campos requeridos',
+                icon: 'error',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
     
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     
-
+        // Mostrar indicador de carga
+        Swal.fire({
+            title: 'Guardando...',
+            text: 'Por favor espere',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    
+        fetch('/api/sistemas/1/', {  // Añadido el ID 1
+            method: 'PUT',  // Cambiado a PUT ya que estamos actualizando
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            // Primero verificamos si la respuesta es JSON
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json().then(data => {
+                    if (!response.ok) {
+                        throw data;
+                    }
+                    return data;
+                });
+            }
+            throw new Error('Respuesta no válida del servidor');
+        })
+        .then(data => {
+            Swal.fire({
+                title: 'Éxito',
+                text: data.message || 'La configuración se guardó exitosamente',
+                icon: 'success',
+                confirmButtonText: 'Ok'
+            }).then(() => {
+                window.location.reload();
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error',
+                text: error.message || 'Error al guardar la configuración',
+                icon: 'error',
+                confirmButtonText: 'Ok'
+            });
+        });
+    });
+</script>
 {% endblock extra_js %}
