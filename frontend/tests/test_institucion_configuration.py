@@ -182,67 +182,176 @@ class InstitucionConfigurationTests(TestCase):
         except Exception as e:
             self.fail(f"Error durante la prueba de edición: {str(e)}")
 
-    
-    def test_5_eliminar_institucion(self):
-        """Prueba la eliminación de una institución existente"""
+    """ 
+    def test_5_eliminar_instituciones_prueba(self):
+        
         self.navigate_to_institucion()
         
+        instituciones_a_eliminar = ["Institución Test", "Institución Actualizada Test"]
+        
         try:
-            # Esperar y encontrar el botón de eliminar
-            delete_button = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "button.delete-btn"))
-            )
+            for nombre_institucion in instituciones_a_eliminar:
+                # Buscar la institución específica
+                search_input = self.driver.find_element(By.CLASS_NAME, "search")
+                search_input.clear()
+                search_input.send_keys(nombre_institucion)
+                
+                # Esperar a que se aplique el filtro
+                time.sleep(2)
+                
+                # Obtener todas las filas después de la búsqueda
+                rows = self.driver.find_elements(By.CSS_SELECTOR, "tbody.list tr:not(.no-result-message)")
+                
+                # Si encontramos exactamente una fila, procedemos con la eliminación
+                if len(rows) == 1:
+                    # Obtener el botón de eliminar
+                    delete_button = rows[0].find_element(By.CSS_SELECTOR, "button.delete-btn")
+                    nombre_actual = rows[0].find_element(By.CLASS_NAME, "nombre").text.strip()
+                    
+                    # Solo eliminar si es exactamente la institución que queremos
+                    if nombre_actual == nombre_institucion:
+                        # Click en el botón de eliminar
+                        self.driver.execute_script("arguments[0].click();", delete_button)
+                        
+                        # Esperar que aparezca el SweetAlert
+                        WebDriverWait(self.driver, 10).until(
+                            EC.presence_of_element_located((By.CLASS_NAME, "swal2-popup"))
+                        )
+                        
+                        # Verificar el mensaje exacto del SweetAlert
+                        mensaje_confirmacion = self.driver.find_element(
+                            By.CLASS_NAME, "swal2-html-container"
+                        ).text
+                        mensaje_esperado = f'¿Deseas eliminar la institución "{nombre_institucion}"?'
+                        
+                        # Verificar que el mensaje es exactamente el esperado
+                        self.assertEqual(
+                            mensaje_confirmacion,
+                            mensaje_esperado,
+                            f"El mensaje de confirmación no coincide. Esperado: '{mensaje_esperado}', Recibido: '{mensaje_confirmacion}'"
+                        )
+                        
+                        # Solo proceder si el mensaje es correcto
+                        if mensaje_confirmacion == mensaje_esperado:
+                            confirm_button = WebDriverWait(self.driver, 10).until(
+                                EC.element_to_be_clickable((By.CSS_SELECTOR, ".swal2-confirm"))
+                            )
+                            confirm_button.click()
+                            
+                            # Esperar el mensaje de éxito
+                            WebDriverWait(self.driver, 10).until(
+                                EC.presence_of_element_located((By.CLASS_NAME, "swal2-success"))
+                            )
+                            
+                            # Esperar a que se recargue la página
+                            WebDriverWait(self.driver, 10).until(
+                                EC.presence_of_element_located((By.CLASS_NAME, "listjs-table"))
+                            )
+                            
+                            time.sleep(2)  # Dar tiempo para que la página se actualice
+                        else:
+                            self.fail(f"Se intentó eliminar una institución incorrecta")
+
+            # Verificación final
+            self.driver.refresh()
             
-            # Obtener el nombre de la institución antes de eliminar (para verificación)
-            institucion_nombre = delete_button.get_attribute('data-nombre')
-            institucion_id = delete_button.get_attribute('data-id')
-            
-            # Click en el botón de eliminar
-            self.driver.execute_script("arguments[0].click();", delete_button)
-            
-            # Esperar que aparezca el diálogo de confirmación de SweetAlert2
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "swal2-popup"))
-            )
-            
-            # Verificar el mensaje de confirmación
-            confirmation_message = self.driver.find_element(
-                By.CLASS_NAME, "swal2-html-container"
-            ).text
-            expected_message = f'¿Deseas eliminar la institución "{institucion_nombre}"?'
-            self.assertEqual(confirmation_message, expected_message)
-            
-            # Click en el botón "Sí, eliminar"
-            confirm_button = self.driver.find_element(
-                By.CSS_SELECTOR, ".swal2-confirm"
-            )
-            confirm_button.click()
-            
-            # Esperar el mensaje de éxito
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "swal2-success"))
-            )
-            
-            # Esperar a que se recargue la página
             WebDriverWait(self.driver, 10).until(
                 EC.presence_of_element_located((By.CLASS_NAME, "listjs-table"))
             )
             
-            # Verificar que la institución ya no existe en la tabla
-            try:
-                # Intentar buscar el registro eliminado
-                self.driver.find_element(
-                    By.CSS_SELECTOR, f"button[data-id='{institucion_id}']"
+            # Verificar que las instituciones fueron eliminadas
+            for nombre_institucion in instituciones_a_eliminar:
+                search_input = self.driver.find_element(By.CLASS_NAME, "search")
+                search_input.clear()
+                search_input.send_keys(nombre_institucion)
+                time.sleep(1)
+                
+                rows = self.driver.find_elements(By.CSS_SELECTOR, "tbody.list tr:not(.no-result-message)")
+                exact_match = False
+                
+                for row in rows:
+                    nombre_celda = row.find_element(By.CLASS_NAME, "nombre").text.strip()
+                    if nombre_celda == nombre_institucion:
+                        exact_match = True
+                        break
+                
+                self.assertFalse(
+                    exact_match,
+                    f"La institución '{nombre_institucion}' aún existe en la tabla después de ser eliminada"
                 )
-                self.fail("La institución aún existe en la tabla después de ser eliminada")
-            except:
-                # Si no se encuentra el elemento, la prueba es exitosa
-                pass
 
         except TimeoutException as e:
-            self.fail(f"No se pudo completar la eliminación de la institución: {str(e)}")
+            self.fail(f"No se pudo completar la eliminación de las instituciones: {str(e)}")
         except Exception as e:
             self.fail(f"Error durante la prueba de eliminación: {str(e)}")
+
+    """
+
+
+
+
+    def test_5_eliminar_instituciones_prueba(self):
+        
+        self.navigate_to_institucion()
+
+        nombres_a_eliminar = ["Institución Test", "Institución Actualizada Test"]
+
+        for nombre in nombres_a_eliminar:
+            while True:
+                # Buscar la institución en la tabla
+                search_input = self.driver.find_element(By.CLASS_NAME, "search")
+                search_input.clear()
+                search_input.send_keys(nombre)
+                time.sleep(2)  # Esperar a que se filtren los resultados
+
+                rows = self.driver.find_elements(By.CSS_SELECTOR, "tbody.list tr:not(.no-result-message)")
+
+                # Si no hay más resultados, terminamos la eliminación de este nombre
+                if not rows:
+                    break
+
+                # Iterar sobre las filas para buscar coincidencias exactas
+                found = False
+                for row in rows:
+                    nombre_celda = row.find_element(By.CLASS_NAME, "nombre").text.strip()
+                    if nombre_celda == nombre:
+                        found = True
+                        # Encontró la institución, proceder con la eliminación
+                        delete_button = row.find_element(By.CSS_SELECTOR, "button.delete-btn")
+                        self.driver.execute_script("arguments[0].click();", delete_button)
+
+                        # Confirmar la eliminación en SweetAlert
+                        WebDriverWait(self.driver, 10).until(
+                            EC.presence_of_element_located((By.CLASS_NAME, "swal2-popup"))
+                        )
+                        confirm_button = self.driver.find_element(By.CSS_SELECTOR, ".swal2-confirm")
+                        confirm_button.click()
+
+                        # Esperar mensaje de éxito y que la tabla se recargue
+                        WebDriverWait(self.driver, 10).until(
+                            EC.presence_of_element_located((By.CLASS_NAME, "swal2-success"))
+                        )
+                        time.sleep(2)  # Dar tiempo para la actualización
+
+                        # Recargar la página para verificar nuevamente
+                        self.driver.refresh()
+                        WebDriverWait(self.driver, 10).until(
+                            EC.presence_of_element_located((By.CLASS_NAME, "listjs-table"))
+                        )
+                        break  # Salir del loop y volver a buscar desde el principio
+
+                if not found:
+                    break  # Si no encontró coincidencias en la búsqueda, salir del loop
+
+        # Verificación final: confirmar que no existen más instituciones con esos nombres
+        for nombre in nombres_a_eliminar:
+            search_input = self.driver.find_element(By.CLASS_NAME, "search")
+            search_input.clear()
+            search_input.send_keys(nombre)
+            time.sleep(2)
+
+            rows = self.driver.find_elements(By.CSS_SELECTOR, "tbody.list tr:not(.no-result-message)")
+            assert not rows, f"La institución '{nombre}' aún existe en la tabla después de ser eliminada"
 
 
 
