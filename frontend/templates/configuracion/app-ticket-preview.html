@@ -79,11 +79,7 @@
             <h4>Vista previa del Ticket</h4>
             <div id="ticketPreview" class="ticket-preview">
             <!-- Logo -->
-            <img
-                id="logoImg"
-                src="https://via.placeholder.com/150" 
-                alt="Logo"
-            />
+            <img id="logoImg" src="{% if logo_ticket %}{{ logo_ticket }}{% else %}https://via.placeholder.com/150{% endif %}" alt="Logo" />
             <!-- Turno -->
             <h2 id="turnoText">S27</h2>
             <!-- Trámite -->

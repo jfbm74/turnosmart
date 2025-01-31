@@ -210,7 +210,13 @@ class TicketPreviewView(TemplateView):
         context = super().get_context_data(**kwargs)
         ticket_id = self.kwargs.get('pk')  # Obtenemos el ID del ticket desde la URL
         ticket = get_object_or_404(Ticket, pk=ticket_id)
+
+        # Obtener el primer logo de la tabla Imagen
+        logo = Imagen.objects.first()
+
         context['ticket'] = ticket
+        context['logo_ticket'] = logo.logo_ticket.url if logo and logo.logo_ticket else None  # Pasar el logo si existe
+
         return context
 
 

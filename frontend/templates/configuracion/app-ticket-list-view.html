@@ -572,6 +572,7 @@
 
 
 <!-- Script para buscar ticket -->   
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         try {
@@ -587,7 +588,6 @@
                 }]
             };
     
-            // Esperar a que los datos de la tabla estén cargados antes de inicializar List.js
             function initListJs() {
                 const listContainer = document.getElementById('tasksList');
                 if (!listContainer) {
@@ -595,18 +595,37 @@
                     return;
                 }
     
-                // Asegurar que List.js se inicializa solo si hay elementos en la tabla
                 const tbody = listContainer.querySelector('tbody.list');
-                if (!tbody || tbody.children.length === 0) {
-                    console.warn("⚠️ La tabla está vacía. No se inicializó List.js.");
+                if (!tbody) {
+                    console.error('❌ ERROR: No se encontró `tbody.list` dentro de la tabla.');
                     return;
                 }
     
-                window.ticketList = new List('tasksList', listOptions);
-                console.log("✅ List.js inicializado correctamente.");
+                // Verificar si List.js ya está inicializado
+                if (window.ticketList) {
+                    console.warn("⚠️ List.js ya está inicializado. Evitando duplicación.");
+                    return;
+                }
+    
+                // Esperar a que la tabla tenga datos antes de inicializar List.js
+                const checkIfTableHasData = setInterval(() => {
+                    if (tbody.children.length > 0) {
+                        clearInterval(checkIfTableHasData);
+                        try {
+                            window.ticketList = new List('tasksList', listOptions);
+                            console.log("✅ List.js inicializado correctamente.");
+                        } catch (error) {
+                            console.error("❌ ERROR al inicializar List.js:", error);
+                        }
+                    }
+                }, 500); // Revisar cada 500ms hasta que haya datos
+    
+                // Si después de 5 segundos no hay datos, cancelar la inicialización
+                setTimeout(() => clearInterval(checkIfTableHasData), 5000);
             }
     
-            setTimeout(initListJs, 500);
+            // Retrasar la inicialización para evitar errores
+            setTimeout(initListJs, 1500);
     
             // Manejo de búsqueda con debounce
             const searchInput = document.querySelector('.search');
@@ -636,6 +655,8 @@
         }
     });
     </script>
+    
+    
     
 
 {% endblock extra_js %}
