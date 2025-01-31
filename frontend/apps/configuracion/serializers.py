@@ -49,13 +49,14 @@ class AudioSerializer(serializers.ModelSerializer):
 class TicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
-        fields = ['id', 'ancho_ticket', 'ancho_logo', 'alto_logo', 'logo_visible', 'fuente_turno', 'fuente_tramite', 
-                  'tramite_visible', 'fuente_prioridad', 'prioridad_visible', 'fuente_nombre', 'nombre_visible', 
-                  'fuente_espera', 'espera_visible', 'fuente_hora', 'hora_visible', 'fuente_fecha', 'fecha_visible', 
-                  'fuente_sitio_web', 'sitio_web_visible', 'fuente_nombre_cliente', 'nombre_cliente_visible', 
-                  'fuente_cedula_cliente', 'cedula_cliente_visible']
+        fields = ['id', 'nombre', 'ancho_ticket', 'ancho_logo', 'alto_logo', 'logo_visible', 'fuente_turno', 
+                  'fuente_tramite', 'tramite_visible', 'fuente_prioridad', 'prioridad_visible', 
+                  'fuente_nombre', 'nombre_visible', 'fuente_espera', 'espera_visible', 'fuente_hora', 
+                  'hora_visible', 'fuente_fecha', 'fecha_visible', 'fuente_sitio_web', 'sitio_web_visible', 
+                  'fuente_nombre_cliente', 'nombre_cliente_visible', 'fuente_cedula_cliente', 'cedula_cliente_visible']
         extra_kwargs = {
             'id': {'help_text': 'Identificador único del ticket', 'read_only': True},
+            'nombre': {'required': False} # No es requerido
         }
 
 

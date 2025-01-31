@@ -7,58 +7,63 @@
 {% endblock extra_css %}
 {% block content %}
 <style>
-    /* Estilos base del ticket */
-   
-    /* Oculta elementos a nivel CSS (se sobreescribe vía JS cuando visible = false) */
-    .hidden {
-      display: none !important;
-    }
-    /* Oculta la columna de configuración y cualquier elemento con .no-print en la vista de impresión */
-    @media print {
-      .config-column,
-      .no-print {
-        display: none !important;
-      }
-    }
-
+    /* Estilos base para el layout */
     html, body {
         height: 100%;
         margin: 0;
         padding: 0;
-      }
+    }
 
+    .main-content {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        padding-bottom: 60px; /* Altura del footer */
+    }
+
+    .page-content {
+        flex: 1 0 auto;
+        width: 100%;
+        padding-bottom: 2rem; /* Espacio antes del footer */
+    }
+
+    /* Estilos del footer */
+    footer {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 60px; /* Altura fija del footer */
+    }
+
+    /* Resto de los estilos del ticket */
     .ticket-preview {
         border: 2px solid #ccc;
         border-radius: 8px;
         padding: 20px;
         margin-bottom: 20px;
         text-align: center;
-        width: 200px; /* Se ajusta dinámicamente vía JS */
+        width: 200px;
         overflow: hidden;
-        background-color: #fff; /* ← Agrega esta línea */
-      }
+        background-color: #fff;
+    }
 
-      .ticket-preview img {
+    .ticket-preview img {
         display: block;
         margin: 0 auto;
-      }
-
-      .main-content {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
     }
 
-    .page-content {
-        flex: 1 0 auto;
+    .hidden {
+        display: none !important;
     }
 
-    /* Ajuste para el footer */
-    footer {
-        flex-shrink: 0;
-        width: 100%;
+    @media print {
+        .config-column,
+        .no-print {
+            display: none !important;
+        }
     }
-  </style>
+</style>
   <div class="main-content">
     <div class="page-content">
         <div class="container-fluid">
@@ -285,7 +290,9 @@
                     </div>
                     <!-- Botones de acción -->
                     <div class="d-flex justify-content-end gap-2">
-                        
+                        <a href="{% url 'tickets-lista' %}" class="btn btn-secondary">
+                            <i class="ri-arrow-left-line align-middle me-1"></i>Volver
+                        </a>
                         <button type="reset" class="btn btn-secondary">
                             <i class="bi bi-arrow-counterclockwise"></i> Restablecer
                         </button>
@@ -293,10 +300,13 @@
                             <i class="bi bi-save"></i> Guardar Cambios
                         </button>
                     </div>
-                </form>
-            </div>
-        </div>
-    </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    </div>
     {% block footer %}
     {% include "partials/footer.html" %}
     {% endblock footer %}
@@ -456,76 +466,179 @@
     <!-- Resto del formulario se mantiene igual -->
 </form>
 
-<!-- Script corregido -->
+<!-- Script Crear y Actualizar -->
 <script>
-document.getElementById('configForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    // Obtener el token CSRF
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    if (!csrftoken) {
-        console.error('No se encontró el token CSRF');
-        return;
-    }
-
-    // Obtener el ID del ticket
-    const ticketId = document.getElementById('idInput').value;
+    document.getElementById('configForm').addEventListener('submit', function(e) {
+        e.preventDefault();
     
-    // Crear FormData con todos los campos del formulario
-    const formData = new FormData(this);
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        if (!csrftoken) {
+            console.error('No se encontró el token CSRF');
+            return;
+        }
     
-    // Asegurarse de que los checkboxes no marcados también se envíen
-    const checkboxes = ['logo_visible', 'tramite_visible', 'prioridad_visible', 
-                       'nombre_visible', 'hora_visible', 'fecha_visible', 
-                       'sitio_web_visible', 'nombre_cliente_visible'];
-                       
-    checkboxes.forEach(checkbox => {
-        if (!formData.has(checkbox)) {
-            formData.append(checkbox, 'false');
-        }
-    });
-
-    // Token de autorización
-    const authToken = 'd07c91f369e145647caec709beac1278761a353d';
-
-    // Realizar la petición a la API usando la misma ruta que en el ejemplo funcional
-    fetch(`${window.location.origin}/api/tickets/${ticketId}/`, {
-        method: 'PUT',
-        headers: {
-            'X-CSRFToken': csrftoken,
-            'Authorization': `Token ${authToken}`,
-        },
-        body: formData
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Éxito:', data);
-        Swal.fire({
-            title: '¡Actualización Exitosa!',
-            text: 'La configuración del ticket ha sido actualizada correctamente.',
-            icon: 'success',
-            confirmButtonText: 'OK'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.reload();
+        const ticketId = document.getElementById('idInput').value;
+        
+        // Crear objeto con los datos del formulario
+        const formData = new FormData(this);
+        
+        // Asegurarnos de que el nombre se mantenga
+        formData.append('nombre', '{{ ticket.nombre }}');  // Agregar el nombre del ticket actual
+        
+        // Manejar checkboxes
+        const checkboxes = ['logo_visible', 'tramite_visible', 'prioridad_visible', 
+                           'nombre_visible', 'hora_visible', 'fecha_visible', 
+                           'sitio_web_visible', 'nombre_cliente_visible'];
+                           
+        checkboxes.forEach(checkbox => {
+            if (!formData.has(checkbox)) {
+                formData.append(checkbox, 'false');
             }
         });
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-            title: 'Error',
-            text: 'Hubo un error al actualizar la configuración del ticket. ' + error.message,
-            icon: 'error',
-            confirmButtonText: 'OK'
+    
+        // Convertir FormData a objeto JSON
+        const jsonData = {};
+        formData.forEach((value, key) => {
+            if (key.includes('visible')) {
+                jsonData[key] = value === 'true' || value === 'on';
+            } else if (key !== 'csrfmiddlewaretoken') {
+                jsonData[key] = value;
+            }
+        });
+    
+        const authToken = 'd07c91f369e145647caec709beac1278761a353d';
+    
+        fetch(`${window.location.origin}/api/tickets/${ticketId}/`, {
+            method: 'PUT',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Authorization': `Token ${authToken}`,
+                'Content-Type': 'application/json',  // Cambiado para enviar JSON
+            },
+            body: JSON.stringify(jsonData)  // Enviamos como JSON
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(JSON.stringify(err));
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Éxito:', data);
+            Swal.fire({
+                title: '¡Actualización Exitosa!',
+                text: 'La configuración del ticket ha sido actualizada correctamente.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.reload();
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'Hubo un error al actualizar la configuración del ticket: ' + error.message,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         });
     });
-});</script>
+
+</script>
+
+
+<!-- Script para hacer búsqueda en la tabla de tickets -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            // Opciones para List.js
+            const options = {
+                listClass: 'list',
+                searchClass: 'search',
+                // Ajustamos los valueNames para que coincidan con las columnas de tickets
+                valueNames: ['id', 'nombre', 'ancho_ticket', 'logo_visible', 'tramite_visible', 'prioridad_visible'],
+                // Configuración de la paginación
+                page: 10,
+                pagination: [{
+                    name: "pagination",
+                    paginationClass: "list-pagination",
+                    outerWindow: 2
+                }]
+            };
+
+            // Crear la instancia de List
+            const ticketsList = new List('tasksList', options);
+
+            // Manejar el evento de búsqueda con debounce para mejor rendimiento
+            const searchField = document.querySelector('.search');
+            let searchTimeout = null;
+            
+            if (searchField) {
+                searchField.addEventListener('keyup', function() {
+                    if (searchTimeout) {
+                        clearTimeout(searchTimeout);
+                    }
+                    
+                    const searchValue = this.value;
+                    searchTimeout = setTimeout(() => {
+                        try {
+                            ticketsList.search(searchValue);
+                        } catch (error) {
+                            console.error('Error al realizar la búsqueda:', error);
+                        }
+                    }, 300); // Debounce de 300ms
+                });
+            }
+
+            // Función para el botón de filtros
+            window.SearchData = function() {
+                const searchField = document.querySelector('.search');
+                if (searchField) {
+                    const searchValue = searchField.value;
+                    try {
+                        ticketsList.search(searchValue);
+                    } catch (error) {
+                        console.error('Error al aplicar filtros:', error);
+                    }
+                }
+            };
+
+            // Actualizar la tabla después de cada búsqueda
+            ticketsList.on('searchComplete', function() {
+                const tbody = document.querySelector('#institucionesTable tbody');
+                if (!tbody) return;
+
+                if (ticketsList.matchingItems.length === 0) {
+                    // Remover mensaje anterior si existe
+                    const existingMessage = document.querySelector('.no-result-message');
+                    if (existingMessage) {
+                        existingMessage.remove();
+                    }
+                    
+                    // Agregar nuevo mensaje
+                    const tr = document.createElement('tr');
+                    tr.className = 'no-result-message';
+                    tr.innerHTML = '<td colspan="7" class="text-center">No se encontraron resultados</td>';
+                    tbody.appendChild(tr);
+                } else {
+                    // Remover mensaje si hay resultados
+                    const noResultMessage = document.querySelector('.no-result-message');
+                    if (noResultMessage) {
+                        noResultMessage.remove();
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error('Error al inicializar List.js:', error);
+        }
+    });
+</script>
 
 {% endblock extra_js %}
 
