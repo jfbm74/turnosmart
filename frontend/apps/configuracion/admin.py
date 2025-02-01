@@ -23,8 +23,8 @@ class ImagenAdmin(admin.ModelAdmin):
 
 @admin.register(Video)
 class VideoAdmin(admin.ModelAdmin):
-    list_display = ("origen", "url_video", "video", "estado")
-    list_filter = ("origen", "estado")
+    list_display = ("nombre", "origen", "url_video", "video", "estado")
+    list_filter = ("nombre", "origen", "estado")
     search_fields = ("url_video",)
 
 

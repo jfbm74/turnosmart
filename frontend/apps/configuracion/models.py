@@ -34,6 +34,7 @@ class Video(models.Model):
     """
     Modelo para gestionar videos (URLs o archivos subidos).
     """
+    nombre = models.CharField(max_length=255, blank=False, null=False) 
     origen = models.CharField(max_length=20, choices=[
         ('URL', 'URL Externa'),
         ('SISTEMA', 'Videos subidos en el sistema')

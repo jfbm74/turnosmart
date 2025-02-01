@@ -21,21 +21,6 @@ class ImagenSerializer(serializers.ModelSerializer):
         }
 
 
-class VideoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Video
-        fields = ['id', 'origen', 'url_video', 'video', 'estado']
-        extra_kwargs = {
-            'id': {'help_text': 'Identificador único del video', 'read_only': True},
-        }
-
-    def validate(self, data):
-        if data['origen'] == 'URL' and not data.get('url_video'):
-            raise serializers.ValidationError("Debe proporcionar una URL para el video.")
-        if data['origen'] == 'SISTEMA' and not data.get('video'):
-            raise serializers.ValidationError("Debe cargar un archivo de video.")
-        return data
-
 
 class AudioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -97,14 +82,15 @@ class ImagenSerializer(serializers.ModelSerializer):
 class VideoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Video
-        fields = ['id', 'origen', 'url_video', 'video', 'estado']
+        fields = ['id', 'nombre', 'origen', 'url_video', 'video', 'estado']
         extra_kwargs = {
-              'id': {'help_text': 'Identificador único del video', 'read_only': True},
-              'origen': {'help_text': 'Define el origen del vídeo (URL o SISTEMA).'},
-              'url_video': {'help_text': 'URL del video'},
-              'video': {'help_text': 'Archivo del video en caso de ser cargado del sistema.'},
-              'estado': {'help_text': 'Indica si el video está activo.'},
-            }
+            'id': {'help_text': 'Identificador único del video', 'read_only': True},
+            'nombre': {'required': True, 'help_text': 'Nombre obligatorio del video'},
+            'origen': {'help_text': 'Define el origen del vídeo (URL o SISTEMA).'},
+            'url_video': {'help_text': 'URL del video'},
+            'video': {'help_text': 'Archivo del video en caso de ser cargado del sistema.'},
+            'estado': {'help_text': 'Indica si el video está activo.'},
+        }
 
     def validate(self, data):
         if data['origen'] == 'URL' and not data.get('url_video'):

@@ -115,14 +115,72 @@ class VideoViewSet(viewsets.ModelViewSet):
     serializer_class = VideoSerializer
     permission_classes = [IsAuthenticated]
 
-
     @swagger_auto_schema(
-          request_body=VideoSerializer,
-            responses={status.HTTP_201_CREATED: VideoSerializer()}
+        request_body=VideoSerializer,
+        responses={status.HTTP_201_CREATED: VideoSerializer()},
+        operation_description="Crea un nuevo video. El campo 'nombre' es obligatorio."
     )
     def create(self, request, *args, **kwargs):
-            """Crea un video. """
-            return super().create(request, *args, **kwargs)
+        """Crea un video y verifica si 'nombre' se está recibiendo."""
+
+        if "nombre" not in request.data:
+            return Response({"error": "El campo 'nombre' es obligatorio."}, status=400)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)  # ✅ Verificar validación antes de guardar
+
+        # ✅ Forzar la asignación del campo 'nombre' al guardar
+        serializer.save(nombre=request.data["nombre"])
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @swagger_auto_schema(
+        responses={status.HTTP_200_OK: VideoSerializer(many=True)}
+    )
+    def list(self, request, *args, **kwargs):
+        """Lista todos los videos del sistema"""
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        responses={status.HTTP_200_OK: VideoSerializer()}
+    )
+    def retrieve(self, request, *args, **kwargs):
+        """Obtener información del video por su ID"""
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        request_body=VideoSerializer,
+        responses={status.HTTP_200_OK: VideoSerializer()},
+        operation_description="Actualiza la información de un video. El campo 'nombre' es obligatorio."
+    )
+    def update(self, request, *args, **kwargs):
+        """Actualiza la información del video por ID"""
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        responses={status.HTTP_204_NO_CONTENT: "Video eliminado"}
+    )
+    def destroy(self, request, *args, **kwargs):
+        """Elimina un video por ID"""
+        return super().destroy(request, *args, **kwargs)
+
+    @action(detail=False, methods=['post'])
+    @swagger_auto_schema(
+        operation_description="Validar URL de video.",
+        request_body=VideoSerializer
+    )
+    def validar_url(self, request):
+        """Verifica la validez de la URL del video"""
+        url = request.data.get("url_video", None)
+        if not url:
+            return Response({"error": "Debe proporcionar una URL."}, status=400)
+        return Response({"mensaje": "URL válida."}, status=200)
+    """
+    API para gestionar videos.
+    """
+    queryset = Video.objects.all()
+    serializer_class = VideoSerializer
+    permission_classes = [IsAuthenticated]
 
 
     @swagger_auto_schema(

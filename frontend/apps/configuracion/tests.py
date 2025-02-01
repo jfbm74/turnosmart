@@ -596,7 +596,6 @@ class VozAPITests(APITestCase):
         Voz.objects.all().delete()
         User.objects.all().delete()
 
-
 class VideoAPITests(APITestCase):
     def setUp(self):
         self.client = APIClient()
@@ -609,7 +608,7 @@ class VideoAPITests(APITestCase):
         self.authenticate()
 
         # Crear un video inicial
-        self.video = Video.objects.create(
+        self.video = Video.objects.create(nombre='Video de prueba', 
             origen="URL",
             url_video="http://example.com/video.mp4",
             estado=True,
@@ -637,13 +636,15 @@ class VideoAPITests(APITestCase):
     def test_create_video_authenticated(self):
         """Test para crear un video con autenticación."""
         data = {
-           "origen": "URL",
-           "url_video": "http://example.com/new_video.mp4",
-            "estado": True,
+        "nombre": "Video de prueba",  # 🔹 Agregar este campo obligatorio
+        "origen": "URL",
+        "url_video": "http://example.com/new_video.mp4",
+        "estado": True,
         }
         response = self.client.post(self.list_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Video.objects.count(), 2)
+
     
     def test_create_video_invalid_url(self):
          """Test para crear un video con URL sin autenticación."""
@@ -708,7 +709,3 @@ class VideoAPITests(APITestCase):
        self.client.force_authenticate(user=None)
        response = self.client.delete(self.detail_url)
        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def tearDown(self):
-        Video.objects.all().delete()
-        User.objects.all().delete()
