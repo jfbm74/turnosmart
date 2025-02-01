@@ -21,7 +21,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd frontend  # Cambia al directorio correcto
+          cd frontend 
           python3 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
@@ -29,6 +29,6 @@ jobs:
 
       - name: Run Django Tests
         run: |
-          cd frontend  # Asegurarse de estar en el directorio correcto
+          cd frontend 
           source venv/bin/activate
           python manage.py test apps
