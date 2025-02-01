@@ -51,7 +51,13 @@
                                         <h5 class="card-title mb-0 flex-grow-1">Imágenes</h5>
                                         <div class="flex-shrink-0">
                                             <div class="d-flex flex-wrap gap-2">
-                                            	<button class="btn btn-soft-primary add-btn" data-bs-toggle="modal" data-bs-target="#showModal"><i class="ri-add-line align-bottom me-1"></i> Agregar Imágen</button>
+                                            	<button 
+                                                    class="btn btn-soft-primary add-btn" 
+                                                    id="add-image-btn" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#showModal">
+                                                    <i class="ri-add-line align-bottom me-1"></i> Agregar Imágen
+                                                </button>
                                             	<button class="btn btn-soft-secondary" id="remove-actions" onClick="deleteMultiple()"><i class="ri-delete-bin-2-line"></i></button>
                                            </div>
                                         </div>
@@ -96,17 +102,24 @@
                                                 {% for imagen in imagenes %}
                                                 <tr>
                                                     <td>{{ imagen.id }}</td>
-                                                    <td><img src="{{ imagen.logo_pequeño.url }}" alt="Logo Pequeño" width="50"></td>
+                                                    <td><img src="{{ imagen.logo_pequeño.url }}" alt="Logo Pequeño" width="50" class="logo-pequeno"></td>
                                                     <td><img src="{{ imagen.logo_grande.url }}" alt="Logo Grande" width="50"></td>
                                                     <td><img src="{{ imagen.logo_ticket.url }}" alt="Logo Ticket" width="50"></td>
                                                     <td><img src="{{ imagen.footer.url }}" alt="Footer" width="50"></td>
                                                     <td><img src="{{ imagen.wallpaper_turnero.url }}" alt="Wallpaper" width="50"></td>
                                                     <td>
                                                         <div class="d-flex gap-2">
-                                                            <button class="btn btn-sm btn-soft-primary" onclick="editImage({{ imagen.id }})">
+                                                            <button 
+                                                                class="btn btn-sm btn-soft-primary edit-image-btn" 
+                                                                id="edit-image-{{ imagen.id }}"
+                                                                onclick="editImage({{ imagen.id }})"
+                                                                data-id="{{ imagen.id }}">
                                                                 <i class="ri-edit-line"></i>
                                                             </button>
-                                                            <button class="btn btn-sm btn-soft-danger" onclick="deleteImage({{ imagen.id }})">
+                                                            <button 
+                                                                class="btn btn-sm btn-soft-danger delete-image-btn" 
+                                                                id="delete-image-{{ imagen.id }}" 
+                                                                onclick="deleteImage({{ imagen.id }})">
                                                                 <i class="ri-delete-bin-line"></i>
                                                             </button>
                                                         </div>
@@ -149,35 +162,42 @@
                                     <h5 class="modal-title" id="exampleModalLabel">Crear Nueva Imagen</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-modal"></button>
                                 </div>
-                                <form id="imagenForm" method="POST" action="/api/imagenes/" enctype="multipart/form-data">
+                                <form id="imagenForm" method="POST" enctype="multipart/form-data">
+
                                     {% csrf_token %}
                                     <div class="modal-body">
                                         <div class="row g-3">
                                             <div class="col-lg-6">
                                                 <label for="logo_pequeño" class="form-label">Logo Pequeño</label>
-                                                <input type="file" id="logo_pequeño" name="logo_pequeño" class="form-control" required />
+                                                <input type="file" id="logo_pequeño" name="logo_pequeño" class="form-control" onchange="previewImage(event, 'preview-logo-pequeno')" />
+                                                <img id="preview-logo-pequeno" src="" class="img-thumbnail mt-2" style="max-width: 150px; display: none;" />
                                             </div>
                                             <div class="col-lg-6">
                                                 <label for="logo_grande" class="form-label">Logo Grande</label>
-                                                <input type="file" id="logo_grande" name="logo_grande" class="form-control" required />
+                                                <input type="file" id="logo_grande" name="logo_grande" class="form-control" onchange="previewImage(event, 'preview-logo-grande')" />
+                                                <img id="preview-logo-grande" src="" class="img-thumbnail mt-2" style="max-width: 150px; display: none;" />
                                             </div>
                                             <div class="col-lg-6">
                                                 <label for="logo_ticket" class="form-label">Logo Ticket</label>
-                                                <input type="file" id="logo_ticket" name="logo_ticket" class="form-control" />
+                                                <input type="file" id="logo_ticket" name="logo_ticket" class="form-control" onchange="previewImage(event, 'preview-logo-ticket')" />
+                                                <img id="preview-logo-ticket" src="" class="img-thumbnail mt-2" style="max-width: 150px; display: none;" />
                                             </div>
                                             <div class="col-lg-6">
                                                 <label for="footer" class="form-label">Footer</label>
-                                                <input type="file" id="footer" name="footer" class="form-control" />
+                                                <input type="file" id="footer" name="footer" class="form-control" onchange="previewImage(event, 'preview-footer')" />
+                                                <img id="preview-footer" src="" class="img-thumbnail mt-2" style="max-width: 150px; display: none;" />
                                             </div>
                                             <div class="col-lg-6">
                                                 <label for="wallpaper_turnero" class="form-label">Wallpaper Turnero</label>
-                                                <input type="file" id="wallpaper_turnero" name="wallpaper_turnero" class="form-control" />
+                                                <input type="file" id="wallpaper_turnero" name="wallpaper_turnero" class="form-control" onchange="previewImage(event, 'preview-wallpaper-turnero')" />
+                                                <img id="preview-wallpaper-turnero" src="" class="img-thumbnail mt-2" style="max-width: 150px; display: none;" />
                                             </div>
+                                            
                                         </div>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
-                                        <button type="submit" class="btn btn-success">Guardar</button>
+                                        <button type="submit" class="btn btn-success" id="btn-guardar-imagen">Guardar</button>
                                     </div>
                                 </form>
                             </div>
@@ -210,54 +230,262 @@
     <!-- Sweet Alerts js -->
     <script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>   
     
-    <!-- Agregar aquí el nuevo script -->
+    <!-- Agrega y Actualiza un  registro de la tabla -->
     <script>
-        document.getElementById('imagenForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-        
-            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            if (!csrftoken) {
-                console.error('No se encontró el token CSRF');
-                return;
-            }
-        
-            const formData = new FormData(this);
-            const authToken = 'd07c91f369e145647caec709beac1278761a353d';
-        
-            fetch(`${window.location.origin}/api/imagenes/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                    'Authorization': 'Token ' + authToken,
-                },
-                body: formData,
+        // Variable global para rastrear el ID de la imagen en edición
+        let editingImageId = null;
+
+        // Función para editar imagen
+        function editImage(id) {
+            editingImageId = id;
+            
+            fetch(`${window.location.origin}/api/imagenes/${id}/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error al obtener la imagen: ${response.status}`);
+                }
+                return response.json();
             })
-                .then(response => {
-                    if (!response.ok) throw new Error(`Error: ${response.status}`);
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Éxito:', data);
-                    Swal.fire({
-                        title: '¡Éxito!',
-                        text: 'Imagen creada exitosamente.',
-                        icon: 'success',
-                        confirmButtonText: 'OK',
-                    }).then(() => {
-                        location.reload();
-                    });
-                })
-                .catch(error => {
-                    console.error('Error en la solicitud fetch:', error);
-                    Swal.fire({
-                        title: 'Error',
-                        text: `Error al crear la imagen: ${error.message}`,
-                        icon: 'error',
-                        confirmButtonText: 'OK',
+            .then(data => {
+                const modalTitle = document.getElementById('exampleModalLabel');
+                if (modalTitle) {
+                    modalTitle.textContent = "Editar Imagen";
+                }
+
+                const saveButton = document.querySelector('#imagenForm .btn-success');
+                if (saveButton) {
+                    saveButton.textContent = "Actualizar";
+                }
+
+                // Mostrar las imágenes previas si existen
+                if (data.logo_pequeño) updateImagePreview('preview-logo-pequeno', data.logo_pequeño);
+                if (data.logo_grande) updateImagePreview('preview-logo-grande', data.logo_grande);
+                if (data.logo_ticket) updateImagePreview('preview-logo-ticket', data.logo_ticket);
+                if (data.footer) updateImagePreview('preview-footer', data.footer);
+                if (data.wallpaper_turnero) updateImagePreview('preview-wallpaper-turnero', data.wallpaper_turnero);
+
+                // Guardar las URLs originales en atributos data
+                const form = document.getElementById('imagenForm');
+                form.dataset.logoPequeno = data.logo_pequeño || '';
+                form.dataset.logoGrande = data.logo_grande || '';
+                form.dataset.logoTicket = data.logo_ticket || '';
+                form.dataset.footer = data.footer || '';
+                form.dataset.wallpaperTurnero = data.wallpaper_turnero || '';
+
+                // Mostrar el modal
+                const modal = new bootstrap.Modal(document.getElementById('showModal'));
+                modal.show();
+            })
+            .catch(error => {
+                console.error('Error al cargar la imagen:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'No se pudo cargar la imagen para edición.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        }
+
+        // Función para actualizar la vista previa de las imágenes
+        function updateImagePreview(elementId, imageUrl) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                if (imageUrl) {
+                    element.src = imageUrl;
+                    element.style.display = 'block';
+                } else {
+                    element.style.display = 'none';
+                }
+            }
+        }
+
+        // Función para previsualizar imágenes nuevas
+        function previewImage(event, previewId) {
+            const file = event.target.files[0];
+            const preview = document.getElementById(previewId);
+            
+            if (file && preview) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Inicialización cuando el DOM está listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Manejar el botón de agregar nueva imagen
+            const addImageBtn = document.getElementById('add-image-btn');
+            if (addImageBtn) {
+                addImageBtn.addEventListener('click', () => {
+                    editingImageId = null;
+                    const form = document.getElementById('imagenForm');
+                    if (form) {
+                        form.reset();
+                        // Limpiar los datos almacenados
+                        form.dataset.logoPequeno = '';
+                        form.dataset.logoGrande = '';
+                        form.dataset.logoTicket = '';
+                        form.dataset.footer = '';
+                        form.dataset.wallpaperTurnero = '';
+                    }
+
+                    const modalTitle = document.getElementById('exampleModalLabel');
+                    if (modalTitle) modalTitle.textContent = "Crear Nueva Imagen";
+
+                    const saveButton = document.querySelector('#imagenForm .btn-success');
+                    if (saveButton) saveButton.textContent = "Guardar";
+
+                    // Limpiar previsualizaciones
+                    document.querySelectorAll('.img-thumbnail').forEach(img => {
+                        img.src = "";
+                        img.style.display = "none";
                     });
                 });
+            }
+
+            // Manejar el envío del formulario
+            const form = document.getElementById('imagenForm');
+            if (form) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    const formData = new FormData();
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                    // Solo agregar al FormData los archivos que han sido seleccionados
+                    const fileFields = [
+                        'logo_pequeño',
+                        'logo_grande',
+                        'logo_ticket',
+                        'footer',
+                        'wallpaper_turnero'
+                    ];
+
+                    let hasFiles = false;
+                    fileFields.forEach(fieldName => {
+                        const input = this.querySelector(`#${fieldName}`);
+                        if (input && input.files && input.files.length > 0) {
+                            formData.append(fieldName, input.files[0]);
+                            hasFiles = true;
+                        }
+                    });
+
+                    // Si no es una creación nueva y no hay archivos seleccionados, mostrar mensaje
+                    if (editingImageId && !hasFiles) {
+                        Swal.fire({
+                            title: 'Aviso',
+                            text: 'No has seleccionado ninguna imagen nueva para actualizar.',
+                            icon: 'info',
+                            confirmButtonText: 'OK'
+                        });
+                        return;
+                    }
+
+                    const url = editingImageId 
+                        ? `${window.location.origin}/api/imagenes/${editingImageId}/`
+                        : `${window.location.origin}/api/imagenes/`;
+                    
+                    const method = editingImageId ? 'PATCH' : 'POST';
+
+                    try {
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: {
+                                'X-CSRFToken': csrftoken
+                            },
+                            body: formData
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        
+                        await Swal.fire({
+                            title: '¡Éxito!',
+                            text: editingImageId ? 'Imagen actualizada exitosamente.' : 'Imagen creada exitosamente.',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
+
+                        window.location.href = '/api/configuracion/imagenes/';
+                    } catch (error) {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: `Error al ${editingImageId ? 'actualizar' : 'crear'} la imagen: ${error.message}`,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                });
+            }
         });
     </script>
+    
+    
+<script>
+    // Función para eliminar una imagen
+function deleteImage(id) {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Esta acción no se puede deshacer",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            fetch(`${window.location.origin}/api/imagenes/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Para respuestas 204 No Content
+                    return Promise.resolve();
+                }
+                // Si la respuesta no es ok, intentamos parsear el error
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Error al eliminar la imagen');
+                });
+            })
+            .then(() => {
+                Swal.fire({
+                    title: '¡Eliminado!',
+                    text: 'La imagen ha sido eliminada.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    // Recargar la página para mostrar los cambios
+                    window.location.reload();
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: `No se pudo eliminar la imagen: ${error.message}`,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        }
+    });
+}
+</script>
+        
     
     
 

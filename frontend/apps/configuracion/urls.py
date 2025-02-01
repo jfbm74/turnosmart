@@ -37,6 +37,7 @@ router.register(r'voces', VozViewSet, basename='voz')
 urlpatterns = [
     path('configuracion/instituciones/', InstitucionListView.as_view(), name='instituciones-lista'),
     path('configuracion/imagenes/', ImagenListView.as_view(), name='imagenes-lista'),
+    path('configuracion/imagenes/<int:pk>/', ImagenViewSet.as_view({'get': 'retrieve'}), name='imagen-detail'),
     path('configuracion/videos/', VideoListView.as_view(), name='videos-lista'),
     path('configuracion/audios/', AudioListView.as_view(), name='audios-lista'),
     path('configuracion/tickets/', TicketListView.as_view(), name='tickets-lista'),

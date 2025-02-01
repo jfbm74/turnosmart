@@ -12,15 +12,6 @@ class InstitucionSerializer(serializers.ModelSerializer):
         }
 
 
-class ImagenSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Imagen
-        fields = ['id', 'logo_pequeño', 'logo_grande', 'logo_ticket', 'footer', 'wallpaper_turnero']
-        extra_kwargs = {
-            'id': {'help_text': 'Identificador único de las imágenes', 'read_only': True},
-        }
-
-
 
 class AudioSerializer(serializers.ModelSerializer):
     class Meta:
