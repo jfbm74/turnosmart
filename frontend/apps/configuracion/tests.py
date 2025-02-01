@@ -676,14 +676,16 @@ class VideoAPITests(APITestCase):
     def test_update_video_authenticated(self):
         """Test para actualizar un video con autenticación."""
         data = {
+            "nombre": "Video Actualizado",  # Añadimos el campo nombre que es requerido
             "origen": "URL",
             "url_video": "http://example.com/updated_video.mp4",
-            "estado": False,
-            }
+            "estado": False
+        }
         response = self.client.put(self.detail_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.video.refresh_from_db()
         self.assertEqual(self.video.url_video, "http://example.com/updated_video.mp4")
+        self.assertEqual(self.video.nombre, "Video Actualizado")  # Verificamos que el nombre se actualizó
 
     def test_delete_video_authenticated(self):
        """Test para eliminar un video con autenticación."""
