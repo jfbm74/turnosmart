@@ -193,8 +193,6 @@ class ImagenConfigurationTests(TestCase):
         except TimeoutException as e:
             self.fail(f"Error en la edición de la imagen: {str(e)}")
 
-
-    @unittest.skip("Omitir este test por ahora")
     def test_3_visualizar_previsualizaciones(self):
         """
         3) Visualizar previsualizaciones:

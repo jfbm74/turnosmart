@@ -8,6 +8,17 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .serializers import ClienteSerializer, ClienteListSerializer
 from .models import Cliente
+from django.shortcuts import render
+from django.conf import settings
+import requests
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from .models import Cliente
+from .serializers import ClienteSerializer
+
 
 
 class ClienteListCreateView(APIView):
@@ -121,3 +132,8 @@ class ClienteDetailView(APIView):
         return Response(
             {"message": "Cliente no encontrado"}, status=status.HTTP_404_NOT_FOUND
         )
+
+@login_required(login_url='/login/')
+def clientes_list_view(request):
+    clientes = Cliente.objects.all()
+    return render(request, 'clientes/app-clientes-list-view.html', {'clientes': clientes})

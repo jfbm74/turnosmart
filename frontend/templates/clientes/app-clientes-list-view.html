@@ -1,0 +1,366 @@
+{% extends "partials/base.html" %}
+{% load static %}
+{% block title %}Listar Clientes{% endblock title %}
+{% block extra_css %}
+<link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+            {% include "partials/page-title.html" with pagetitle="Configuración" title="Lista de Clientes" %}
+            {% endblock pagetitle %}
+
+            <div class="row">
+                <div class="col-xxl-3 col-sm-6">
+                    <div class="card card-animate">
+                        
+                    </div> <!-- end card-->
+                </div><!--end col-->
+                <div class="col-xxl-3 col-sm-6">
+                    <div class="card card-animate">
+                        
+                    </div>
+                </div><!--end col-->
+                <div class="col-xxl-3 col-sm-6">
+                    <div class="card card-animate">
+                        
+                    </div>
+                </div><!--end col-->
+                <div class="col-xxl-3 col-sm-6">
+                    <div class="card card-animate">
+                        
+                    </div>
+                </div><!--end col-->
+            </div><!--end row-->
+            
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card" id="clientesList">
+                        <div class="card-header border-0">
+                            <div class="d-flex align-items-center">
+                                <h5 class="card-title mb-0 flex-grow-1">Clientes</h5>
+                                <div class="flex-shrink-0">
+                                    <button class="btn btn-soft-primary add-btn" data-bs-toggle="modal" data-bs-target="#showModal" id="add-cliente-btn">
+                                        <i class="ri-add-line align-bottom me-1"></i> Agregar Cliente
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body border border-dashed border-end-0 border-start-0">
+                            <div class="search-box">
+                                <input type="text" class="form-control search bg-light border-light" placeholder="Buscar clientes" id="search-clientes">
+                                <i class="ri-search-line search-icon"></i>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive table-card mb-4">
+                                <table class="table align-middle table-nowrap mb-0" id="clientes-table">
+                                    <thead class="table-light text-muted">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nombre</th>
+                                            <th>Apellido</th>
+                                            <th>Documento</th>
+                                            <th>Email</th>
+                                            <th>Teléfono</th>
+                                            <th>Dirección</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="list">
+                                        {% if clientes %}
+                                            {% for cliente in clientes %}
+                                                <tr>
+                                                    <td class="id" id="cliente-id-{{ cliente.id }}">{{ cliente.id }}</td>
+                                                    <td class="nombre" id="cliente-nombre-{{ cliente.id }}">{{ cliente.nombre }}</td>
+                                                    <td class="apellido" id="cliente-apellido-{{ cliente.id }}">{{ cliente.apellido }}</td>
+                                                    <td class="documento" id="cliente-documento-{{ cliente.id }}">{{ cliente.documento }}</td>
+                                                    <td class="email" id="cliente-email-{{ cliente.id }}">{{ cliente.email }}</td>
+                                                    <td class="telefono" id="cliente-telefono-{{ cliente.id }}">{{ cliente.telefono }}</td>
+                                                    <td class="direccion" id="cliente-direccion-{{ cliente.id }}">{{ cliente.direccion }}</td>
+                                                    <td class="estado" id="cliente-estado-{{ cliente.id }}">{{ cliente.estado|yesno:"Activo,Inactivo" }}</td>
+                                                    <td class="d-flex gap-2">
+                                                        <button class="btn btn-sm btn-outline-primary edit-btn" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#showModal" 
+                                                                id="edit-cliente-{{ cliente.id }}"
+                                                                data-id="{{ cliente.id }}"
+                                                                data-nombre="{{ cliente.nombre }}"
+                                                                data-apellido="{{ cliente.apellido }}"
+                                                                data-documento="{{ cliente.documento }}"
+                                                                data-email="{{ cliente.email }}"
+                                                                data-telefono="{{ cliente.telefono }}"
+                                                                data-direccion="{{ cliente.direccion }}">
+                                                            <i class="ri-pencil-line"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-danger delete-btn" 
+                                                                data-id="{{ cliente.id }}" 
+                                                                id="delete-cliente-{{ cliente.id }}">
+                                                            <i class="ri-delete-bin-line"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="9" class="text-center">No hay clientes disponibles.</td>
+                                            </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal para agregar/editar clientes -->
+            <div class="modal fade zoomIn" id="showModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content border-0">
+                        <div class="modal-header p-3 bg-primary-subtle">
+                            <h5 class="modal-title" id="exampleModalLabel">Crear / Editar Cliente</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-modal"></button>
+                        </div>
+                        <form id="clienteForm" method="POST">
+                            {% csrf_token %}
+                            <div class="modal-body">
+                                <div class="row g-3">
+                                    <div class="col-lg-6">
+                                        <label for="nombre" class="form-label">Nombre</label>
+                                        <input type="text" id="nombre" name="nombre" class="form-control" required />
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <label for="apellido" class="form-label">Apellido</label>
+                                        <input type="text" id="apellido" name="apellido" class="form-control" required />
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <label for="documento" class="form-label">Documento</label>
+                                        <input type="text" id="documento" name="documento" class="form-control" required />
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" id="email" name="email" class="form-control" required />
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <label for="telefono" class="form-label">Teléfono</label>
+                                        <input type="text" id="telefono" name="telefono" class="form-control" required />
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <label for="direccion" class="form-label">Dirección</label>
+                                        <input type="text" id="direccion" name="direccion" class="form-control" required />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+                                <button type="submit" id="btnGuardarCliente" class="btn btn-success">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- container-fluid -->
+    </div>
+    <!-- End Page-content -->
+    {% block footer %}
+    {% include "partials/footer.html" %}
+    {% endblock footer %}
+</div>
+{% endblock content %}
+{% block extra_js %}
+
+    <!-- list.js min js -->
+    <script src="{% static 'libs/list.js/dist/list.min.js' %}"></script> 
+
+    <!--list pagination js-->
+    <script src="{% static 'libs/list.pagination.js/list.pagination.min.js' %}"></script>
+
+    <!-- titcket init js -->
+    <script src="{% static 'libs/pages/tasks-list.init.js' %}"></script>
+
+    <!-- Sweet Alerts js -->
+    <script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>   
+
+    <script>
+        function initListJS() {
+            var table = document.getElementById('clientes-table');
+            var searchInput = document.getElementById('search-clientes');
+    
+            if (table && table.rows.length > 1 && searchInput) {
+                try {
+                    window.clientesList = new List('clientesList', {
+                        valueNames: ['id', 'nombre', 'apellido', 'documento', 'email', 'telefono', 'direccion'],
+                        searchInput: searchInput
+                    });
+                } catch (error) {
+                    console.error('Error en List.js:', error);
+                }
+            } else {
+                console.warn("List.js no se inicializó porque la tabla no tiene datos.");
+            }
+        }
+    
+        document.addEventListener('DOMContentLoaded', function() {
+            initListJS();
+            const elemento = document.getElementById('clientes-table');
+            if (!elemento) {
+                console.warn("Elemento 'clientes-table' no encontrado.");
+            }
+        });
+    </script>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicialización de List.js
+        function initListJS() {
+            var table = document.getElementById('clientes-table');
+            var searchInput = document.getElementById('search-clientes');
+            
+            if (table && searchInput) {
+                try {
+                    var options = {
+                        valueNames: [
+                            'id', 'nombre', 'apellido', 'documento', 
+                            'email', 'telefono', 'direccion', 'estado'
+                        ],
+                        searchInput: searchInput
+                    };
+                    
+                    window.clientesList = new List('clientesList', options);
+                } catch (error) {
+                    console.error('Error inicializando List.js:', error);
+                }
+            }
+        }
+
+        // Inicialización de formulario de cliente
+        function initClienteForm() {
+            var addClienteBtn = document.getElementById('add-cliente-btn');
+            var clienteForm = document.getElementById('clienteForm');
+            var editButtons = document.querySelectorAll('.edit-btn');
+            
+            if (addClienteBtn) {
+                addClienteBtn.addEventListener('click', function() {
+                    clienteForm.reset();
+                    document.getElementById('exampleModalLabel').textContent = 'Crear Cliente';
+                    window.formMode = 'create';
+                    window.currentClienteId = null;
+                });
+            }
+
+            editButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    window.formMode = 'edit';
+                    window.currentClienteId = this.getAttribute('data-id');
+                    
+                    document.getElementById('exampleModalLabel').textContent = 'Editar Cliente';
+                    
+                    // Poblar formulario
+                    ['nombre', 'apellido', 'documento', 'email', 'telefono', 'direccion'].forEach(function(field) {
+                        document.getElementById(field).value = this.getAttribute('data-' + field) || '';
+                    }.bind(this));
+                });
+            });
+
+            if (clienteForm) {
+                clienteForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    var formData = new FormData(this);
+                    var jsonData = {};
+                    formData.forEach((value, key) => jsonData[key] = value);
+
+                    var url = window.formMode === 'create'
+                        ? `${window.location.origin}/api/clientes/`
+                        : `${window.location.origin}/api/clientes/${window.currentClienteId}/`;
+
+                    fetch(url, {
+                        method: window.formMode === 'create' ? 'POST' : 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        },
+                        body: JSON.stringify(jsonData),
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error("Error en la solicitud");
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        Swal.fire('Éxito', `Cliente ${window.formMode === 'create' ? 'creado' : 'actualizado'} exitosamente.`, 'success')
+                        .then(() => window.location.reload());
+                    })
+                    .catch(error => {
+                        Swal.fire('Error', `No se pudo ${window.formMode === 'create' ? 'crear' : 'actualizar'} el cliente.`, 'error');
+                        console.error("Error en la solicitud:", error);
+                    });
+                });
+            }
+        }
+
+        // Inicialización de botones de eliminación
+        function initDeleteButtons() {
+            var deleteButtons = document.querySelectorAll('.delete-btn');
+            
+            deleteButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var clienteId = this.getAttribute('data-id');
+                    
+                    if (!clienteId) {
+                        Swal.fire('Error', 'No se encontró el ID del cliente.', 'error');
+                        return;
+                    }
+                    
+                    Swal.fire({
+                        title: '¿Estás seguro?',
+                        text: 'Esta acción no se puede deshacer.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch(`${window.location.origin}/api/clientes/${clienteId}/`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                                }
+                            })
+                            .then(response => {
+                                if (response.status === 204) {
+                                    return null;
+                                }
+                                return response.json();
+                            })
+                            .then(() => {
+                                Swal.fire('Eliminado', 'El cliente ha sido eliminado.', 'success')
+                                .then(() => window.location.reload());
+                            })
+                            .catch(error => {
+                                Swal.fire('Error', 'No se pudo eliminar el cliente.', 'error');
+                                console.error("Error en la eliminación:", error);
+                            });
+                        }
+                    });
+                });
+            });
+        }
+
+        // Inicializar todas las funcionalidades
+        initListJS();
+        initClienteForm();
+        initDeleteButtons();
+    });
+    </script>
+    
+{% endblock extra_js %}
