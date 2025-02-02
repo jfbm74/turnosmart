@@ -75,15 +75,18 @@
                                                             <td class="nombre">{{ tramite.nombre }}</td>
                                                             <td class="iniciales">{{ tramite.iniciales }}</td>
                                                             <td class="cliente_requerido">{{ tramite.cliente_requerido }}</td>
-                                                            <td class="ventanilla_atencion">{{ tramite.ventanilla_atencion.descripcion }}</td>
+                                                            <td class="ventanilla_atencion">
+                                                                <span class="badge bg-primary text-white">
+                                                                        {{ tramite.ventanilla_atencion.descripcion }}</td>
+                                                                </span>
                                                             <td class="ventanilla_transferencia_frecuente">
                                                                 {% for vent in tramite.ventanilla_transferencia_frecuente_objs %}
-                                                                    {{ vent.descripcion }}{% if not forloop.last %}, {% endif %}
+                                                                    <span class="badge bg-secondary text-white">{{ vent.descripcion }}</span>
                                                                 {% endfor %}
                                                             </td>
                                                             <td class="grupo_transferencia_frecuente">
                                                                 {% for grupo in tramite.grupo_transferencia_frecuente_list %}
-                                                                    {{ grupo.nombre }}{% if not forloop.last %}, {% endif %}
+                                                                    <span class="badge bg-success text-white">{{ grupo.nombre }}</span>
                                                                 {% endfor %}
                                                             </td>
                                                             <td>
