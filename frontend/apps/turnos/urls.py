@@ -4,6 +4,7 @@ from .views import (
     FranjaHorariaViewSet,
     HorarioViewSet,
     GenerarHorariosAPIView,
+    PrioridadViewSet,
     SalaViewSet,
     TurneroViewSet,
 )
@@ -14,6 +15,7 @@ router.register(r"franjas-horarias", FranjaHorariaViewSet, basename="franja-hora
 router.register(r"horarios", HorarioViewSet, basename="horario")
 router.register(r"turneros", TurneroViewSet, basename="turnero")
 router.register(r"salas-espera", SalaViewSet, basename="sala-espera")
+router.register(r"prioridades", PrioridadViewSet, basename="prioridad")
 
 # Agregar rutas adicionales
 urlpatterns = router.urls + [

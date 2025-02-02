@@ -1,10 +1,9 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
-from apps.turnos.models import Sala, Turnero, Menu
+from apps.turnos.models import Sala, Turnero, Menu, Prioridad, Horario, FranjaHoraria
 from django.contrib.auth import get_user_model
 from datetime import datetime
-from apps.turnos.models import Horario, FranjaHoraria
 
 
 User = get_user_model()
@@ -352,3 +351,91 @@ class SalaAPITests(APITestCase):
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Sala.objects.count(), 1)
+
+
+
+class PrioridadAPITests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="testuser", password="testpassword", email="testuser@example.com"
+        )
+        self.client.force_authenticate(user=self.user)
+
+        # Crear una prioridad inicial
+        self.prioridad = Prioridad.objects.create(
+            nombre="Prueba", prioridad="MEDIA"
+        )
+
+        self.list_url = reverse("prioridad-list")
+        self.detail_url = reverse("prioridad-detail", args=[self.prioridad.id])
+
+    def test_list_prioridades_authenticated(self):
+        """Test para listar prioridades con autenticación."""
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+
+    def test_list_prioridades_unauthenticated(self):
+        """Test para listar prioridades sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_create_prioridad_authenticated(self):
+        """Test para crear una prioridad con autenticación."""
+        data = {"nombre": "Test Prioridad", "prioridad": "ALTA"}
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Prioridad.objects.count(), 2)
+
+    def test_create_prioridad_unauthenticated(self):
+        """Test para crear una prioridad sin autenticación."""
+        self.client.force_authenticate(user=None)
+        data = {"nombre": "Test Prioridad", "prioridad": "ALTA"}
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_retrieve_prioridad_authenticated(self):
+        """Test para obtener una prioridad específica con autenticación."""
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["nombre"], self.prioridad.nombre)
+
+    def test_retrieve_prioridad_unauthenticated(self):
+        """Test para obtener una prioridad específica sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_prioridad_authenticated(self):
+        """Test para actualizar una prioridad con autenticación."""
+        data = {"nombre": "Prueba Actualizada", "prioridad": "BAJA"}
+        response = self.client.put(self.detail_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.prioridad.refresh_from_db()
+        self.assertEqual(self.prioridad.nombre, "Prueba Actualizada")
+        self.assertEqual(self.prioridad.prioridad, "BAJA")
+
+    def test_update_prioridad_unauthenticated(self):
+        """Test para actualizar una prioridad sin autenticación."""
+        self.client.force_authenticate(user=None)
+        data = {"nombre": "Prueba Actualizada", "prioridad": "BAJA"}
+        response = self.client.put(self.detail_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_delete_prioridad_authenticated(self):
+        """Test para eliminar una prioridad con autenticación."""
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Prioridad.objects.count(), 0)
+
+    def test_delete_prioridad_unauthenticated(self):
+        """Test para eliminar una prioridad sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def tearDown(self):
+         Prioridad.objects.all().delete()
+         User.objects.all().delete()

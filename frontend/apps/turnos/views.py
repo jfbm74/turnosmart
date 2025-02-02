@@ -1,9 +1,10 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
-from apps.turnos.models import FranjaHoraria, Horario, Turnero, Menu, Sala
+from apps.turnos.models import FranjaHoraria, Horario, Prioridad, Turnero, Menu, Sala
 from .serializers import (
     FranjaHorariaSerializer,
     HorarioSerializer,
+    PrioridadSerializer,
     TurneroSerializer,
     TurneroMenuAssociationSerializer,
     MenuSerializer,
@@ -15,6 +16,8 @@ from datetime import datetime
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework import status
+from drf_yasg.utils import swagger_auto_schema
+
 
 
 class FranjaHorariaViewSet(ModelViewSet):
@@ -118,3 +121,60 @@ class SalaViewSet(ModelViewSet):
     queryset = Sala.objects.all()
     serializer_class = SalaSerializer
     permission_classes = [IsAuthenticated]
+
+
+class PrioridadViewSet(viewsets.ModelViewSet):
+    """
+    API para gestionar las prioridades.
+    """
+    queryset = Prioridad.objects.all()
+    serializer_class = PrioridadSerializer
+    permission_classes = [IsAuthenticated]
+    
+    @swagger_auto_schema(operation_description="Listar las prioridades")
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Crea una nueva prioridad",
+        request_body=PrioridadSerializer,
+        responses={
+            status.HTTP_201_CREATED: PrioridadSerializer(),
+            status.HTTP_400_BAD_REQUEST: "Invalid data",
+        },
+    )
+    def create(self, request, *args, **kwargs):
+       return super().create(request, *args, **kwargs)
+
+
+    @swagger_auto_schema(
+        responses={
+            status.HTTP_200_OK: PrioridadSerializer(),
+            status.HTTP_404_NOT_FOUND: "Prioridad no encontrada",
+        },
+        operation_description="Obtener una prioridad especifica por id"
+    )
+    def retrieve(self, request, *args, **kwargs):
+         return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+         request_body=PrioridadSerializer,
+            responses={
+                status.HTTP_200_OK: PrioridadSerializer(),
+                status.HTTP_400_BAD_REQUEST: "Invalid data",
+                status.HTTP_404_NOT_FOUND: "Prioridad no encontrada"
+           },
+        operation_description="Actualizar una prioridad existente"
+    )
+    def update(self, request, *args, **kwargs):
+         return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+           responses={
+               status.HTTP_204_NO_CONTENT: "Prioridad eliminada exitosamente",
+                status.HTTP_404_NOT_FOUND: "Prioridad no encontrada"
+            },
+        operation_description="Eliminar una prioridad existente"
+    )
+    def destroy(self, request, *args, **kwargs):
+         return super().destroy(request, *args, **kwargs)

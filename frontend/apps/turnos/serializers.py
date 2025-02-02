@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import FranjaHoraria, Horario, Turnero, Menu, Sala
+from .models import FranjaHoraria, Horario, Prioridad, Turnero, Menu, Sala
 
 
 class FranjaHorariaSerializer(serializers.ModelSerializer):
@@ -84,3 +84,14 @@ class SalaSerializer(serializers.ModelSerializer):
                 "El nombre de la sala no puede exceder 100 caracteres."
             )
         return value
+
+
+class PrioridadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Prioridad
+        fields = ['id', 'nombre', 'prioridad']
+        extra_kwargs = {
+              'id': {'help_text': 'Identificador único de la prioridad', 'read_only': True},
+              'nombre': {'help_text': 'Nombre de la prioridad'},
+            'prioridad': {'help_text': 'Nivel de prioridad de los turnos'}
+        }
