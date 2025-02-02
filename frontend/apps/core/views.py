@@ -278,18 +278,94 @@ class TramiteViewSet(viewsets.ModelViewSet):
           return super().destroy(request, *args, **kwargs)
 
 
-class TramiteListView(LoginRequiredMixin, ListView):
+class TramiteViewSet(viewsets.ModelViewSet):
+    """
+    API para gestionar los trámites.
+    """
+    queryset = Tramite.objects.all()
+    serializer_class = TramiteSerializer
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(operation_description="Listar todos los tramites")
+    def list(self, request, *args, **kwargs):
+       return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Crea un nuevo tramite",
+            request_body=TramiteSerializer,
+        responses={status.HTTP_201_CREATED: TramiteSerializer(),status.HTTP_400_BAD_REQUEST: "Errores de validación"}
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+            responses={status.HTTP_200_OK: TramiteSerializer(),
+            status.HTTP_404_NOT_FOUND: "Tramite not found"}
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+         request_body=TramiteSerializer,
+          responses={
+                status.HTTP_200_OK: TramiteSerializer(),
+                status.HTTP_400_BAD_REQUEST: "Errores de validación",
+                status.HTTP_404_NOT_FOUND: "Tramite not found"
+            },
+        operation_description="Actualiza un tramite existente"
+    )
+    def update(self, request, *args, **kwargs):
+       return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        responses={
+          status.HTTP_204_NO_CONTENT: "Trámite eliminado",
+           status.HTTP_404_NOT_FOUND: "Tramite no encontrado"
+       },
+        operation_description="Eliminar un trámite existente"
+     )
+    def destroy(self, request, *args, **kwargs):
+          return super().destroy(request, *args, **kwargs)
+    
+
+class TramiteListView(ListView):
     model = Tramite
     template_name = "core/app-tramite-list-view.html"
-    context_object_name = "tramites"  # Nombre para acceder a los tramites en el template
+    context_object_name = "tramites"
 
+    def get_queryset(self):
+        return Tramite.objects.all().prefetch_related(
+            "ventanilla_transferencia_frecuente",
+            "grupo_transferencia_frecuente"
+        )
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
-""" class VentanillaViewSet(ModelViewSet):
-    queryset = Ventanilla.objects.all()
-    serializer_class = VentanillaSerializer
-    permission_classes = [IsAuthenticated]
- """
+        context["ventanillas"] = Ventanilla.objects.all()
+        context["grupos"] = Grupo.objects.all()
+
+        for tramite in context["tramites"]:
+            # 1) Lista de objetos ventanilla para mostrarlos con sus descripciones
+            tramite.ventanilla_transferencia_frecuente_objs = (
+                tramite.ventanilla_transferencia_frecuente.all()
+            )
+            
+            # 2) Lista de IDs para el data-* (JSON.parse)
+            tramite.ventanilla_transferencia_frecuente_ids = list(
+                tramite.ventanilla_transferencia_frecuente.all().values_list('id', flat=True)
+            )
+            
+            # Lo mismo con grupos, si deseas separar
+            tramite.grupo_transferencia_frecuente_objs = (
+                tramite.grupo_transferencia_frecuente.all()
+            )
+            tramite.grupo_transferencia_frecuente_ids = list(
+                tramite.grupo_transferencia_frecuente.all().values_list('id', flat=True)
+            )
+
+        return context
+
 
 class VentanillaViewSet(ModelViewSet):
     """

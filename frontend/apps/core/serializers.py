@@ -1,5 +1,4 @@
 # core/serializers.py
-
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -12,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .models import Tramite, UserProfile, Grupo, Ventanilla
+
 
 
 User = get_user_model()
@@ -126,6 +126,27 @@ class VentanillaSerializer(serializers.ModelSerializer):
 
 
 class TramiteSerializer(serializers.ModelSerializer):
+    # Si deseas permitir asignar una sola ventanilla principal:
+    ventanilla_atencion = serializers.PrimaryKeyRelatedField(
+        queryset=Ventanilla.objects.all(),
+        required=False,
+        allow_null=True
+    )
+
+    # Para las ventanillas de transferencia frecuente (lista de IDs):
+    ventanilla_transferencia_frecuente = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Ventanilla.objects.all(),
+        required=False
+    )
+
+    # Para los grupos (lista de IDs):
+    grupo_transferencia_frecuente = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Grupo.objects.all(),
+        required=False
+    )
+
     class Meta:
         model = Tramite
         fields = [
@@ -137,22 +158,3 @@ class TramiteSerializer(serializers.ModelSerializer):
             "ventanilla_transferencia_frecuente",
             "grupo_transferencia_frecuente",
         ]
-        extra_kwargs = {
-            "id": {"read_only": True},
-            "nombre": {"help_text": "Nombre del trámite."},
-            "iniciales": {
-                "help_text": "Iniciales del trámite (para mostrar en el ticket)."
-            },
-            "cliente_requerido": {
-                "help_text": "Define si se solicita información del cliente (no, al atender, al tomar turno)."
-            },
-            "ventanilla_atencion": {
-                "help_text": "Ventanilla por defecto para la atención de este trámite."
-            },
-            "ventanilla_transferencia_frecuente": {
-                "help_text": "Ventanillas frecuentes a las que se puede transferir el trámite."
-            },
-            "grupo_transferencia_frecuente": {
-                "help_text": "Grupos frecuentes a los que se puede transferir el trámite."
-            },
-        }

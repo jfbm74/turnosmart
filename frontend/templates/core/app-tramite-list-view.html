@@ -1,29 +1,35 @@
 {% extends "partials/base.html" %}
 {% load static %}
-{% block title %}Lista de Ventanillas{% endblock title %}
+{% block title %}Lista de Trámites{% endblock title %}
 {% block extra_css %}
-    <!-- Sweet Alert css-->
-    <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+<!-- Sweet Alert css-->
+<link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
 {% endblock extra_css %}
 
 {% block content %}
-<div class="main-content">
-    <div class="page-content">
-        <div class="container-fluid">
-            {% block pagetitle %}
-            {% include "partials/page-title.html" with pagetitle="Core" title="Lista de Ventanillas" %}
-            {% endblock pagetitle %}
-                <div class="row">
+        <!-- ============================================================== -->
+        <!-- Start right Content here -->
+        <!-- ============================================================== -->
+        <div class="main-content">
+
+            <div class="page-content">
+                <div class="container-fluid">
+
+                    {% block pagetitle %}
+                        {% include "partials/page-title.html" with pagetitle="Core" title="Lista de Trámites" %}
+                    {% endblock pagetitle %}
+
+                   <div class="row">
                         <div class="col-lg-12">
-                            <div class="card"  id="tasksList">
+                            <div class="card" id="tasksList">
                                 <div class="card-header border-0">
                                     <div class="d-flex align-items-center">
-                                        <h5 class="card-title mb-0 flex-grow-1">Ventanillas</h5>
+                                        <h5 class="card-title mb-0 flex-grow-1">Trámites</h5>
                                         <div class="flex-shrink-0">
                                             <div class="d-flex flex-wrap gap-2">
-                                            	<button class="btn btn-soft-primary add-btn" data-bs-toggle="modal" data-bs-target="#showModal"><i class="ri-add-line align-bottom me-1"></i> Agregar Ventanilla</button>
-                                            	<button class="btn btn-soft-secondary" id="remove-actions" onClick="deleteMultiple()"><i class="ri-delete-bin-2-line"></i></button>
-                                           </div>
+                                                <button class="btn btn-soft-primary add-btn" data-bs-toggle="modal" data-bs-target="#showModal"><i class="ri-add-line align-bottom me-1"></i> Agregar Trámite</button>
+                                                <button class="btn btn-soft-secondary" id="remove-actions" onclick="deleteMultiple()"><i class="ri-delete-bin-2-line"></i></button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -35,121 +41,172 @@
                                                     <input type="text" class="form-control search bg-light border-light" placeholder="Busqueda">
                                                     <i class="ri-search-line search-icon"></i>
                                                 </div>
-                                            </div><!--end col-->
-                                                                                        
+                                            </div><!--end col-->                                                                                      
                                             <div class="col-xxl-1 col-sm-4">
-                                                <button type="button" class="btn btn-primary w-100" onclick="SearchData();"> <i class="ri-equalizer-fill me-1 align-bottom"></i>
-                                                    Filtros
+                                                <button type="button" class="btn btn-primary w-100" onclick="SearchData();"> 
+                                                    <i class="ri-equalizer-fill me-1 align-bottom"></i> Filtros
                                                 </button>
                                             </div><!--end col-->
                                         </div><!--end row-->
                                     </form>
                                 </div><!--end card-body-->
+
                                 <div class="card-body">
-                                     <div class="table-responsive table-card mb-4">
-                                        <div class="listjs-table" id="ventanillasTable">
-                                        <table class="table align-middle table-nowrap mb-0">
+                                    <div class="table-responsive">
+                                        <!-- IMPORTANTE: Agregamos un id para poder usarlo en el JS (en el evento searchComplete) -->
+                                        <table id="tramitesTable" class="table align-middle table-nowrap">
                                             <thead class="table-light text-muted">
                                                 <tr>
                                                     <th>ID</th>
-                                                    <th>ID Ventanilla</th>
-                                                    <th>Descripción</th>
-                                                     <th>Estado</th>
+                                                    <th>Nombre</th>
+                                                    <th>Iniciales</th>
+                                                    <th>Cliente Requerido</th>
+                                                    <th>Ventanilla Atención</th>
+                                                    <th>Ventanillas Transferencia Frecuente</th>
+                                                    <th>Grupos Transferencia Frecuente</th>
                                                     <th>Acciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="list">
-                                            {% if ventanillas %}
-                                                {% for ventanilla in ventanillas %}
+                                                {% if tramites %}
+                                                    {% for tramite in tramites %}
+                                                        <tr>
+                                                            <td class="id">{{ tramite.id }}</td>
+                                                            <td class="nombre">{{ tramite.nombre }}</td>
+                                                            <td class="iniciales">{{ tramite.iniciales }}</td>
+                                                            <td class="cliente_requerido">{{ tramite.cliente_requerido }}</td>
+                                                            <td class="ventanilla_atencion">{{ tramite.ventanilla_atencion.descripcion }}</td>
+                                                            <td class="ventanilla_transferencia_frecuente">
+                                                                {% for vent in tramite.ventanilla_transferencia_frecuente_objs %}
+                                                                    {{ vent.descripcion }}{% if not forloop.last %}, {% endif %}
+                                                                {% endfor %}
+                                                            </td>
+                                                            <td class="grupo_transferencia_frecuente">
+                                                                {% for grupo in tramite.grupo_transferencia_frecuente_list %}
+                                                                    {{ grupo.nombre }}{% if not forloop.last %}, {% endif %}
+                                                                {% endfor %}
+                                                            </td>
+                                                            <td>
+                                                                <!-- Estos data-* deben ser JSON válido si vas a hacer JSON.parse() en JS -->
+                                                                <button class="btn btn-outline-primary edit-btn"
+                                                                    data-id="{{ tramite.id }}"
+                                                                    data-nombre="{{ tramite.nombre }}"
+                                                                    data-iniciales="{{ tramite.iniciales }}"
+                                                                    data-cliente_requerido="{{ tramite.cliente_requerido }}"
+                                                                    data-ventanilla_atencion="{{ tramite.ventanilla_atencion.id }}"
+                                                                    data-ventanilla_transferencia_frecuente="{{ tramite.ventanilla_transferencia_frecuente_ids|safe }}"
+                                                                    data-grupo_transferencia_frecuente="{{ tramite.grupo_transferencia_frecuente_ids|safe }}">
+                                                                    <i class="ri-pencil-line"></i>
+                                                                </button>
+                                                                <button class="btn btn-outline-danger delete-btn" 
+                                                                        data-id="{{ tramite.id }}" 
+                                                                        data-nombre="{{ tramite.nombre }}">
+                                                                    <i class="ri-delete-bin-line"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% else %}
                                                     <tr>
-                                                        <td class="id">{{ ventanilla.id }}</td>
-                                                        <td class="id_ventanilla">{{ ventanilla.id_ventanilla }}</td>
-                                                        <td class="descripcion">{{ ventanilla.descripcion }}</td>
-                                                        <td class="estado">{{ ventanilla.estado|yesno:"Activo,Inactivo" }}</td>
-                                                        <td>
-                                                          <div class="d-flex gap-2">
-                                                            <button type="button" class="btn btn-sm btn-outline-primary edit-btn"
-                                                                  data-bs-toggle="modal" 
-                                                                  data-bs-target="#showModal" 
-                                                                  data-id="{{ ventanilla.id }}"
-                                                                  data-id_ventanilla="{{ ventanilla.id_ventanilla }}"
-                                                                  data-descripcion="{{ ventanilla.descripcion }}"
-                                                                 data-estado="{{ ventanilla.estado }}"
-                                                                  >
-                                                                <i class="ri-pencil-line"></i>
-                                                             </button>
-                                                            <button type="button" class="btn btn-sm btn-outline-danger delete-btn" data-id="{{ ventanilla.id }}" data-descripcion="{{ ventanilla.descripcion }}">
-                                                                <i class="ri-delete-bin-line"></i>
-                                                            </button>
-                                                            </div>
-                                                        </td>
+                                                        <td colspan="8" class="text-center">No hay trámites disponibles.</td>
                                                     </tr>
-                                                 {% endfor %}
-                                            {% else %}
-                                                 <tr>
-                                                      <td colspan="5" class="text-center">No hay ventanillas disponibles.</td>
-                                                 </tr>
-                                             {% endif %}
-                                             </tbody>
-                                         </table>
-                                        </div>
-                                        <div class="d-flex justify-content-end mt-3">
-                                            <div class="pagination-wrap">
-                                                <div class="list-pagination"></div>
-                                            </div>
-                                        </div>
+                                                {% endif %}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div><!--end card-->
                         </div><!--end col-->
                     </div><!--end row-->
 
+                    <!-- Modal -->
                     <div class="modal fade zoomIn" id="showModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered modal-lg">
                             <div class="modal-content border-0">
                                 <div class="modal-header p-3 bg-primary-subtle">
-                                    <h5 class="modal-title" id="exampleModalLabel">Crear Nueva Ventanilla</h5>
+                                    <h5 class="modal-title" id="exampleModalLabel">Crear Nuevo Trámite</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-modal"></button>
                                 </div>
-                                 <form id="ventanillaForm" method="POST" action="/api/ventanillas/">
+                                <form id="tramiteForm" method="POST" action="/api/tramites/">
                                     {% csrf_token %}
                                     <div class="modal-body">
                                         <div class="row g-3">
                                             <div class="col-lg-6">
-                                                <label for="id_ventanilla" class="form-label">ID Ventanilla</label>
-                                                <input type="number" id="id_ventanilla" name="id_ventanilla" class="form-control" placeholder="Identificador de la ventanilla" required />
+                                                <label for="nombre" class="form-label">Nombre</label>
+                                                <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Nombre del Trámite" required />
                                             </div>
                                             <div class="col-lg-6">
-                                                <label for="descripcion" class="form-label">Descripción</label>
-                                                <input type="text" id="descripcion" name="descripcion" class="form-control" placeholder="Descripción de la ventanilla"/>
+                                                <label for="iniciales" class="form-label">Iniciales</label>
+                                                <input type="text" id="iniciales" name="iniciales" class="form-control" placeholder="Iniciales del Trámite" required />
                                             </div>
-                                            <div class="col-lg-12">
-                                              <div class="form-check form-switch">
-                                                 <input class="form-check-input" type="checkbox" role="switch" id="estado" name="estado">
-                                                    <label class="form-check-label" for="estado">Estado</label>
-                                                </div>
+                                          
+                                            <div class="col-lg-6">
+                                                <label for="cliente_requerido" class="form-label">Cliente Requerido</label>
+                                                <select class="form-control" name="cliente_requerido" id="cliente_requerido">
+                                                    <option value="no">Información de cliente no requerida</option>
+                                                    <option value="atender">Información de cliente requerida al ser atendido</option>
+                                                    <option value="turno">Información de cliente (Cédula) requerida al tomar turno</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <label for="ventanilla_atencion" class="form-label">Ventanilla de Atención</label>
+                                                <!-- select normal (no multiple) para ventanilla principal -->
+                                                <select id="ventanilla_atencion" name="ventanilla_atencion" class="form-control">
+                                                    <option value="" selected>Seleccione una opción</option>
+                                                    {% for v in ventanillas %}
+                                                        <option value="{{ v.id }}">
+                                                            {{ v.id_ventanilla }} - {{ v.descripcion }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="col-lg-6">
+                                                <label for="ventanilla_transferencia_frecuente" class="form-label">Ventanillas de Transferencia Frecuente</label>
+                                                <select multiple="multiple" id="ventanilla_transferencia_frecuente"
+                                                        name="ventanilla_transferencia_frecuente" class="form-control">
+                                                    {% for v in ventanillas %}
+                                                        <option value="{{ v.id }}">
+                                                            {{ v.id_ventanilla }} - {{ v.descripcion }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+
+                                            <div class="col-lg-6">
+                                                <label for="grupo_transferencia_frecuente" class="form-label">Grupos de Transferencia Frecuente</label>
+                                                <select multiple="multiple" id="grupo_transferencia_frecuente"
+                                                        name="grupo_transferencia_frecuente" class="form-control">
+                                                    {% for g in grupos %}
+                                                        <option value="{{ g.id }}">
+                                                            {{ g.nombre }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
-                                        <button type="submit" class="btn btn-success">Guardar</button>
+                                        <button type="submit" class="btn btn-success" id="guardar-tramite">Guardar</button>
                                     </div>
                                 </form>
                             </div>
                         </div>
                     </div>
+                    
                 </div>
                 <!-- container-fluid -->
             </div>
             <!-- End Page-content -->
 
-        {% block footer %}
-        {% include "partials/footer.html" %}
-        {% endblock footer %}
+            {% block footer %}
+            {% include "partials/footer.html" %}
+            {% endblock footer %}
         </div>
         <!-- end main content-->
 {% endblock content %}
+
 {% block extra_js %}
     <!-- list.js min js -->
     <script src="{% static 'libs/list.js/dist/list.min.js' %}"></script>
@@ -157,240 +214,339 @@
     <!--list pagination js-->
     <script src="{% static 'libs/list.pagination.js/dist/list.pagination.min.js' %}"></script>
 
-    <!-- titcket init js -->
+    <!-- ticket init js -->
     <script src="{% static 'js/pages/tasks-list.init.js' %}"></script>
 
-        <!-- Sweet Alerts js -->
+    <!-- Sweet Alerts js -->
     <script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>   
-    
+
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        try {
-            // Opciones para List.js
-            const options = {
-                // Especificamos el contenedor
-                listClass: 'list',
-                searchClass: 'search',
-                 valueNames: ['id', 'id_ventanilla', 'descripcion', 'estado'],
-                // Configuración de la paginación
-                page: 10,
-                pagination: [{
-                    name: "pagination",
-                    paginationClass: "list-pagination",
-                    outerWindow: 2
-                }]
-            };
+        // Inicialización de List.js con la configuración para la tabla de trámites
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // Opciones para List.js
+                const options = {
+                    listClass: 'list',
+                    searchClass: 'search',
+                    valueNames: ['id', 'nombre', 'iniciales', 'cliente_requerido', 'ventanilla_atencion'],
+                    page: 10,
+                    pagination: [{
+                        name: "pagination",
+                        paginationClass: "list-pagination",
+                        outerWindow: 2
+                    }]
+                };
 
-           // Crear la instancia de List
-           const ventanillasList = new List('tasksList', options);
+                // Crear la instancia de List
+                const tramitesList = new List('tasksList', options);
 
-             // Manejar el evento de búsqueda con debounce para mejor rendimiento
-            const searchField = document.querySelector('.search');
-            let searchTimeout = null;
-                
-            if (searchField) {
-                searchField.addEventListener('keyup', function() {
-                    if (searchTimeout) {
-                        clearTimeout(searchTimeout);
-                    }
-                        
-                    const searchValue = this.value;
-                    searchTimeout = setTimeout(() => {
-                        try {
-                            ventanillasList.search(searchValue);
-                         } catch (error) {
-                            console.error('Error al realizar la búsqueda:', error);
-                         }
-                     }, 300); // Debounce de 300ms
-                });
-            }
-
-           // Función para el botón de filtros
-           window.SearchData = function() {
+                // Manejo de debounce para búsquedas
                 const searchField = document.querySelector('.search');
+                let searchTimeout = null;
+                
                 if (searchField) {
-                    const searchValue = searchField.value;
-                    try {
-                        ventanillasList.search(searchValue);
-                    } catch (error) {
-                        console.error('Error al aplicar filtros:', error);
-                    }
+                    searchField.addEventListener('keyup', function() {
+                        if (searchTimeout) {
+                            clearTimeout(searchTimeout);
+                        }
+                        const searchValue = this.value;
+                        searchTimeout = setTimeout(() => {
+                            try {
+                                tramitesList.search(searchValue);
+                            } catch (error) {
+                                console.error('Error al realizar la búsqueda:', error);
+                            }
+                        }, 300);
+                    });
                 }
-            };
 
-            // Actualizar la tabla después de cada búsqueda
-            ventanillasList.on('searchComplete', function() {
-                const tbody = document.querySelector('#ventanillasTable tbody');
-                if (!tbody) return;
-
-                if (ventanillasList.matchingItems.length === 0) {
-                    // Remover mensaje anterior si existe
-                    const existingMessage = document.querySelector('.no-result-message');
-                    if (existingMessage) {
-                        existingMessage.remove();
-                   }
-
-                   // Agregar nuevo mensaje
-                   const tr = document.createElement('tr');
-                   tr.className = 'no-result-message';
-                    tr.innerHTML = '<td colspan="5" class="text-center">No se encontraron resultados</td>';
-                   tbody.appendChild(tr);
-                } else {
-                     // Remover mensaje si hay resultados
-                   const noResultMessage = document.querySelector('.no-result-message');
-                   if (noResultMessage) {
-                      noResultMessage.remove();
+                // Botón de filtros
+                window.SearchData = function() {
+                    const searchField = document.querySelector('.search');
+                    if (searchField) {
+                        const searchValue = searchField.value;
+                        try {
+                            tramitesList.search(searchValue);
+                        } catch (error) {
+                            console.error('Error al aplicar filtros:', error);
+                        }
                     }
-                 }
-            });
+                };
+
+                // Mostrar mensaje de "no se encontraron resultados" al filtrar
+                tramitesList.on('searchComplete', function() {
+                    const tbody = document.querySelector('#tramitesTable tbody');
+                    if (!tbody) return;
+
+                    if (tramitesList.matchingItems.length === 0) {
+                        // Remover mensaje anterior si existe
+                        const existingMessage = document.querySelector('.no-result-message');
+                        if (existingMessage) {
+                            existingMessage.remove();
+                        }
+                        // Agregar nuevo mensaje
+                        const tr = document.createElement('tr');
+                        tr.className = 'no-result-message';
+                        tr.innerHTML = '<td colspan="8" class="text-center">No se encontraron resultados</td>';
+                        tbody.appendChild(tr);
+                    } else {
+                        // Remover mensaje si hay resultados
+                        const noResultMessage = document.querySelector('.no-result-message');
+                        if (noResultMessage) {
+                            noResultMessage.remove();
+                        }
+                    }
+                });
 
             } catch (error) {
                 console.error('Error al inicializar List.js:', error);
             }
         });
-        
+
         let formMode = 'create';
-        let currentVentanillaId = null;
+        let currentTramiteId = null;
     
         function resetForm() {
-            document.getElementById('ventanillaForm').reset();
+            document.getElementById('tramiteForm').reset();
             formMode = 'create';
-            currentVentanillaId = null;
-            document.getElementById('exampleModalLabel').textContent = 'Crear Nueva Ventanilla';
+            currentTramiteId = null;
+            document.getElementById('exampleModalLabel').textContent = 'Crear Nuevo Trámite';
         }
 
-       function loadVentanillaData(button) {
-          formMode = 'edit';
-           currentVentanillaId = button.dataset.id;
-          // Update modal title
-           document.getElementById('exampleModalLabel').textContent = 'Editar Ventanilla';
-           // Load ventanilla data into form
-            const fields = ['id_ventanilla', 'descripcion', 'estado'];
-            fields.forEach(field => {
-                const input = document.getElementById(field);
-                if (input) {
-                    input.value = button.dataset[field] || '';
-                }
-            });
-            if(button.dataset.estado == "True"){
-               document.getElementById("estado").checked = true
-            }
-            else {
-                 document.getElementById("estado").checked = false
-            }
-      }
-
-        document.querySelectorAll('.edit-btn').forEach(button => {
-            button.addEventListener('click', () => loadVentanillaData(button));
-        });
-
-        const modal = document.getElementById('showModal');
-        if (modal) {
-           modal.addEventListener('hidden.bs.modal', resetForm);
-         }
-
-        document.getElementById('ventanillaForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-        
-           const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            const formData = new FormData(this);
-             const jsonData = {};
+        // Carga de datos en el modal para edición
+        function loadTramiteData(button) {
+            formMode = 'edit';
+            currentTramiteId = button.dataset.id;
             
-           formData.forEach((value, key) => {
-                if (key !== 'csrfmiddlewaretoken') {
-                    jsonData[key] = value === 'on' ? true : value;
-                }
-            });
+            // Actualizar título del modal
+            document.getElementById('exampleModalLabel').textContent = 'Editar Trámite';
+            
+            // Cargar datos simples en los inputs
+            document.getElementById('nombre').value = button.dataset.nombre;
+            document.getElementById('iniciales').value = button.dataset.iniciales;
+            document.getElementById('cliente_requerido').value = button.dataset.cliente_requerido;
+            document.getElementById('ventanilla_atencion').value = button.dataset.ventanilla_atencion;
 
-            const url = formMode === 'create'
-                ? `${window.location.origin}/api/ventanillas/`
-                : `${window.location.origin}/api/ventanillas/${currentVentanillaId}/`;
-        
-          fetch(url, {
-                method: formMode === 'create' ? 'POST' : 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken,
-                    'Authorization': 'Token ' + localStorage.getItem('auth_token')
-                 },
-              body: JSON.stringify(jsonData)
-           })
-           .then(response => {
-               if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-                return response.json();
-            })
-            .then(data => {
-              Swal.fire({
-                   title: '¡Éxito!',
-                 text: formMode === 'create'
-                      ? 'Ventanilla creada exitosamente.'
-                     : 'Ventanilla actualizada exitosamente.',
-                   icon: 'success',
-                    confirmButtonText: 'OK'
-               }).then(() => {
-                   location.reload();
+            // Cargar datos múltiples (ventanillas, grupos)
+            try {
+                const ventanillasTransferencia = JSON.parse(button.dataset.ventanilla_transferencia_frecuente);
+                const gruposTransferencia = JSON.parse(button.dataset.grupo_transferencia_frecuente);
+                
+                // Select múltiple de ventanillas
+                const ventanillasSelect = document.getElementById('ventanilla_transferencia_frecuente');
+                Array.from(ventanillasSelect.options).forEach(option => option.selected = false);
+                ventanillasTransferencia.forEach(id => {
+                    const opt = ventanillasSelect.querySelector(`option[value="${id}"]`);
+                    if (opt) opt.selected = true;
                 });
-          })
-          .catch(error => {
-            console.error('Error en la solicitud fetch:', error);
-             Swal.fire({
-                 title: 'Error',
-                 text: `Error al ${formMode === 'create' ? 'crear' : 'actualizar'} la ventanilla: ${error.message}`,
-                  icon: 'error',
-                  confirmButtonText: 'OK'
-              });
-           });
-         });
-          
-          
-        document.querySelectorAll('.delete-btn').forEach(button => {
-            button.addEventListener('click', function () {
-                 const ventanillaId = this.dataset.id;
-                 const ventanillaDescripcion = this.dataset.descripcion;
+                
+                // Select múltiple de grupos
+                const gruposSelect = document.getElementById('grupo_transferencia_frecuente');
+                Array.from(gruposSelect.options).forEach(option => option.selected = false);
+                gruposTransferencia.forEach(id => {
+                    const opt = gruposSelect.querySelector(`option[value="${id}"]`);
+                    if (opt) opt.selected = true;
+                });
+            } catch (error) {
+                console.error('Error al parsear JSON:', error);
+            }
 
-                  // Mostrar confirmación antes de eliminar
-                Swal.fire({
-                     title: '¿Estás seguro?',
-                    text: `¿Deseas eliminar la ventanilla "${ventanillaDescripcion}"?`,
-                     icon: 'warning',
-                    showCancelButton: true,
-                      confirmButtonColor: '#d33',
-                     cancelButtonColor: '#3085d6',
-                     confirmButtonText: 'Sí, eliminar',
-                     cancelButtonText: 'Cancelar'
-                 }).then((result) => {
-                      if (result.isConfirmed) {
-                          // Realizar la solicitud de eliminación
-                           const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            // Mostrar modal
+            const modal = new bootstrap.Modal(document.getElementById('showModal'));
+            modal.show();
+        }
+    
+        document.addEventListener('DOMContentLoaded', function() {
+            // Asignar evento a los botones de edición
+            document.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', () => loadTramiteData(button));
+            });
+
+            // Resetear el form cuando se cierra el modal
+            const modal = document.getElementById('showModal');
+            if (modal) {
+                modal.addEventListener('hidden.bs.modal', resetForm);
+            }
+
+            // Manejar envío del formulario
+            document.getElementById('tramiteForm').addEventListener('submit', function (e) {
+                e.preventDefault();
             
-                            fetch(`${window.location.origin}/api/ventanillas/${ventanillaId}/`, {
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const formData = new FormData(this);
+            
+                // Prepara un objeto donde forzosamente los múltiples sean arrays vacíos de inicio
+                const jsonData = {
+                    ventanilla_transferencia_frecuente: [],
+                    grupo_transferencia_frecuente: []
+                };
+            
+                // Recorremos todos los pares del formData
+                for (let [key, value] of formData.entries()) {
+                    if (key === 'csrfmiddlewaretoken') {
+                        continue; // ignorar
+                    }
+            
+                    // Si es uno de los campos múltiples, lo metemos al array
+                    if (key === 'ventanilla_transferencia_frecuente') {
+                        jsonData.ventanilla_transferencia_frecuente.push(value);
+                    }
+                    else if (key === 'grupo_transferencia_frecuente') {
+                        jsonData.grupo_transferencia_frecuente.push(value);
+                    }
+                    // Caso normal: un campo simple
+                    else {
+                        jsonData[key] = value;
+                    }
+                }
+            
+                // Determina si es create o update
+                const url = formMode === 'create'
+                    ? `${window.location.origin}/api/tramites/`
+                    : `${window.location.origin}/api/tramites/${currentTramiteId}/`;
+            
+                const method = formMode === 'create' ? 'POST' : 'PUT';
+            
+                // Hacemos el fetch
+                fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken,
+                        'Authorization': 'Token d07c91f369e145647caec709beac1278761a353d'
+                    },
+                    body: JSON.stringify(jsonData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        // DRF suele devolver el body con los errores en JSON;
+                        // Lo parseamos para ver el detalle
+                        return response.json().then(errData => {
+                            console.error('DRF Validation Errors:', errData);
+                            throw new Error(`HTTP ${response.status} – ${JSON.stringify(errData)}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        text: formMode === 'create'
+                            ? 'Trámite creado exitosamente.'
+                            : 'Trámite actualizado exitosamente.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        location.reload();
+                    });
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud fetch:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: `Error al ${formMode === 'create' ? 'crear' : 'actualizar'} el trámite: ${error.message}`,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            });
+            
+
+
+            // Manejar la eliminación
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const tramiteId = this.dataset.id;
+                    const tramiteNombre = this.dataset.nombre;
+
+                    Swal.fire({
+                        title: '¿Estás seguro?',
+                        text: `¿Deseas eliminar el trámite "${tramiteNombre}"?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                            fetch(`${window.location.origin}/api/tramites/${tramiteId}/`, {
                                 method: 'DELETE',
-                                 headers: {
-                                   'X-CSRFToken': csrftoken,
+                                headers: {
+                                    'X-CSRFToken': csrftoken,
                                     'Authorization': 'Token ' + localStorage.getItem('auth_token')
                                 },
                             })
-                          .then(response => {
-                                // Verifica si la respuesta es 204 No Content
-                               if (response.ok && response.status === 204) {
-                                  return Promise.resolve();
+                            .then(response => {
+                                if (response.ok && response.status === 204) {
+                                    return Promise.resolve();
                                 }
-                               // Si no es 204, intenta procesar el error
-                               return response.json().then(data => {
-                                throw new Error(data.error || 'Ocurrió un error desconocido');
-                               });
+                                return response.json().then(data => {
+                                    throw new Error(data.error || 'Ocurrió un error desconocido');
+                                });
                             })
-                           .then(() => {
-                              Swal.fire('Eliminada', 'La ventanilla ha sido eliminada.', 'success')
-                                  .then(() => location.reload());
+                            .then(() => {
+                                Swal.fire('Eliminada', 'El trámite ha sido eliminado.', 'success')
+                                    .then(() => location.reload());
                             })
                             .catch(error => {
-                             Swal.fire('Error', `No se pudo eliminar la ventanilla: ${error.message}`, 'error');
+                                Swal.fire('Error', `No se pudo eliminar el trámite: ${error.message}`, 'error');
                             });
                         }
-                   });
-             });
-       });
+                    });
+                });
+            });
+        });
+    </script>
 
-</script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Manejo de eliminación de trámites
+            document.querySelectorAll(".delete-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    const tramiteId = this.dataset.id;
+                    const tramiteNombre = this.dataset.nombre;
+        
+                    Swal.fire({
+                        title: "¿Estás seguro?",
+                        text: `¿Deseas eliminar el trámite "${tramiteNombre}"?`,
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#d33",
+                        cancelButtonColor: "#3085d6",
+                        confirmButtonText: "Sí, eliminar",
+                        cancelButtonText: "Cancelar"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+        
+                            fetch(`/api/tramites/${tramiteId}/`, {
+                                method: "DELETE",
+                                headers: {
+                                    "X-CSRFToken": csrftoken
+                                }
+                            })
+                            .then(response => {
+                                if (response.ok) {
+                                    return Promise.resolve();
+                                }
+                                return response.json().then(data => {
+                                    throw new Error(data.error || "Ocurrió un error desconocido");
+                                });
+                            })
+                            .then(() => {
+                                Swal.fire("Eliminado", "El trámite ha sido eliminado.", "success")
+                                    .then(() => location.reload());
+                            })
+                            .catch(error => {
+                                Swal.fire("Error", `No se pudo eliminar el trámite: ${error.message}`, "error");
+                            });
+                        }
+                    });
+                });
+            });
+        });
+    </script>
 {% endblock extra_js %}

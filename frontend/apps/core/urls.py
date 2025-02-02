@@ -1,3 +1,4 @@
+# core/serializers.py
 from django.urls import include, path
 from .views import (
     GrupoViewSet,
@@ -13,7 +14,7 @@ from .views import (
     VentanillaViewSet,
 )
 from rest_framework import routers
-from .views import VentanillaListView
+from .views import VentanillaListView, TramiteListView
 
 
 
@@ -39,7 +40,7 @@ urlpatterns = [
         PasswordResetConfirmView.as_view(),
         name="password_reset_confirm",
     ),
-    # path('core/tramites/', TramiteListView.as_view(), name='tramites-lista')
     path('core/ventanillas/', VentanillaListView.as_view(), name='ventanillas-lista'),
+    path('core/tramites/', TramiteListView.as_view(), name='tramites-lista'),
     path("", include(router.urls)),
 ]
