@@ -17,6 +17,9 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView
+
 
 
 
@@ -178,3 +181,9 @@ class PrioridadViewSet(viewsets.ModelViewSet):
     )
     def destroy(self, request, *args, **kwargs):
          return super().destroy(request, *args, **kwargs)
+
+
+class PrioridadListView(LoginRequiredMixin, ListView):
+    model = Prioridad
+    template_name = "turnos/app-prioridad-list-view.html"  # Ruta del template
+    context_object_name = "prioridades"

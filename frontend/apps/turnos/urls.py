@@ -4,6 +4,7 @@ from .views import (
     FranjaHorariaViewSet,
     HorarioViewSet,
     GenerarHorariosAPIView,
+    PrioridadListView,
     PrioridadViewSet,
     SalaViewSet,
     TurneroViewSet,
@@ -18,8 +19,9 @@ router.register(r"salas-espera", SalaViewSet, basename="sala-espera")
 router.register(r"prioridades", PrioridadViewSet, basename="prioridad")
 
 # Agregar rutas adicionales
-urlpatterns = router.urls + [
+urlpatterns = [
     path(
         "generar-horarios/", GenerarHorariosAPIView.as_view(), name="generar-horarios"
     ),
-]
+    path('turnos/prioridades/', PrioridadListView.as_view(), name='prioridades-list'),
+] + router.urls

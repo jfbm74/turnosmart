@@ -347,192 +347,192 @@
     <!-- script para hacer submit y update al formulario  -->
     <script>        
         // Variables globales
-        let formMode = 'create';
-        let currentInstitucionId = null;
+let formMode = 'create';
+let currentInstitucionId = null;
 
-        // Inicialización de List.js con la configuración para la tabla de instituciones
-        document.addEventListener('DOMContentLoaded', function() {
-            try {
-                // Opciones para List.js
-                const options = {
-                    listClass: 'list',
-                    searchClass: 'search',
-                    valueNames: ['id', 'nombre', 'siglas', 'direccion', 'ubicacion', 'telefono', 'email', 'sitio_web', 'mensaje'],
-                    page: 10,
-                    pagination: [{
-                        name: "pagination",
-                        paginationClass: "list-pagination",
-                        outerWindow: 2
-                    }]
-                };
+// Inicialización de List.js con la configuración para la tabla de instituciones
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        // Opciones para List.js
+        const options = {
+            listClass: 'list',
+            searchClass: 'search',
+            valueNames: ['id', 'nombre', 'siglas', 'direccion', 'ubicacion', 'telefono', 'email', 'sitio_web', 'mensaje'],
+            page: 10,
+            pagination: [{
+                name: "pagination",
+                paginationClass: "list-pagination",
+                outerWindow: 2
+            }]
+        };
 
-                // Crear la instancia de List
-                const institucionesList = new List('tasksList', options);
+        // Crear la instancia de List
+        const institucionesList = new List('tasksList', options);
 
-                // Manejar el evento de búsqueda con debounce
-                const searchField = document.querySelector('.search');
-                let searchTimeout = null;
-                
-                if (searchField) {
-                    searchField.addEventListener('keyup', function() {
-                        if (searchTimeout) {
-                            clearTimeout(searchTimeout);
-                        }
-                        
-                        const searchValue = this.value;
-                        searchTimeout = setTimeout(() => {
-                            try {
-                                institucionesList.search(searchValue);
-                            } catch (error) {
-                                console.error('Error al realizar la búsqueda:', error);
-                            }
-                        }, 300);
-                    });
+        // Manejar el evento de búsqueda con debounce
+        const searchField = document.querySelector('.search');
+        let searchTimeout = null;
+        
+        if (searchField) {
+            searchField.addEventListener('keyup', function() {
+                if (searchTimeout) {
+                    clearTimeout(searchTimeout);
                 }
-
-                // Función para el botón de filtros
-                window.SearchData = function() {
-                    const searchField = document.querySelector('.search');
-                    if (searchField) {
-                        const searchValue = searchField.value;
-                        try {
-                            institucionesList.search(searchValue);
-                        } catch (error) {
-                            console.error('Error al aplicar filtros:', error);
-                        }
-                    }
-                };
-
-                // Actualizar la tabla después de cada búsqueda
-                institucionesList.on('searchComplete', function() {
-                    const tbody = document.querySelector('#institucionesTable tbody');
-                    if (!tbody) return;
-
-                    if (institucionesList.matchingItems.length === 0) {
-                        const existingMessage = document.querySelector('.no-result-message');
-                        if (existingMessage) {
-                            existingMessage.remove();
-                        }
-                        
-                        const tr = document.createElement('tr');
-                        tr.className = 'no-result-message';
-                        tr.innerHTML = '<td colspan="10" class="text-center">No se encontraron resultados</td>';
-                        tbody.appendChild(tr);
-                    } else {
-                        const noResultMessage = document.querySelector('.no-result-message');
-                        if (noResultMessage) {
-                            noResultMessage.remove();
-                        }
-                    }
-                });
-
-            } catch (error) {
-                console.error('Error al inicializar List.js:', error);
-            }
-
-            // Funciones para el manejo del formulario
-            function resetForm() {
-                document.getElementById('institucionForm').reset();
-                formMode = 'create';
-                currentInstitucionId = null;
-                document.getElementById('exampleModalLabel').textContent = 'Crear Nueva Institución';
-            }
-
-            function loadInstitucionData(button) {
-                formMode = 'edit';
-                currentInstitucionId = button.dataset.id;
                 
-                // Actualizar el título del modal
-                document.getElementById('exampleModalLabel').textContent = 'Editar Institución';
-                
-                // Cargar los datos en el formulario
-                const fields = ['nombre', 'siglas', 'direccion', 'ubicacion', 'telefono', 'email', 'sitio_web', 'mensaje'];
-                fields.forEach(field => {
-                    const input = document.getElementById(field);
-                    if (input) {
-                        input.value = button.dataset[field] || '';
+                const searchValue = this.value;
+                searchTimeout = setTimeout(() => {
+                    try {
+                        institucionesList.search(searchValue);
+                    } catch (error) {
+                        console.error('Error al realizar la búsqueda:', error);
                     }
-                });
-            }
-
-            // Event listeners para edición
-                document.querySelectorAll('.edit-btn').forEach(button => {
-                    button.addEventListener('click', () => loadInstitucionData(button));
-                });
-
-                // Reset form when modal is closed
-                const modal = document.getElementById('showModal');
-                if (modal) {
-                    modal.addEventListener('hidden.bs.modal', resetForm);
-                }
-
-                // Submit handler del formulario
-                const form = document.getElementById('institucionForm');
-                if (form) {
-                    form.addEventListener('submit', function(e) {
-                        e.preventDefault();
-
-                        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                        if (!csrftoken) {
-                            console.error('No se encontró el token CSRF');
-                            return;
-                        }
-
-                        const formData = new FormData(this);
-                        const jsonData = {};
-                        formData.forEach((value, key) => {
-                            if (key !== 'csrfmiddlewaretoken') {
-                                jsonData[key] = value;
-                            }
-                        });
-
-                        const authToken = 'd07c91f369e145647caec709beac1278761a353d';
-                        const url = formMode === 'create' 
-                            ? `${window.location.origin}/api/instituciones/`
-                            : `${window.location.origin}/api/instituciones/${currentInstitucionId}/`;
-                        
-                        fetch(url, {
-                            method: formMode === 'create' ? 'POST' : 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRFToken': csrftoken,
-                                'Authorization': 'Token ' + authToken,
-                            },
-                            body: JSON.stringify(jsonData),
-                        })
-                        .then(response => {
-                            if (!response.ok) throw new Error(`Error: ${response.status}`);
-                            return response.json();
-                        })
-                        .then(data => {
-                            console.log('Éxito:', data);
-                            Swal.fire({
-                                title: '¡Éxito!',
-                                text: formMode === 'create' 
-                                    ? 'Institución creada exitosamente.'
-                                    : 'Institución actualizada exitosamente.',
-                                icon: 'success',
-                                confirmButtonText: 'OK',
-                            }).then(() => {
-                                location.reload();
-                            });
-                        })
-                        .catch(error => {
-                            console.error('Error en la solicitud fetch:', error);
-                            Swal.fire({
-                                title: 'Error',
-                                text: `Error al ${formMode === 'create' ? 'crear' : 'actualizar'} la institución: ${error.message}`,
-                                icon: 'error',
-                                confirmButtonText: 'OK',
-                            });
-                        });
-                    });
-                }
+                }, 300);
             });
+        }
+
+        // Función para el botón de filtros
+        window.SearchData = function() {
+            const searchField = document.querySelector('.search');
+            if (searchField) {
+                const searchValue = searchField.value;
+                try {
+                    institucionesList.search(searchValue);
+                } catch (error) {
+                    console.error('Error al aplicar filtros:', error);
+                }
+            }
+        };
+
+        // Actualizar la tabla después de cada búsqueda
+        institucionesList.on('searchComplete', function() {
+            const tbody = document.querySelector('#institucionesTable tbody');
+            if (!tbody) return;
+
+            if (institucionesList.matchingItems.length === 0) {
+                const existingMessage = document.querySelector('.no-result-message');
+                if (existingMessage) {
+                    existingMessage.remove();
+                }
+                
+                const tr = document.createElement('tr');
+                tr.className = 'no-result-message';
+                tr.innerHTML = '<td colspan="10" class="text-center">No se encontraron resultados</td>';
+                tbody.appendChild(tr);
+            } else {
+                const noResultMessage = document.querySelector('.no-result-message');
+                if (noResultMessage) {
+                    noResultMessage.remove();
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error al inicializar List.js:', error);
+    }
+
+    // Funciones para el manejo del formulario
+    function resetForm() {
+        document.getElementById('institucionForm').reset();
+        formMode = 'create';
+        currentInstitucionId = null;
+        document.getElementById('exampleModalLabel').textContent = 'Crear Nueva Institución';
+    }
+
+    function loadInstitucionData(button) {
+        formMode = 'edit';
+        currentInstitucionId = button.dataset.id;
+        
+        // Actualizar el título del modal
+        document.getElementById('exampleModalLabel').textContent = 'Editar Institución';
+        
+        // Cargar los datos en el formulario
+        const fields = ['nombre', 'siglas', 'direccion', 'ubicacion', 'telefono', 'email', 'sitio_web', 'mensaje'];
+        fields.forEach(field => {
+            const input = document.getElementById(field);
+            if (input) {
+                input.value = button.dataset[field] || '';
+            }
+        });
+    }
+
+    // Event listeners para edición
+        document.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', () => loadInstitucionData(button));
+        });
+
+        // Reset form when modal is closed
+        const modal = document.getElementById('showModal');
+        if (modal) {
+            modal.addEventListener('hidden.bs.modal', resetForm);
+        }
+
+        // Submit handler del formulario
+        const form = document.getElementById('institucionForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                if (!csrftoken) {
+                    console.error('No se encontró el token CSRF');
+                    return;
+                }
+
+                const formData = new FormData(this);
+                const jsonData = {};
+                formData.forEach((value, key) => {
+                    if (key !== 'csrfmiddlewaretoken') {
+                        jsonData[key] = value;
+                    }
+                });
+
+                const authToken = 'd07c91f369e145647caec709beac1278761a353d';
+                const url = formMode === 'create' 
+                    ? `${window.location.origin}/api/instituciones/`
+                    : `${window.location.origin}/api/instituciones/${currentInstitucionId}/`;
+                
+                fetch(url, {
+                    method: formMode === 'create' ? 'POST' : 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken,
+                        'Authorization': 'Token ' + authToken,
+                    },
+                    body: JSON.stringify(jsonData),
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error(`Error: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Éxito:', data);
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        text: formMode === 'create' 
+                            ? 'Institución creada exitosamente.'
+                            : 'Institución actualizada exitosamente.',
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                    }).then(() => {
+                        location.reload();
+                    });
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud fetch:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: `Error al ${formMode === 'create' ? 'crear' : 'actualizar'} la institución: ${error.message}`,
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                    });
+                });
+            });
+        }
+    });
     </script>
 
 
-    <!-- script para hacer eliminar  -->
+    <!-- script para hacer submit y update al formulario  -->
     <script>
         document.querySelectorAll('.delete-btn').forEach(button => {
             button.addEventListener('click', function () {
