@@ -62,9 +62,6 @@ class Perfil(models.Model):
         return self.nombre
 
 
-from django.db import models
-
-
 class Opcion(models.Model):
     """
     Modelo para definir las opciones del menú lateral y su configuración.

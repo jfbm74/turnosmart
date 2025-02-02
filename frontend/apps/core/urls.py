@@ -13,6 +13,8 @@ from .views import (
     VentanillaViewSet,
 )
 from rest_framework import routers
+from .views import VentanillaListView
+
 
 
 router = routers.DefaultRouter()
@@ -37,5 +39,7 @@ urlpatterns = [
         PasswordResetConfirmView.as_view(),
         name="password_reset_confirm",
     ),
+    # path('core/tramites/', TramiteListView.as_view(), name='tramites-lista')
+    path('core/ventanillas/', VentanillaListView.as_view(), name='ventanillas-lista'),
     path("", include(router.urls)),
 ]

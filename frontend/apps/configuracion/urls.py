@@ -43,5 +43,5 @@ urlpatterns = [
     path('configuracion/tickets/', TicketListView.as_view(), name='tickets-lista'),
     path('configuracion/tickets/preview/<int:pk>/', TicketPreviewView.as_view(), name='ticket-preview'),
     path('ticket-preview/<int:pk>/', TicketPreviewView.as_view(), name='ticket-preview'),
-    path('configuracion/sistemas/', SistemaListView.as_view(), name='sistemas-lista'), #add this url
+    path('configuracion/sistemas/', SistemaListView.as_view(), name='sistemas-lista'), 
 ] + router.urls

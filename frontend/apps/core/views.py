@@ -29,6 +29,9 @@ from .serializers import (
     VentanillaSerializer,
 )
 from rest_framework.viewsets import ModelViewSet
+from django.views.generic import ListView
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 
 User = get_user_model()
@@ -223,6 +226,71 @@ class GrupoViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
+
+
+class TramiteViewSet(viewsets.ModelViewSet):
+    """
+    API para gestionar los trámites.
+    """
+    queryset = Tramite.objects.all()
+    serializer_class = TramiteSerializer
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(operation_description="Listar todos los tramites")
+    def list(self, request, *args, **kwargs):
+       return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Crea un nuevo tramite",
+            request_body=TramiteSerializer,
+        responses={status.HTTP_201_CREATED: TramiteSerializer(),status.HTTP_400_BAD_REQUEST: "Errores de validación"}
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+            responses={status.HTTP_200_OK: TramiteSerializer(),
+            status.HTTP_404_NOT_FOUND: "Tramite not found"}
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+         request_body=TramiteSerializer,
+          responses={
+                status.HTTP_200_OK: TramiteSerializer(),
+                status.HTTP_400_BAD_REQUEST: "Errores de validación",
+                status.HTTP_404_NOT_FOUND: "Tramite not found"
+            },
+        operation_description="Actualiza un tramite existente"
+    )
+    def update(self, request, *args, **kwargs):
+       return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        responses={
+          status.HTTP_204_NO_CONTENT: "Trámite eliminado",
+           status.HTTP_404_NOT_FOUND: "Tramite no encontrado"
+       },
+        operation_description="Eliminar un trámite existente"
+     )
+    def destroy(self, request, *args, **kwargs):
+          return super().destroy(request, *args, **kwargs)
+
+
+class TramiteListView(LoginRequiredMixin, ListView):
+    model = Tramite
+    template_name = "core/app-tramite-list-view.html"
+    context_object_name = "tramites"  # Nombre para acceder a los tramites en el template
+
+
+
+""" class VentanillaViewSet(ModelViewSet):
+    queryset = Ventanilla.objects.all()
+    serializer_class = VentanillaSerializer
+    permission_classes = [IsAuthenticated]
+ """
+
 class VentanillaViewSet(ModelViewSet):
     """
     API para gestionar ventanillas individuales.
@@ -232,12 +300,45 @@ class VentanillaViewSet(ModelViewSet):
     serializer_class = VentanillaSerializer
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(operation_description="Listar todas las ventanillas")
+    def list(self, request, *args, **kwargs):
+       return super().list(request, *args, **kwargs)
 
-class TramiteViewSet(viewsets.ModelViewSet):
-    """
-    API para gestionar los trámites.
-    """
+    @swagger_auto_schema(
+        request_body=VentanillaSerializer,
+            responses={status.HTTP_201_CREATED: VentanillaSerializer()},
+            operation_description="Crear una nueva ventanilla"
+    )
+    def create(self, request, *args, **kwargs):
+         return super().create(request, *args, **kwargs)
 
-    queryset = Tramite.objects.all()
-    serializer_class = TramiteSerializer
-    permission_classes = [IsAuthenticated]
+    @swagger_auto_schema(
+      responses={status.HTTP_200_OK: VentanillaSerializer()},
+       operation_description="Obtener los datos de la ventanilla por su id"
+    )
+    def retrieve(self, request, *args, **kwargs):
+         return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+      request_body=VentanillaSerializer,
+          responses={status.HTTP_200_OK: VentanillaSerializer(),
+         status.HTTP_404_NOT_FOUND: "Ventanilla not found"},
+       operation_description="Actualizar la informacion de la ventanilla por id"
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+          responses={
+                status.HTTP_204_NO_CONTENT: "Ventanilla eliminada",
+                status.HTTP_404_NOT_FOUND: "Ventanilla not found"
+            },
+       operation_description="Eliminar ventanilla por id"
+    )
+    def destroy(self, request, *args, **kwargs):
+         return super().destroy(request, *args, **kwargs)
+
+class VentanillaListView(LoginRequiredMixin, ListView):
+    model = Ventanilla
+    template_name = "core/app-ventanilla-list-view.html"
+    context_object_name = "ventanillas"
