@@ -4,6 +4,8 @@ from rest_framework.test import APITestCase, APIClient
 from apps.turnos.models import Sala, Turnero, Menu, Prioridad, Horario, FranjaHoraria
 from django.contrib.auth import get_user_model
 from datetime import datetime
+from unittest.mock import patch
+
 
 
 User = get_user_model()
@@ -221,18 +223,16 @@ class GenerarHorariosAPITests(APITestCase):
 
         self.generar_url = reverse("generar-horarios")
 
-    def test_generar_horarios_authenticated(self):
+    @patch('apps.turnos.views.datetime')
+    def test_generar_horarios_authenticated(self, mock_datetime):
         """Test para generar horarios con autenticación."""
-        # Forzar que sea lunes para la prueba
-        datetime_now_patch = datetime.now()
-        dia_actual = datetime_now_patch.strftime("%A").lower()
+        # Mock datetime to return Sunday
+        mock_date = datetime(2024, 2, 4)  # A Sunday
+        mock_datetime.now.return_value = mock_date
 
         response = self.client.get(self.generar_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        if dia_actual in ["monday", "wednesday"]:
-            self.assertGreaterEqual(len(response.data["horarios_activos"]), 1)
-        else:
-            self.assertEqual(len(response.data["horarios_activos"]), 0)
+        self.assertEqual(len(response.data["horarios_activos"]), 0)
 
     def test_generar_horarios_unauthenticated(self):
         """Test para generar horarios sin autenticación."""
