@@ -4,6 +4,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import StaleElementReferenceException
+import time
+
 
 class TramiteTests(unittest.TestCase):
     
@@ -25,6 +28,20 @@ class TramiteTests(unittest.TestCase):
         WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "ri-logout-box-line"))
         )
+    
+    def safe_click(self, by, value, timeout=10, retries=3):
+        """Método seguro para hacer clic evitando StaleElementReferenceException"""
+        for _ in range(retries):
+            try:
+                element = WebDriverWait(self.driver, timeout).until(
+                    EC.element_to_be_clickable((by, value))
+                )
+                element.click()
+                return
+            except StaleElementReferenceException:
+                print(f"Elemento {value} obsoleto, reintentando...")
+        raise Exception(f"No se pudo hacer clic en {value} después de {retries} intentos.")
+
         
     def test_crear_tramite(self):
         """Prueba para crear un nuevo trámite"""
@@ -109,33 +126,35 @@ class TramiteTests(unittest.TestCase):
         # Verificar que el cambio se reflejó
         WebDriverWait(self.driver, 10).until(
             EC.text_to_be_present_in_element((By.XPATH, "//td[contains(text(), 'Trámite Modificado')]"), "Trámite Modificado")
-        )
+        )    
+
     
+
     def test_eliminar_tramite(self):
         """Prueba para eliminar un trámite"""
         self.login()
         self.driver.get(self.base_url + "/api/core/tramites/")
         
         # Click en el botón de eliminación
-        delete_button = WebDriverWait(self.driver, 10).until(
-            EC.element_to_be_clickable((By.CLASS_NAME, "delete-btn"))
-        )
-        delete_button.click()
+        #self.safe_click(self.driver, By.CLASS_NAME, "delete-btn")
+        self.safe_click(By.CLASS_NAME, "delete-btn")
+
+
+        # Esperar confirmación de SweetAlert2 y hacer clic en el botón de confirmación
+        self.safe_click(By.CLASS_NAME, "swal2-confirm")
+
+        # Esperar 2 segundos para estabilizar el DOM antes del siguiente clic
+        time.sleep(2)
+
+        # Hacer clic en el botón OK del mensaje de éxito de SweetAlert2
+        self.safe_click(By.CLASS_NAME, "swal2-confirm")
+
         
-        # Esperar confirmación de SweetAlert2
-        WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "swal2-confirm"))
-        ).click()
-        
-        # Esperar y hacer clic en el botón OK del mensaje de éxito
-        WebDriverWait(self.driver, 10).until(
-            EC.element_to_be_clickable((By.CLASS_NAME, "swal2-confirm"))
-        ).click()
-        
-        # Verificar que el trámite desaparece
+        # Verificar que el trámite desaparece después de la eliminación
         WebDriverWait(self.driver, 10).until_not(
             EC.presence_of_element_located((By.XPATH, "//td[contains(text(), 'Trámite Modificado')]"))
         )
+
 
     def tearDown(self):
         self.driver.quit()

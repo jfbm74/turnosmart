@@ -1,0 +1,748 @@
+{% extends "partials/base.html" %}
+{% load static %}
+
+{% block title %}Lista de Horarios{% endblock title %}
+
+{% block extra_css %}
+    <!-- Sweet Alert css-->
+    <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            {% block pagetitle %}
+                {% include "partials/page-title.html" with pagetitle="Configuración" title="Horarios" %}
+            {% endblock pagetitle %}
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card" id="tasksList">
+                        <div class="card-header border-0">
+                            <div class="d-flex align-items-center">
+                                <h5 class="card-title mb-0 flex-grow-1">Gestión de Horarios y Franjas Horarias</h5>
+                                <div class="flex-shrink-0">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button id="addButton" class="btn btn-soft-primary add-btn" data-bs-toggle="modal" data-bs-target="#scheduleModal">
+                                            <i class="ri-add-line align-bottom me-1"></i><span id="addButtonText">Agregar Horario</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body border border-dashed border-end-0 border-start-0">
+                            <form>
+                                <div class="row g-3">
+                                    <div class="col-xxl-5 col-sm-12">
+                                        <div class="search-box">
+                                            <input type="text" class="form-control search bg-light border-light" placeholder="Búsqueda">
+                                            <i class="ri-search-line search-icon"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-xxl-3 col-sm-4">
+                                        <div>
+                                            <select class="form-control" data-choices>
+                                                <option value="">Todas las Franjas</option>
+                                                {% for franja in franjas_horarias %}
+                                                    <option value="{{ franja.id }}">{{ franja.hora_inicio }} - {{ franja.hora_fin }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-xxl-1 col-sm-4">
+                                        <button type="button" class="btn btn-primary w-100" onclick="SearchData();">
+                                            <i class="ri-equalizer-fill me-1 align-bottom"></i>Filtros
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="card-body">
+                            <ul class="nav nav-tabs mb-3" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-bs-toggle="tab" href="#schedules" role="tab">
+                                        Horarios
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-bs-toggle="tab" href="#timeslots" role="tab">
+                                        Franjas Horarias
+                                    </a>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="schedules" role="tabpanel">
+                                    <div class="table-responsive table-card mb-4">
+                                        <table class="table align-middle table-nowrap mb-0">
+                                            <thead class="table-light text-muted">
+                                                <tr>
+                                                    <th>Franja Horaria</th>
+                                                    <th>Lunes</th>
+                                                    <th>Martes</th>
+                                                    <th>Miércoles</th>
+                                                    <th>Jueves</th>
+                                                    <th>Viernes</th>
+                                                    <th>Sábado</th>
+                                                    <th>Domingo</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="list">
+                                                {% for schedule in schedules %}
+                                                <!-- Dentro del bucle de schedules -->
+                                                <tr>
+                                                    <td>{{ schedule.franja_horaria.hora_inicio|time:"g:i a" }} - {{ schedule.franja_horaria.hora_fin|time:"g:i a" }} {% if not schedule.franja_horaria.estado %}<span class="badge bg-danger">Franja Inactiva</span>{% endif %}</td>
+                                                    <td>{% if schedule.estado_lunes %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-danger">Inactivo</span>{% endif %}</td>
+                                                    <td>{% if schedule.estado_martes %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-danger">Inactivo</span>{% endif %}</td>
+                                                    <td>{% if schedule.estado_miercoles %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-danger">Inactivo</span>{% endif %}</td>
+                                                    <td>{% if schedule.estado_jueves %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-danger">Inactivo</span>{% endif %}</td>
+                                                    <td>{% if schedule.estado_viernes %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-danger">Inactivo</span>{% endif %}</td>
+                                                    <td>{% if schedule.estado_sabado %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-danger">Inactivo</span>{% endif %}</td>
+                                                    <td>{% if schedule.estado_domingo %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-danger">Inactivo</span>{% endif %}</td>
+                                                    <td>
+                                                        <div class="d-flex gap-2">
+                                                            <button class="btn btn-sm btn-soft-primary edit-btn" 
+                                                                    data-schedule-id="{{ schedule.id }}">
+                                                                <i class="ri-pencil-line"></i>
+                                                           <!-- Para horarios -->
+                                                            <button class="btn btn-sm btn-soft-danger delete-btn" 
+                                                            data-schedule-id="{{ schedule.id }}">
+                                                            <i class="ri-delete-bin-line"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>   
+                                                {% empty %}
+                                                <tr>
+                                                    <td colspan="9" class="text-center">No hay horarios disponibles.</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="d-flex justify-content-end mt-3">
+                                        <div class="pagination-wrap">
+                                            <div class="list-pagination"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane" id="timeslots" role="tabpanel">
+                                    <div class="table-responsive table-card mb-4">
+                                        <table class="table align-middle table-nowrap mb-0">
+                                            <thead class="table-light text-muted">
+                                                <tr>
+                                                    <th>Hora Inicio</th>
+                                                    <th>Hora Fin</th>
+                                                    <th>Estado</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for franja in franjas_horarias %}
+                                                <tr>
+                                                    <td>{{ franja.hora_inicio }}</td>
+                                                    <td>{{ franja.hora_fin }}</td>
+                                                    <td>
+                                                        {% if franja.estado %}
+                                                        <span class="badge bg-success">Activa</span>
+                                                        {% else %}
+                                                        <span class="badge bg-danger">Inactiva</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex gap-2">
+                                                            <button class="btn btn-sm btn-soft-primary edit-btn"
+                                                                    data-id="{{ franja.id }}"
+                                                                    data-hora-inicio="{{ franja.hora_inicio|time:'H:i' }}"
+                                                                    data-hora-fin="{{ franja.hora_fin|time:'H:i' }}"
+                                                                    data-estado="{{ franja.estado|yesno:'True,False' }}">
+                                                                <i class="ri-pencil-line"></i>
+                                                            </button>
+
+                                                            <!-- Para franjas horarias -->
+                                                            <button class="btn btn-sm btn-soft-danger delete-btn" 
+                                                            data-franja-id="{{ franja.id }}">
+                                                            <i class="ri-delete-bin-line"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% empty %}
+                                                <tr>
+                                                    <td colspan="4" class="text-center">No hay franjas horarias registradas.</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal para Agregar/Editar Horario -->
+    <div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-header p-3 bg-primary-subtle">
+                    <h5 class="modal-title" id="scheduleModalLabel">Crear Nuevo Horario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="horarioForm" method="POST">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-lg-12">
+                                <label for="franja_horaria" class="form-label">Franja Horaria</label>
+                                <select class="form-select" id="franja_horaria" name="franja_horaria" required>
+                                    <option value="">Selecciona una franja horaria</option>
+                                    {% for franja in franjas_horarias %}
+                                        <option value="{{ franja.id }}">{{ franja.hora_inicio|time:"g:i a" }} - {{ franja.hora_fin|time:"g:i a" }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-lg-12">
+                                <label class="form-label">Días de la Semana</label>
+                                <div class="row g-3">
+                                    <div class="col-sm-6">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="lunes" name="lunes">
+                                            <label class="form-check-label" for="lunes">Lunes</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="martes" name="martes">
+                                            <label class="form-check-label" for="martes">Martes</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="miercoles" name="miercoles">
+                                            <label class="form-check-label" for="miercoles">Miércoles</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="jueves" name="jueves">
+                                            <label class="form-check-label" for="jueves">Jueves</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="viernes" name="viernes">
+                                            <label class="form-check-label" for="viernes">Viernes</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="sabado" name="sabado">
+                                            <label class="form-check-label" for="sabado">Sábado</label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="domingo" name="domingo">
+                                            <label class="form-check-label" for="domingo">Domingo</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Agregar/Editar Franja Horaria -->
+    <div class="modal fade" id="timeslotModal" tabindex="-1" aria-labelledby="timeslotModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-header p-3 bg-primary-subtle">
+                    <h5 class="modal-title" id="timeslotModalLabel">Crear Nueva Franja Horaria</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="franjaHorariaForm" method="POST">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-lg-6">
+                                <label for="hora_inicio" class="form-label">Hora de Inicio</label>
+                                <input type="time" class="form-control" id="hora_inicio" name="hora_inicio" required>
+                            </div>
+                            <div class="col-lg-6">
+                                <label for="hora_fin" class="form-label">Hora de Fin</label>
+                                <input type="time" class="form-control" id="hora_fin" name="hora_fin" required>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="estado" name="estado" checked>
+                                    <label class="form-check-label" for="estado">Estado Activo</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% block footer %}
+    {% include "partials/footer.html" %}
+    {% endblock footer %}
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+    <!-- list.js min js -->
+    <script src="{% static 'libs/list.js/dist/list.min.js' %}"></script>
+    <!-- list pagination js -->
+    <script src="{% static 'libs/list.pagination.js/dist/list.pagination.min.js' %}"></script>
+    <!-- Sweet Alerts js -->
+    <script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Variables globales
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            let editMode = false;
+            let currentScheduleId = null;
+            let currentFranjaId = null;
+        
+            // Elementos del DOM - Modal Horarios
+            const scheduleModal = document.getElementById('scheduleModal');
+            const scheduleModalLabel = document.getElementById('scheduleModalLabel');
+            const horarioForm = document.getElementById('horarioForm');
+        
+            // Elementos del DOM - Modal Franjas Horarias
+            const timeslotModal = document.getElementById('timeslotModal');
+            const timeslotModalLabel = document.getElementById('timeslotModalLabel');
+            const franjaHorariaForm = document.getElementById('franjaHorariaForm');
+        
+            // Inicializar Bootstrap modals
+            const bsScheduleModal = new bootstrap.Modal(scheduleModal);
+            const bsTimeslotModal = new bootstrap.Modal(timeslotModal);
+        
+            // Verificación inicial
+            console.log('Script initialized');
+            console.log('Bootstrap available:', typeof bootstrap !== 'undefined');
+        
+            // Verificar elementos necesarios
+            if (!scheduleModal || !scheduleModalLabel || !horarioForm) {
+                console.error("Error: No se encontraron los elementos del modal de horarios.");
+                return;
+            }
+            if (!timeslotModal || !timeslotModalLabel || !franjaHorariaForm) {
+                console.error("Error: No se encontraron los elementos del modal de franjas horarias.");
+                return;
+            }
+        
+            // Funciones Auxiliares
+            function getActiveTab() {
+                const activeTabContent = document.querySelector('.tab-content .tab-pane.active');
+                return activeTabContent ? activeTabContent.id : '';
+            }
+        
+            function updateButtonText(tabId) {
+                const addButton = document.getElementById('addButton');
+                const addButtonText = document.getElementById('addButtonText');
+        
+                if (!addButton || !addButtonText) return;
+        
+                if (tabId === 'schedules') {
+                    addButtonText.textContent = 'Agregar Horario';
+                    addButton.setAttribute('data-bs-target', '#scheduleModal');
+                } else if (tabId === 'timeslots') {
+                    addButtonText.textContent = 'Agregar Franja Horaria';
+                    addButton.setAttribute('data-bs-target', '#timeslotModal');
+                }
+            }
+        
+            // Event Listeners para las pestañas
+            document.querySelectorAll('a[data-bs-toggle="tab"]').forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function(event) {
+                    const targetId = event.target.getAttribute('href').replace('#', '');
+                    updateButtonText(targetId);
+                });
+            });
+        
+            // Event Listeners para Modal de Horarios
+            // Modificar esta parte en el event listener del botón editar
+            document.querySelectorAll('#schedules .edit-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Edit button clicked in schedules tab');
+
+                    currentScheduleId = this.getAttribute('data-schedule-id');
+                    console.log('Schedule ID:', currentScheduleId);
+
+                    // Obtener el horario a editar (la fila actual)
+                    const row = this.closest('tr');
+                    
+                    // Obtener solo el texto de la franja horaria (primera parte antes del span)
+                    const franjaCell = row.cells[0];
+                    const franjaText = franjaCell.childNodes[0].textContent.trim();
+                    console.log('Franja text:', franjaText); // Para debug
+                    
+                    const estados = {
+                        lunes: row.cells[1].querySelector('.badge').classList.contains('bg-success'),
+                        martes: row.cells[2].querySelector('.badge').classList.contains('bg-success'),
+                        miercoles: row.cells[3].querySelector('.badge').classList.contains('bg-success'),
+                        jueves: row.cells[4].querySelector('.badge').classList.contains('bg-success'),
+                        viernes: row.cells[5].querySelector('.badge').classList.contains('bg-success'),
+                        sabado: row.cells[6].querySelector('.badge').classList.contains('bg-success'),
+                        domingo: row.cells[7].querySelector('.badge').classList.contains('bg-success')
+                    };
+
+                    // Actualizar el título del modal
+                    scheduleModalLabel.textContent = 'Editar Horario';
+
+                    // Encontrar y seleccionar la franja horaria correcta en el select
+                    const franjaSelect = document.getElementById('franja_horaria');
+                    console.log('Franja actual:', franjaText);
+                    Array.from(franjaSelect.options).forEach(option => {
+                        console.log('Comparando con:', option.text.trim());
+                        if (option.text.trim() === franjaText.split('Franja Inactiva')[0].trim()) {
+                            console.log('¡Coincidencia encontrada!');
+                            option.selected = true;
+                        }
+                    });
+
+                    // Para debug
+                    console.log('Franja actual:', franjaText);
+                    console.log('Opciones disponibles:', Array.from(franjaSelect.options).map(opt => opt.text.trim()));
+
+                    // Establecer los estados de los checkboxes
+                    Object.keys(estados).forEach(dia => {
+                        const checkbox = document.getElementById(dia);
+                        if (checkbox) {
+                            checkbox.checked = estados[dia];
+                        }
+                    });
+
+                    // Mostrar el modal
+                    bsScheduleModal.show();
+                });
+            });
+        
+            if (horarioForm) {
+                horarioForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('Schedule form submitted');
+            
+                    const formData = {
+                        franja_horaria: document.getElementById('franja_horaria').value,
+                        lunes: document.getElementById('lunes').checked,
+                        martes: document.getElementById('martes').checked,
+                        miercoles: document.getElementById('miercoles').checked,
+                        jueves: document.getElementById('jueves').checked,
+                        viernes: document.getElementById('viernes').checked,
+                        sabado: document.getElementById('sabado').checked,
+                        domingo: document.getElementById('domingo').checked
+                    };
+            
+                    let url = '/api/horarios/';
+                    let method = 'POST';
+            
+                    if (currentScheduleId) {
+                        url = `/api/horarios/${currentScheduleId}/`;
+                        method = 'PUT';
+                    }
+            
+                    fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken,
+                            'Authorization': 'Token d07c91f369e145647caec709beac1278761a353d'  // Token agregado
+                        },
+                        body: JSON.stringify(formData)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        bsScheduleModal.hide();
+                        Swal.fire({
+                            title: '¡Éxito!',
+                            text: currentScheduleId ? 'Horario actualizado exitosamente.' : 'Horario creado exitosamente.',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Hubo un error al procesar la solicitud.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    });
+                });
+            }
+        
+            // Event Listeners para Modal de Franjas Horarias
+            document.querySelectorAll('#timeslots .edit-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Edit button clicked in timeslots tab');
+        
+                    const buttonData = {
+                        id: this.getAttribute('data-id'),
+                        horaInicio: this.getAttribute('data-hora-inicio'),
+                        horaFin: this.getAttribute('data-hora-fin'),
+                        estado: this.getAttribute('data-estado')
+                    };
+                    console.log('Button data:', buttonData);
+        
+                    editMode = true;
+                    currentFranjaId = buttonData.id;
+        
+                    if (timeslotModalLabel) {
+                        timeslotModalLabel.textContent = 'Editar Franja Horaria';
+                    }
+        
+                    const horaInicioField = document.getElementById('hora_inicio');
+                    const horaFinField = document.getElementById('hora_fin');
+                    const estadoField = document.getElementById('estado');
+        
+                    if (horaInicioField && horaFinField && estadoField) {
+                        horaInicioField.value = buttonData.horaInicio;
+                        horaFinField.value = buttonData.horaFin;
+                        estadoField.checked = buttonData.estado === 'True';
+                    }
+        
+                    bsTimeslotModal.show();
+                });
+            });
+        
+            // Event Listener para Botón Agregar
+            document.getElementById('addButton').addEventListener('click', function(e) {
+                const activeTab = getActiveTab();
+                if (activeTab === 'timeslots') {
+                    e.preventDefault();
+                    editMode = false;
+                    currentFranjaId = null;
+                    
+                    if (timeslotModalLabel) {
+                        timeslotModalLabel.textContent = 'Crear Nueva Franja Horaria';
+                    }
+                    
+                    if (franjaHorariaForm) {
+                        franjaHorariaForm.reset();
+                    }
+                    
+                    bsTimeslotModal.show();
+                }
+            });
+        
+            // Event Listeners para Modal de Franjas Horarias
+            if (franjaHorariaForm) {
+                franjaHorariaForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('Form submitted');
+        
+                    const formData = {
+                        hora_inicio: document.getElementById('hora_inicio').value,
+                        hora_fin: document.getElementById('hora_fin').value,
+                        estado: document.getElementById('estado').checked
+                    };
+        
+                    let url = '/api/franjas-horarias/';
+                    let method = 'POST';
+        
+                    if (editMode && currentFranjaId) {
+                        url = `/api/franjas-horarias/${currentFranjaId}/`;
+                        method = 'PUT';
+                    }
+        
+                    fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken,
+                            'Authorization': 'Token d07c91f369e145647caec709beac1278761a353d'  // Token agregado
+                        },
+                        body: JSON.stringify(formData)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        bsTimeslotModal.hide();
+                        Swal.fire({
+                            title: '¡Éxito!',
+                            text: editMode ? 'Franja horaria actualizada exitosamente.' : 'Franja horaria creada exitosamente.',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Hubo un error al procesar la solicitud.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    });
+                });
+            }
+        
+            // Event Listeners para Reset de Modales
+            if (scheduleModal) {
+                scheduleModal.addEventListener('hidden.bs.modal', function() {
+                    currentScheduleId = null;
+                    horarioForm.reset();
+                });
+            }
+        
+            if (timeslotModal) {
+                timeslotModal.addEventListener('show.bs.modal', function() {
+                    if (!editMode) {
+                        if (timeslotModalLabel) {
+                            timeslotModalLabel.textContent = 'Crear Nueva Franja Horaria';
+                        }
+                        if (franjaHorariaForm) {
+                            franjaHorariaForm.reset();
+                        }
+                        const estadoField = document.getElementById('estado');
+                        if (estadoField) {
+                            estadoField.checked = true;
+                        }
+                    }
+                });
+        
+                timeslotModal.addEventListener('hidden.bs.modal', function() {
+                    editMode = false;
+                    currentFranjaId = null;
+                    if (franjaHorariaForm) {
+                        franjaHorariaForm.reset();
+                    }
+                });
+            }
+        
+
+            // Event Listeners para botones de eliminar horarios
+            document.querySelectorAll('#schedules .delete-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const scheduleId = this.getAttribute('data-schedule-id');
+                    
+                    Swal.fire({
+                        title: '¿Estás seguro?',
+                        text: "¡No podrás revertir esta acción!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Realizar la petición DELETE
+                            fetch(`/api/horarios/${scheduleId}/`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRFToken': csrftoken,
+                                    'Authorization': 'Token d07c91f369e145647caec709beac1278761a353d'
+                                }
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Error al eliminar');
+                                }
+                                Swal.fire(
+                                    '¡Eliminado!',
+                                    'El horario ha sido eliminado.',
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire(
+                                    'Error',
+                                    'No se pudo eliminar el horario.',
+                                    'error'
+                                );
+                            });
+                        }
+                    });
+                });
+            });
+
+            // Event Listeners para botones de eliminar franjas horarias
+            document.querySelectorAll('#timeslots .delete-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const franjaId = this.getAttribute('data-franja-id');
+                    
+                    Swal.fire({
+                        title: '¿Estás seguro?',
+                        text: "¡No podrás revertir esta acción!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Realizar la petición DELETE
+                            fetch(`/api/franjas-horarias/${franjaId}/`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRFToken': csrftoken,
+                                    'Authorization': 'Token d07c91f369e145647caec709beac1278761a353d'
+                                }
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Error al eliminar');
+                                }
+                                Swal.fire(
+                                    '¡Eliminado!',
+                                    'La franja horaria ha sido eliminada.',
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire(
+                                    'Error',
+                                    'No se pudo eliminar la franja horaria.',
+                                    'error'
+                                );
+                            });
+                        }
+                    });
+                });
+            });
+        });
+
+    </script>
+{% endblock extra_js %}
+

@@ -4,6 +4,7 @@ from .views import (
     FranjaHorariaViewSet,
     HorarioViewSet,
     GenerarHorariosAPIView,
+    HorariosListView,
     PrioridadListView,
     PrioridadViewSet,
     SalaViewSet,
@@ -24,4 +25,5 @@ urlpatterns = [
         "generar-horarios/", GenerarHorariosAPIView.as_view(), name="generar-horarios"
     ),
     path('turnos/prioridades/', PrioridadListView.as_view(), name='prioridades-list'),
+    path("horarios/list/", HorariosListView.as_view(), name="horarios-list"),
 ] + router.urls

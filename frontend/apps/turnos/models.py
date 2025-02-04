@@ -19,7 +19,6 @@ class Horario(models.Model):
     """
     Modelo para asociar franjas horarias a días de la semana.
     """
-
     franja_horaria = models.ForeignKey(FranjaHoraria, on_delete=models.CASCADE)
     lunes = models.BooleanField(default=False)
     martes = models.BooleanField(default=False)
@@ -29,8 +28,45 @@ class Horario(models.Model):
     sabado = models.BooleanField(default=False)
     domingo = models.BooleanField(default=False)
 
+    def get_estado_dia(self, dia):
+        """
+        Retorna el estado real del día teniendo en cuenta el estado de la franja horaria
+        """
+        dia_activo = getattr(self, dia)
+        return dia_activo and self.franja_horaria.estado
+
+    @property
+    def estado_lunes(self):
+        return self.get_estado_dia('lunes')
+    
+    @property
+    def estado_martes(self):
+        return self.get_estado_dia('martes')
+    
+    @property
+    def estado_miercoles(self):
+        return self.get_estado_dia('miercoles')
+    
+    @property
+    def estado_jueves(self):
+        return self.get_estado_dia('jueves')
+    
+    @property
+    def estado_viernes(self):
+        return self.get_estado_dia('viernes')
+    
+    @property
+    def estado_sabado(self):
+        return self.get_estado_dia('sabado')
+    
+    @property
+    def estado_domingo(self):
+        return self.get_estado_dia('domingo')
+
     def __str__(self):
         return str(self.franja_horaria)
+    
+
 
 
 class Sala(models.Model):

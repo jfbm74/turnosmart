@@ -83,7 +83,27 @@ class GenerarHorariosAPIView(APIView):
             )
 
         return Response({"horarios_activos": resultado})
+    
 
+
+class HorariosListView(ListView):
+    """
+    Vista para listar los horarios y franjas horarias en el frontend.
+    """
+    model = Horario
+    template_name = "turnos/app-horarios-list-view.html"
+    context_object_name = "schedules"
+
+    def get_queryset(self):
+        # Usar select_related para obtener los datos de la franja horaria en una sola consulta
+        return Horario.objects.select_related('franja_horaria').all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # También optimizamos la consulta de franjas horarias
+        context["franjas_horarias"] = FranjaHoraria.objects.all()
+        return context
+    
 
 class TurneroViewSet(viewsets.ModelViewSet):
     """

@@ -81,12 +81,8 @@ class PrioridadConfigurationTests(unittest.TestCase):
         # Confirmar eliminación
         WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.CLASS_NAME, "swal2-confirm"))
-        ).click()
+        ).click()        
         
-        # Esperar y hacer clic en el botón OK de SweetAlert2
-        WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.CLASS_NAME, "swal2-confirm"))
-        ).click()
         
         driver.refresh()
         time.sleep(2)
