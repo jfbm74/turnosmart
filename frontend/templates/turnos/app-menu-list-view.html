@@ -85,7 +85,7 @@
                                                                                 data-prioridad="{{ menu.prioridad.id }}">
                                                                             <i class="ri-pencil-line"></i>
                                                                         </button>
-                                                                        <button class="btn btn-sm btn-outline-danger delete-btn" data-id="{{ menu.id }}" data-nombre="{{ menu.nombre }}">
+                                                                        <button class="btn btn-sm btn-outline-danger delete-btn" id="boton-eliminar" data-id="{{ menu.id }}" data-nombre="{{ menu.nombre }}">
                                                                             <i class="ri-delete-bin-line"></i>
                                                                         </button>
                                                                     </div>
@@ -147,7 +147,7 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
-                                        <button type="submit" class="btn btn-success">Guardar</button>
+                                        <button type="submit" id="boton-guardar" class="btn btn-success">Guardar</button>
                                     </div>
                                 </form>
                             </div>
@@ -225,7 +225,9 @@
             // Manejador del formulario
             document.getElementById('menuForm').addEventListener('submit', function(e) {
                 e.preventDefault();
+                const token = "d07c91f369e145647caec709beac1278761a353d";
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                // const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 const formData = new FormData(this);
                 const jsonData = {};
                 formData.forEach((value, key) => {
@@ -277,6 +279,8 @@
 
             // Event delegation para los botones de editar y eliminar
             document.addEventListener('click', function(e) {
+                const token = "d07c91f369e145647caec709beac1278761a353d";
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 // Botón editar
                 if (e.target.closest('.edit-btn')) {
                     const button = e.target.closest('.edit-btn');
