@@ -1,6 +1,7 @@
 # core/serializers.py
 from django.urls import include, path
 from .views import (
+    GrupoListView,
     GrupoViewSet,
     PasswordChangeView,
     PasswordResetConfirmView,
@@ -42,5 +43,6 @@ urlpatterns = [
     ),
     path('core/ventanillas/', VentanillaListView.as_view(), name='ventanillas-lista'),
     path('core/tramites/', TramiteListView.as_view(), name='tramites-lista'),
+    path('core/grupos/', GrupoListView.as_view(), name='grupos-lista'),
     path("", include(router.urls)),
 ]

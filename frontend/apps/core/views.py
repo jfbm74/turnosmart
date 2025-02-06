@@ -226,6 +226,22 @@ class GrupoViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
+class GrupoListView(LoginRequiredMixin, ListView):
+    model = Grupo
+    template_name = "core/app-grupos-list-view.html"  # Updated template path
+    context_object_name = "grupos"
+    login_url = '/account/login/' # Optional, specify the login URL if needed
+    redirect_field_name = 'redirect_to' # Optional, Specify your redirect field name
+
+    def get_queryset(self):
+        return Grupo.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["ventanillas"] = Ventanilla.objects.all() # Pass all ventanillas to populate de combobox
+        return context
+
+
 
 
 class TramiteViewSet(viewsets.ModelViewSet):
