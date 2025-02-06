@@ -32,128 +32,142 @@
             <ul class="navbar-nav" id="navbar-nav">
                 <li class="menu-title"><span>Menu</span></li>
 
-                <!-- ATENDER -->
-                <li class="nav-item">
-                    <a href="" class="nav-link">
-                        <i class="ri-hand-heart-line"></i> <span>Atender</span>
-                    </a>
-                </li>
+                    <!-- ATENDER -->
+                    <li class="nav-item">
+                        <a href="" class="nav-link">
+                            <i class="ri-hand-heart-line"></i> <span>Atender</span>
+                        </a>
+                    </li>
 
-                <!-- CALIFICACIONES -->
-                <li class="nav-item">
-                    <a href="" class="nav-link">
-                        <i class="ri-check-double-line"></i> <span>Calificaciones</span>
-                    </a>
-                </li>
+                    <!-- CLIENTES -->
+                    <li class="nav-item">
+                        <a href="#sidebarClientes" class="nav-link" data-bs-toggle="collapse">
+                            <i class="ri-user-line"></i> <span>Clientes</span>
+                        </a>
+                        <div class="collapse" id="sidebarClientes">
+                            <ul class="nav nav-sm flex-column">
+                                <li class="nav-item">
+                                    <a href="{% url 'clientes-lista' %}" class="nav-link">Listar Clientes</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="" class="nav-link">Subir Clientes</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
 
-                <!-- CLIENTES -->
-                <li class="nav-item">
-                    <a href="#sidebarClientes" class="nav-link" data-bs-toggle="collapse">
-                        <i class="ri-user-line"></i> <span>Clientes</span>
-                    </a>
-                    <div class="collapse" id="sidebarClientes">
-                        <ul class="nav nav-sm flex-column">
+                    <!-- CONFIGURACIÓN -->
+                    <li class="nav-item">
+                        <a href="#sidebarConfiguracion" class="nav-link" data-bs-toggle="collapse">
+                            <i class="ri-settings-2-line"></i> <span>Configuración</span>
+                        </a>
+                        <div class="collapse" id="sidebarConfiguracion">
+                            <ul class="nav nav-sm flex-column">
+                                <!-- Configuración General -->
+                                <li class="nav-item">
+                                    <a href="#sidebarInstitucion" class="nav-link" data-bs-toggle="collapse">
+                                        <span>General</span>
+                                    </a>
+                                    <div class="collapse" id="sidebarInstitucion">
+                                        <ul class="nav nav-sm flex-column">
+                                            <li class="nav-item">
+                                                <a href="{% url 'instituciones-lista' %}" class="nav-link">Institución</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="{% url 'sistemas-lista' %}" class="nav-link">Sistema</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+
+                                <!-- Recursos Multimedia -->
+                                <li class="nav-item">
+                                    <a href="#sidebarMultimedia" class="nav-link" data-bs-toggle="collapse">
+                                        <span>Multimedia</span>
+                                    </a>
+                                    <div class="collapse" id="sidebarMultimedia">
+                                        <ul class="nav nav-sm flex-column">
+                                            <li class="nav-item">
+                                                <a href="{% url 'imagenes-lista' %}" class="nav-link">Imágenes</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="{% url 'videos-lista' %}" class="nav-link">Videos</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="{% url 'audios-lista' %}" class="nav-link">Audios</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+
+                                <!-- Gestión de Turnos -->
+                                <li class="nav-item">
+                                    <a href="#sidebarTurnos" class="nav-link" data-bs-toggle="collapse">
+                                        <span>Gestión de Turnos</span>
+                                    </a>
+                                    <div class="collapse" id="sidebarTurnos">
+                                        <ul class="nav nav-sm flex-column">
+                                            <li class="nav-item">
+                                                <a href="{% url 'menus-lista' %}" class="nav-link">Menús</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="" class="nav-link">Turneros</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="{% url 'prioridades-list' %}" class="nav-link">Prioridades</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a href="{% url 'horarios-list' %}" class="nav-link">Horarios</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+
+                                <!-- Gestión de Espera -->
+                                <li class="nav-item">
+                                    <a href="#sidebarEspera" class="nav-link" data-bs-toggle="collapse">
+                                        <span>Gestión de Espera</span>
+                                    </a>
+                                    <div class="collapse" id="sidebarEspera">
+                                        <ul class="nav nav-sm flex-column">
+                                            <li class="nav-item">
+                                                <a href="" class="nav-link">Salas de Espera</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+
+                                <!-- Trámites -->
+                                <li class="nav-item">
+                                    <a href="{% url 'tramites-lista' %}" class="nav-link">Trámites</a>
+                                </li>
                             <li class="nav-item">
-                                <a href="{% url 'clientes-lista' %}" class="nav-link">Listar Clientes</a>
-                            </li>                        
-                            <li class="nav-item">
-                                <a href="" class="nav-link">Subir Clientes</a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
+                                    <a href="" class="nav-link">Gestión de Usuarios</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
 
-                <!-- CONFIGURACIÓN -->
-                <!-- CONFIGURACIÓN -->
-                <li class="nav-item">
-                    <a href="#sidebarConfiguracion" class="nav-link" data-bs-toggle="collapse">
-                        <i class="ri-settings-2-line"></i> <span>Configuración</span>
-                    </a>
-                    <div class="collapse" id="sidebarConfiguracion">
-                        <ul class="nav nav-sm flex-column">
-                            <!-- Configuración General -->
-                            <li class="nav-item">
-                                <a href="#sidebarConfigGeneral" class="nav-link" data-bs-toggle="collapse">
-                                    <span>Configuración General</span>
-                                </a>
-                                <div class="collapse" id="sidebarConfigGeneral">
-                                    <ul class="nav nav-sm flex-column">
-                                        <li class="nav-item">
-                                            <a href="{% url 'instituciones-lista' %}" class="nav-link">Institución</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{% url 'sistemas-lista' %}" class="nav-link">Sistema</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
+                    <!-- CALIFICACIONES -->
+                    <li class="nav-item">
+                        <a href="" class="nav-link">
+                            <i class="ri-check-double-line"></i> <span>Calificaciones</span>
+                        </a>
+                    </li>
 
-                            <!-- Recursos Multimedia -->
-                            <li class="nav-item">
-                                <a href="#sidebarMultimedia" class="nav-link" data-bs-toggle="collapse">
-                                    <span>Recursos Multimedia</span>
-                                </a>
-                                <div class="collapse" id="sidebarMultimedia">
-                                    <ul class="nav nav-sm flex-column">
-                                        <li class="nav-item">
-                                            <a href="{% url 'imagenes-lista' %}" class="nav-link">Imágenes</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{% url 'videos-lista' %}" class="nav-link">Videos</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{% url 'audios-lista' %}" class="nav-link">Audios</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
+                    <!-- ENCUESTAS -->
+                    <li class="nav-item">
+                        <a href="" class="nav-link">
+                            <i class="ri-survey-line"></i> <span>Encuestas</span>
+                        </a>
+                    </li>
 
-                            <!-- Gestión de Tickets -->
-                            <li class="nav-item">
-                                <a href="#sidebarTickets" class="nav-link" data-bs-toggle="collapse">
-                                    <span>Gestión de Tickets</span>
-                                </a>
-                                <div class="collapse" id="sidebarTickets">
-                                    <ul class="nav nav-sm flex-column">
-                                        <li class="nav-item">
-                                            <a href="{% url 'tickets-lista' %}" class="nav-link">Ticket</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{% url 'prioridades-list' %}" class="nav-link">Prioridad</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{% url 'ventanillas-lista' %}" class="nav-link">Ventanilla</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{% url 'horarios-list' %}" class="nav-link">Horarios</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="{% url 'grupos-lista' %}" class="nav-link">Grupos</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-
-                            <!-- Trámites -->
-                            <li class="nav-item">
-                                <a href="{% url 'tramites-lista' %}" class="nav-link">Trámites</a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
-
-                <!-- ENCUESTAS -->
-                <li class="nav-item">
-                    <a href="" class="nav-link">
-                        <i class="ri-survey-line"></i> <span>Encuestas</span>
-                    </a>
-                </li>
-
-                <!-- LOGOUT -->
-                <li class="nav-item">
-                    <a href="{% url 'account_logout' %}" class="nav-link">
-                        <i class="ri-logout-box-line"></i> <span>Logout</span>
-                    </a>
+                    <!-- LOGOUT -->
+                    <li class="nav-item">
+                        <a href="{% url 'account_logout' %}" class="nav-link">
+                            <i class="ri-logout-box-line"></i> <span>Logout</span>
+                        </a>
+                    </li>
                 </li>
             </ul>
         </div>
