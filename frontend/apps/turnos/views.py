@@ -207,3 +207,72 @@ class PrioridadListView(LoginRequiredMixin, ListView):
     model = Prioridad
     template_name = "turnos/app-prioridad-list-view.html"  # Ruta del template
     context_object_name = "prioridades"
+
+
+class MenuViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows Menus to be viewed and edited.
+    """
+
+    queryset = Menu.objects.all()
+    serializer_class = MenuSerializer
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(operation_description="List all Menus")
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Create a new Menu",
+        request_body=MenuSerializer,
+        responses={
+            status.HTTP_201_CREATED: MenuSerializer(),
+            status.HTTP_400_BAD_REQUEST: "Bad Request",
+        },
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Retrieve a Menu by ID",
+        responses={
+            status.HTTP_200_OK: MenuSerializer(),
+            status.HTTP_404_NOT_FOUND: "Not Found",
+        },
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Update a Menu by ID",
+        request_body=MenuSerializer,
+        responses={
+            status.HTTP_200_OK: MenuSerializer(),
+            status.HTTP_400_BAD_REQUEST: "Bad Request",
+            status.HTTP_404_NOT_FOUND: "Not Found",
+        },
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Partially update a Menu by ID",
+        request_body=MenuSerializer(partial=True),
+        responses={
+            status.HTTP_200_OK: MenuSerializer(),
+            status.HTTP_400_BAD_REQUEST: "Bad Request",
+            status.HTTP_404_NOT_FOUND: "Not Found",
+        },
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Delete a Menu by ID",
+        responses={
+            status.HTTP_204_NO_CONTENT: "No Content",
+            status.HTTP_404_NOT_FOUND: "Not Found",
+        },
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)

@@ -5,11 +5,13 @@ from .views import (
     HorarioViewSet,
     GenerarHorariosAPIView,
     HorariosListView,
+    MenuViewSet,
     PrioridadListView,
     PrioridadViewSet,
     SalaViewSet,
     TurneroViewSet,
 )
+
 
 # Registro de rutas con DefaultRouter
 router = DefaultRouter()
@@ -18,6 +20,7 @@ router.register(r"horarios", HorarioViewSet, basename="horario")
 router.register(r"turneros", TurneroViewSet, basename="turnero")
 router.register(r"salas-espera", SalaViewSet, basename="sala-espera")
 router.register(r"prioridades", PrioridadViewSet, basename="prioridad")
+router.register(r"menus", MenuViewSet, basename="menus")
 
 # Agregar rutas adicionales
 urlpatterns = [

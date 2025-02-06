@@ -44,7 +44,18 @@ class TurneroSerializer(serializers.ModelSerializer):
 class MenuSerializer(serializers.ModelSerializer):
     class Meta:
         model = Menu
-        fields = ["id", "nombre", "descripcion"]
+        fields = ["id", "nombre", "tipo", "horario_general", "tramite", "prioridad", "imagen", "descripcion"] # Added field here
+        # add validations
+        extra_kwargs = {
+            'id': {'read_only': True, 'help_text': 'The unique identifier for the menu.'},
+            'nombre': {'required': True, 'help_text': 'The name of the menu.'},
+            'tipo': {'required': True, 'help_text': 'The type of menu (CONTENEDOR or TRAMITE).'},
+            'horario_general': {'help_text': 'Whether the menu uses the general schedule.'},
+            'tramite': {'required': False, 'allow_null': True, 'help_text': 'The associated Tramite (if applicable).'},
+            'prioridad': {'required': False, 'allow_null': True, 'help_text': 'The associated Prioridad (if applicable).'},
+            'imagen': {'required': False, 'help_text': 'The URL or path to the menu image.'},
+            'descripcion': {'help_text': 'A description of the menu.'},
+        }
 
 
 class TurneroSerializer(serializers.ModelSerializer):

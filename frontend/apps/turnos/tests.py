@@ -439,3 +439,96 @@ class PrioridadAPITests(APITestCase):
     def tearDown(self):
          Prioridad.objects.all().delete()
          User.objects.all().delete()
+
+
+class MenuAPITests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="testuser", password="testpassword", email="testuser@example.com"
+        )
+        self.client.force_authenticate(user=self.user)
+
+        # Crear objetos necesarios para las pruebas
+        self.prioridad = Prioridad.objects.create(nombre="Alta", prioridad="ALTA")
+        self.menu = Menu.objects.create(nombre="Test Menu", tipo="TRAMITE", prioridad=self.prioridad)
+        
+        self.list_url = reverse("menus-list")
+        self.detail_url = reverse("menus-detail", args=[self.menu.id])
+
+    def test_list_menus_authenticated(self):
+        """Test para listar menus con autenticación."""
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+
+    def test_list_menus_unauthenticated(self):
+        """Test para listar menus sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_create_menu_authenticated(self):
+        """Test para crear un menu con autenticación."""
+        data = {
+            "nombre": "New Menu",
+            "tipo": "CONTENEDOR",
+            "horario_general": True,
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Menu.objects.count(), 2)
+
+    def test_create_menu_unauthenticated(self):
+        """Test para crear un menu sin autenticación."""
+        self.client.force_authenticate(user=None)
+        data = {
+            "nombre": "New Menu",
+            "tipo": "CONTENEDOR",
+            "horario_general": True,
+        }
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_retrieve_menu_authenticated(self):
+        """Test para obtener un menu específico con autenticación."""
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["nombre"], self.menu.nombre)
+
+    def test_retrieve_menu_unauthenticated(self):
+        """Test para obtener un menu específico sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_menu_authenticated(self):
+        """Test para actualizar un menu con autenticación."""
+        data = {
+            "nombre": "Updated Menu",
+            "tipo": "TRAMITE",
+            "horario_general": False,
+             "prioridad": self.prioridad.id  # Incluir la prioridad existente
+        }
+        response = self.client.put(self.detail_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.menu.refresh_from_db()
+        self.assertEqual(self.menu.nombre, "Updated Menu")
+        self.assertEqual(self.menu.horario_general, False)
+
+    def test_delete_menu_authenticated(self):
+        """Test para eliminar un menu con autenticación."""
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Menu.objects.count(), 0)
+
+    def test_delete_menu_unauthenticated(self):
+        """Test para eliminar un menu sin autenticación."""
+        self.client.force_authenticate(user=None)
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def tearDown(self):
+        Menu.objects.all().delete()
+        Prioridad.objects.all().delete() # clean Prioridades
+        User.objects.all().delete()
