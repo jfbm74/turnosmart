@@ -43,6 +43,7 @@ DEFAULT_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "drf_yasg",    
+    'channels',
     ]
 LOCAL_APPS = [
     "dashboards",
@@ -113,7 +114,9 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 
-WSGI_APPLICATION = 'velzon.wsgi.application'
+# WSGI_APPLICATION = 'velzon.wsgi.application'
+ASGI_APPLICATION = "velzon.asgi.application"  # Usar ASGI en lugar de WSGI
+
 
 
 # Database
@@ -255,3 +258,13 @@ REST_FRAMEWORK = {
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost']
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",  # Para pruebas
+        # Para producción usa Redis:
+        # "BACKEND": "channels_redis.core.RedisChannelLayer",
+        # "CONFIG": {"hosts": [("localhost", 6379)]},
+    },
+}
