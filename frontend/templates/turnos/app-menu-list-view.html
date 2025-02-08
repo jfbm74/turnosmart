@@ -62,7 +62,11 @@
                                                         <th class="sort" data-sort="id">ID</th>
                                                         <th class="sort" data-sort="nombre">Nombre</th>
                                                         <th class="sort" data-sort="tipo">Tipo</th>
+                                                        <th class="sort" data-sort="horario_general">Horario General</th>
+                                                        <th class="sort" data-sort="tramite">Trámite</th>
                                                         <th class="sort" data-sort="prioridad">Prioridad</th>
+                                                        <th>Imagen</th>
+                                                        <th>Descripción</th>
                                                         <th>Acciones</th>
                                                     </tr>
                                                 </thead>
@@ -73,7 +77,25 @@
                                                                 <td class="id">{{ menu.id }}</td>
                                                                 <td class="nombre">{{ menu.nombre }}</td>
                                                                 <td class="tipo">{{ menu.get_tipo_display }}</td>
-                                                                <td class="prioridad">{{ menu.prioridad }}</td>
+                                                                <td class="horario_general">{{ menu.horario_general|yesno:"Sí,No" }}</td>
+                                                                <td class="tramite">{{ menu.tramite.nombre|default:'-' }}</td>
+                                                                <td class="prioridad">{{ menu.prioridad.nombre|default:'-' }}</td>
+                                                                <td>
+                                                                    {% if menu.imagen %}
+                                                                        <img src="{{ menu.imagen.url }}" alt="Imagen de menú" class="rounded" style="max-height: 50px;">
+                                                                    {% else %}
+                                                                        -
+                                                                    {% endif %}
+                                                                </td>
+                                                                <td>
+                                                                    {% if menu.descripcion %}
+                                                                        <span class="text-truncate d-inline-block" style="max-width: 150px;" title="{{ menu.descripcion }}">
+                                                                            {{ menu.descripcion }}
+                                                                        </span>
+                                                                    {% else %}
+                                                                        -
+                                                                    {% endif %}
+                                                                </td>
                                                                 <td>
                                                                     <div class="d-flex gap-2">
                                                                         <button class="btn btn-sm btn-outline-primary edit-btn"
@@ -82,10 +104,17 @@
                                                                                 data-id="{{ menu.id }}"
                                                                                 data-nombre="{{ menu.nombre }}"
                                                                                 data-tipo="{{ menu.tipo }}"
-                                                                                data-prioridad="{{ menu.prioridad.id }}">
-                                                                            <i class="ri-pencil-line"></i>
+                                                                                data-horario_general="{{ menu.horario_general }}"
+                                                                                data-prioridad="{{ menu.prioridad.id|default:'' }}"
+                                                                                data-tramite="{{ menu.tramite.id|default:'' }}"
+                                                                                data-imagen="{% if menu.imagen %}{{ menu.imagen.url }}{% endif %}"
+                                                                                data-descripcion="{{ menu.descripcion|default:'' }}">
+                                                                                <i class="ri-pencil-line"></i>
                                                                         </button>
-                                                                        <button class="btn btn-sm btn-outline-danger delete-btn" id="boton-eliminar" data-id="{{ menu.id }}" data-nombre="{{ menu.nombre }}">
+                                                                        <button class="btn btn-sm btn-outline-danger delete-btn" 
+                                                                                id="boton-eliminar" 
+                                                                                data-id="{{ menu.id }}" 
+                                                                                data-nombre="{{ menu.nombre }}">
                                                                             <i class="ri-delete-bin-line"></i>
                                                                         </button>
                                                                     </div>
@@ -94,7 +123,7 @@
                                                         {% endfor %}
                                                     {% else %}
                                                         <tr>
-                                                            <td colspan="5" class="text-center">No hay menús disponibles.</td>
+                                                            <td colspan="9" class="text-center">No hay menús disponibles.</td>
                                                         </tr>
                                                     {% endif %}
                                                 </tbody>
@@ -112,14 +141,14 @@
                         </div><!--end col-->
                     </div><!--end row-->
 
-                     <div class="modal fade zoomIn" id="showModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal fade zoomIn" id="showModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered modal-lg">
                             <div class="modal-content border-0">
                                 <div class="modal-header p-3 bg-primary-subtle">
                                     <h5 class="modal-title" id="exampleModalLabel">Crear Nuevo Menú</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-modal"></button>
                                 </div>
-                                <form id="menuForm" method="POST" action="{% url 'menus-list' %}">
+                                <form id="menuForm" method="POST" action="{% url 'menus-list' %}" enctype="multipart/form-data">
                                     {% csrf_token %}
                                     <div class="modal-body">
                                         <div class="row g-3">
@@ -135,6 +164,13 @@
                                                 </select>
                                             </div>
                                             <div class="col-lg-12">
+                                                <label for="horario_general" class="form-label">Horario General</label>
+                                                <select id="horario_general" name="horario_general" class="form-control" required>
+                                                    <option value="True">Sí</option>
+                                                    <option value="False">No</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-lg-12">
                                                 <label for="prioridad" class="form-label">Prioridad</label>
                                                 <select id="prioridad" name="prioridad" class="form-control">
                                                     <option value="">---------</option>
@@ -142,6 +178,29 @@
                                                         <option value="{{ prioridad.id }}">{{ prioridad.nombre }}</option>
                                                     {% endfor %}
                                                 </select>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <label for="tramite" class="form-label">Trámite</label>
+                                                <select id="tramite" name="tramite" class="form-control">
+                                                    <option value="">---------</option>
+                                                    {% for tramite in tramites %}
+                                                        <option value="{{ tramite.id }}">{{ tramite.nombre }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="col-lg-12">
+                                                <label for="imagen" class="form-label">Imagen</label>
+                                                <!-- Preview de imagen actual -->
+                                                <div id="imagen-preview" class="mb-2 d-none">
+                                                    <img id="imagen-actual" src="" alt="Imagen actual" class="img-fluid mb-2" style="max-height: 200px;">
+                                                    <p class="text-muted small">Imagen actual: <span id="imagen-nombre"></span></p>
+                                                </div>
+                                                <input type="file" class="form-control" id="imagen" name="imagen">
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <label for="descripcion" class="form-label">Descripción</label>
+                                                <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -153,6 +212,7 @@
                             </div>
                         </div>
                     </div>
+                    
 
 
                 </div>
@@ -215,39 +275,91 @@
                 formMode = 'edit';
                 currentMenuId = button.dataset.id;
                 document.getElementById('exampleModalLabel').textContent = 'Editar Menú';
+            
+                // Obtener todos los valores de los atributos data
+                const nombre = button.dataset.nombre || '';
+                const tipo = button.dataset.tipo || '';
+                const horarioGeneral = button.dataset.horario_general || 'True';
+                const prioridad = button.dataset.prioridad || '';
+                const tramite = button.dataset.tramite || '';
+                const descripcion = button.dataset.descripcion || '';
+                const imagenUrl = button.dataset.imagen || '';
+                
+                // Asignar valores a los campos del formulario
+                document.getElementById('nombre').value = nombre;
+                document.getElementById('tipo').value = tipo;
+                document.getElementById('horario_general').value = String(horarioGeneral);
+                
+                // Manejar los selectores con cuidado ya que pueden ser nulos
+                const prioridadSelect = document.getElementById('prioridad');
+                if (prioridadSelect && prioridad) {
+                    prioridadSelect.value = prioridad;
+                }
+            
+                const tramiteSelect = document.getElementById('tramite');
+                if (tramiteSelect && tramite) {
+                    tramiteSelect.value = tramite;
+                }
+            
+                const descripcionTextarea = document.getElementById('descripcion');
+                if (descripcionTextarea) {
+                    descripcionTextarea.value = descripcion === 'undefined' ? '' : descripcion;
+                }
+            
+                // Manejar la previsualización de la imagen
+                const imagenPreview = document.getElementById('imagen-preview');
+                const imagenActual = document.getElementById('imagen-actual');
+                const imagenNombre = document.getElementById('imagen-nombre');
+                
+                if (imagenUrl) {
+                    imagenActual.src = imagenUrl;
+                    imagenNombre.textContent = imagenUrl.split('/').pop(); // Obtiene el nombre del archivo de la URL
+                    imagenPreview.classList.remove('d-none');
+                } else {
+                    imagenPreview.classList.add('d-none');
+                }
+            
+                // Para debugging
+                console.log('Cargando datos del menú:', {
+                    nombre,
+                    tipo,
+                    horarioGeneral,
+                    prioridad,
+                    tramite,
+                    descripcion,
+                    imagenUrl,
+                    'dataset completo': button.dataset
+                });
+            }
 
-                // Cargar datos en el formulario
-                document.getElementById('nombre').value = button.dataset.nombre;
-                document.getElementById('tipo').value = button.dataset.tipo;
-                document.getElementById('prioridad').value = button.dataset.prioridad;
+            function resetForm() {
+                const form = document.getElementById('menuForm');
+                if (form) {
+                    form.reset();
+                    formMode = 'create';
+                    currentMenuId = null;
+                    document.getElementById('exampleModalLabel').textContent = 'Crear Nuevo Menú';
+                    // Ocultar el preview de la imagen
+                    document.getElementById('imagen-preview').classList.add('d-none');
+                }
             }
 
             // Manejador del formulario
             document.getElementById('menuForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                const token = "d07c91f369e145647caec709beac1278761a353d";
-                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                // const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 const formData = new FormData(this);
-                const jsonData = {};
-                formData.forEach((value, key) => {
-                    if (key !== 'csrfmiddlewaretoken') {
-                        jsonData[key] = value;
-                    }
-                });
-
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
                 const url = formMode === 'create'
-                    ? '{% url "menus-list" %}'
+                    ? '/api/menus/'
                     : `/api/menus/${currentMenuId}/`;
-
+            
                 fetch(url, {
                     method: formMode === 'create' ? 'POST' : 'PUT',
                     headers: {
-                        'Content-Type': 'application/json',
                         'X-CSRFToken': csrftoken,
-                        'Authorization': `Token ${token}`
                     },
-                    body: JSON.stringify(jsonData)
+                    body: formData
                 })
                 .then(response => {
                     if (!response.ok) {
@@ -268,9 +380,18 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
+                    let errorMessage = 'Hubo un error al procesar la solicitud';
+                    if (error.detail) {
+                        errorMessage = error.detail;
+                    } else if (typeof error === 'object') {
+                        // Convert validation errors object to string
+                        errorMessage = Object.entries(error)
+                            .map(([key, value]) => `${key}: ${value.join(', ')}`)
+                            .join('\n');
+                    }
                     Swal.fire({
                         title: 'Error',
-                        text: error.detail || 'Hubo un error al procesar la solicitud',
+                        text: errorMessage,
                         icon: 'error',
                         confirmButtonText: 'OK'
                     });
@@ -332,7 +453,15 @@
             // Inicialización de List.js
             try {
                 const options = {
-                    valueNames: ['id', 'nombre', 'tipo', 'prioridad'],
+                    valueNames: [
+                        'id', 
+                        'nombre', 
+                        'tipo', 
+                        'horario_general',
+                        'tramite',
+                        'prioridad',
+                        'descripcion'
+                    ],
                     page: 10,
                     pagination: [{
                         name: "pagination",

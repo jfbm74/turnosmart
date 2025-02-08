@@ -1,6 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from apps.turnos.models import FranjaHoraria, Horario, Prioridad, Turnero, Menu, Sala
+from apps.core.models import Tramite
 from .serializers import (
     FranjaHorariaSerializer,
     HorarioSerializer,
@@ -19,9 +20,6 @@ from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
-
-
-
 
 class FranjaHorariaViewSet(ModelViewSet):
     """
@@ -282,13 +280,14 @@ class MenuListView(LoginRequiredMixin, ListView):
     model = Menu
     template_name = "turnos/app-menu-list-view.html"  # Updated template path
     context_object_name = "menus"
-    login_url = '/account/login/' # Optional, specify the login URL if needed
-    redirect_field_name = 'redirect_to' # Optional, Specify your redirect field name
+    login_url = '/account/login/'  # Optional, specify the login URL if needed
+    redirect_field_name = 'redirect_to'  # Optional, specify your redirect field name
 
     def get_queryset(self):
-        return Menu.objects.all().select_related('prioridad') # optimiza la consulta a la base de datos
+        return Menu.objects.all().select_related('prioridad')  # Optimizes the database query
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["prioridades"] = Prioridad.objects.all() # Pasa todas las prioridades para el select de la modal
+        context["prioridades"] = Prioridad.objects.all()  # Passes all priorities for the modal select
+        context["tramites"] = Tramite.objects.all()  # Passes all Tramites to the template
         return context

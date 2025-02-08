@@ -105,7 +105,7 @@ class Menu(models.Model):
     prioridad = models.ForeignKey(
         "Prioridad", on_delete=models.SET_NULL, blank=True, null=True
     )
-    imagen = models.ImageField(upload_to="menu_icons/", blank=True, null=True)
+    imagen = models.ImageField(upload_to='menus/', null=True, blank=True)  
     descripcion = models.TextField(blank=True, null=True)
 
     def __str__(self):
