@@ -103,39 +103,87 @@ class HorariosListView(ListView):
         return context
     
 
+
 class TurneroViewSet(viewsets.ModelViewSet):
     """
-    API para gestionar los turneros.
+    API endpoint para gestionar turneros.
     """
-
     queryset = Turnero.objects.all()
     serializer_class = TurneroSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'post', 'put', 'patch', 'delete'] 
 
-    @action(detail=True, methods=["post"], url_path="associate-menus")
+    @swagger_auto_schema(
+        operation_description="Listar todos los turneros",
+        responses={200: TurneroSerializer(many=True)}
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="Crear un nuevo turnero",
+        request_body=TurneroSerializer,
+        responses={
+            201: TurneroSerializer(),
+            400: "Bad Request"
+        }
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        responses={200: TurneroSerializer()},
+        operation_description="Obtener un turnero específico"
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        request_body=TurneroSerializer,
+        responses={200: TurneroSerializer()},
+        operation_description="Actualizar un turnero"
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        responses={204: "No Content"},
+        operation_description="Eliminar un turnero"
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+
+    @action(detail=True, methods=['post'], url_path='associate-menus')
     def associate_menus(self, request, pk=None):
         turnero = self.get_object()
-        serializer = TurneroMenuAssociationSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        menu_ids = serializer.validated_data.get("menu_ids", [])
+        menu_ids = request.data.get('menu_ids', [])
         menus = Menu.objects.filter(id__in=menu_ids)
         turnero.menus.set(menus)
+        return Response(self.get_serializer(turnero).data)
 
-        return Response(
-            {
-                "message": "Menús asociados correctamente.",
-                "turnero": self.get_serializer(turnero).data,
-            },
-            status=status.HTTP_200_OK,
-        )
-
-    @action(detail=True, methods=["get"], url_path="get-menus")
+    @action(detail=True, methods=['get'], url_path='get-menus')
     def get_menus(self, request, pk=None):
         turnero = self.get_object()
         menus = turnero.menus.all()
-        serializer = MenuSerializer(menus, many=True)
-        return Response(serializer.data)
+        menu_serializer = MenuSerializer(menus, many=True)
+        return Response(menu_serializer.data)
+
+
+
+class TurneroListView(LoginRequiredMixin, ListView):
+    model = Turnero
+    template_name = "turnos/app-turnero-list-view.html"
+    context_object_name = "turneros"
+
+    def get_queryset(self):
+        return Turnero.objects.all().prefetch_related('menus')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["menus"] = Menu.objects.all()
+        return context
+    
+
 
 
 class SalaViewSet(ModelViewSet):

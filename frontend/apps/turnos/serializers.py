@@ -28,17 +28,6 @@ class HorarioSerializer(serializers.ModelSerializer):
         ]
 
 
-class TurneroSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Turnero
-        fields = ["id", "nombre", "presentacion"]
-        extra_kwargs = {
-            "id": {"read_only": True, "help_text": "Identificador único del turnero."},
-            "nombre": {"help_text": "Nombre del turnero"},
-            "presentacion": {
-                "help_text": "Tipo de presentación del turno (IMPRIMIR o QR)."
-            },
-        }
 
 
 class MenuSerializer(serializers.ModelSerializer):
@@ -59,11 +48,31 @@ class MenuSerializer(serializers.ModelSerializer):
 
 
 class TurneroSerializer(serializers.ModelSerializer):
-    menus = MenuSerializer(many=True, read_only=True)
+    class Meta:
+        model = Turnero
+        fields = ['id', 'nombre', 'ubicacion', 'presentacion', 'menus']
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'menus': {'required': False}
+        }
+
+    def create(self, validated_data):
+        menus_data = validated_data.pop('menus', [])
+        turnero = Turnero.objects.create(**validated_data)
+        if menus_data:
+            turnero.menus.set(menus_data)
+        return turnero
+
+    def update(self, instance, validated_data):
+        menus_data = validated_data.pop('menus', [])
+        instance = super().update(instance, validated_data)
+        if 'menus' in self.initial_data:
+            instance.menus.set(menus_data)
+        return instance
 
     class Meta:
         model = Turnero
-        fields = ["id", "nombre", "ubicacion", "menus"]
+        fields = ['id', 'nombre', 'ubicacion', 'presentacion', 'menus']
 
 
 class TurneroMenuAssociationSerializer(serializers.Serializer):

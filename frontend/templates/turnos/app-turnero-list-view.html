@@ -1,0 +1,459 @@
+{% extends "partials/base.html" %}
+{% load static %}
+
+{% block title %}Listado de Turneros{% endblock title %}
+
+{% block extra_css %}
+    <!-- Sweet Alert css-->
+    <link href="{% static 'libs/sweetalert2/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+{% endblock extra_css %}
+
+{% block content %}
+        <!-- ============================================================== -->
+        <!-- Start right Content here -->
+        <!-- ============================================================== -->
+
+
+        <div class="main-content">
+
+            <div class="page-content">
+                <div class="container-fluid">
+
+                    {% block pagetitle %}
+                    {% include "partials/page-title.html" with pagetitle="Configuración" title="Lista de Turneros" %}
+                    {% endblock pagetitle %}
+
+                    <div class="row">
+                        <div class="col-xxl-3 col-sm-6">
+                            <div class="card card-animate">
+                                
+                            </div> <!-- end card-->
+                        </div><!--end col-->
+                        <div class="col-xxl-3 col-sm-6">
+                            <div class="card card-animate">
+                                
+                            </div>
+                        </div><!--end col-->
+                        <div class="col-xxl-3 col-sm-6">
+                            <div class="card card-animate">
+                                
+                            </div>
+                        </div><!--end col-->
+                        <div class="col-xxl-3 col-sm-6">
+                            <div class="card card-animate">
+                                
+                            </div>
+                        </div><!--end col-->
+                    </div><!--end row-->
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card"  id="tasksList">
+                                <div class="card-header border-0">
+                                    <div class="d-flex align-items-center">
+                                        <h5 class="card-title mb-0 flex-grow-1">Turneros</h5>
+                                        <div class="flex-shrink-0">
+                                            <div class="d-flex flex-wrap gap-2">
+                                            	<button class="btn btn-soft-primary add-btn" data-bs-toggle="modal" data-bs-target="#showModal"><i class="ri-add-line align-bottom me-1"></i> Agregar Turnero</button>
+                                            	
+                                           </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body border border-dashed border-end-0 border-start-0">
+                                    <form>
+                                        <div class="row g-3">
+                                            <div class="col-xxl-5 col-sm-12">
+                                                <div class="search-box">
+                                                    <input type="text" class="form-control search bg-light border-light" placeholder="Busqueda">
+                                                    <i class="ri-search-line search-icon"></i>
+                                                </div>
+                                            </div><!--end col-->
+                                            <div class="col-xxl-1 col-sm-4">
+                                                <button type="button" class="btn btn-primary w-100" onclick="SearchData();"> <i class="ri-equalizer-fill me-1 align-bottom"></i>
+                                                    Filtros
+                                                </button>
+                                            </div><!--end col-->
+                                        </div><!--end row-->
+                                    </form>
+                                </div><!--end card-body-->
+                                <div class="card-body">
+                                    <div class="table-responsive table-card mb-4">
+                                        <div class="listjs-table" id="institucionesTable">
+                                            <table class="table align-middle table-nowrap mb-0">
+                                                <thead class="table-light text-muted">
+                                                    <tr>
+                                                        <th style="width: 50px;">ID</th>
+                                                        <th>Nombre</th>
+                                                        <th>Ubicación</th>
+                                                        <th>Previsualizar</th>
+                                                        <th>Tipo</th>
+                                                        <th>Menus</th>
+                                                        <th style="width: 150px;">Opción</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="list">
+                                                    {% if turneros %}
+                                                        {% for turnero in turneros %}
+                                                            <tr>
+                                                                <td>{{ turnero.id }}</td>
+                                                                <td>{{ turnero.nombre }}</td>
+                                                                <td>{{ turnero.ubicacion }}</td>
+                                                                <td>
+                                                                    <div class="d-flex gap-2">
+                                                                        <button type="button" class="btn btn-sm btn-outline-primary {% if turnero.visualizacion == 'PORTRAIT' %}active{% endif %}" title="Vista Vertical" style="width: 35px; height: 35px; padding: 0;">
+                                                                            <i class="ri-smartphone-line"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-sm btn-outline-primary {% if turnero.visualizacion == 'LANDSCAPE' %}active{% endif %}" title="Vista Horizontal" style="width: 35px; height: 35px; padding: 0;">
+                                                                            <i class="ri-computer-line"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                                <td>{{ turnero.get_presentacion_display }}</td>
+                                                                <td>
+                                                                    {% for menu in turnero.menus.all %}
+                                                                        {{ menu.nombre }}{% if not forloop.last %}, {% endif %}
+                                                                    {% empty %}
+                                                                        Sin Menus
+                                                                    {% endfor %}
+                                                                </td>
+                                                                <td>
+                                                                    <div class="d-flex gap-2">
+                                                                        <button type="button" class="btn btn-sm btn-success edit-item-btn" data-bs-toggle="modal" data-bs-target="#showModal" data-id="{{ turnero.id }}" data-nombre="{{ turnero.nombre }}" data-ubicacion="{{ turnero.ubicacion }}" data-presentacion="{{ turnero.presentacion }}"><i class="ri-pencil-line"></i></button>
+                                                                        <button type="button" class="btn btn-sm btn-danger remove-item-btn" data-id="{{ turnero.id }}" data-nombre="{{ turnero.nombre }}"> <i class="ri-delete-bin-line"></i></button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <tr>
+                                                            <td colspan="6" class="text-center">No hay turneros disponibles.</td>
+                                                        </tr>
+                                                    {% endif %}
+                                                </tbody>                                                
+                                            </table>
+                                        </div>
+                                        <!-- Agregamos el div para la paginación -->
+                                        <div class="d-flex justify-content-end mt-3">
+                                            <div class="pagination-wrap">
+                                                <div class="list-pagination"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div><!--end card-->
+                        </div><!--end col-->
+                    </div><!--end row-->
+
+                    <div class="modal fade flip" id="deleteOrder" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-body p-5 text-center">
+                                    <lord-icon src="https://cdn.lordicon.com/gsqxdxog.json" trigger="loop" colors="primary:#25a0e2,secondary:#00bd9d" style="width:90px;height:90px"></lord-icon>
+                                    <div class="mt-4 text-center">
+                                        <h4>You are about to delete a task ?</h4>
+                                        <p class="text-muted fs-14 mb-4">Deleting your task will remove all of
+                                            your information from our database.</p>
+                                        <div class="hstack gap-2 justify-content-center remove">
+                                            <button class="btn btn-link btn-ghost-primary fw-medium text-decoration-none" id="deleteRecord-close" data-bs-dismiss="modal"><i class="ri-close-line me-1 align-middle"></i> Close</button>
+                                            <button class="btn btn-primary" id="delete-record">Yes, Delete It</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!--end delete modal -->
+
+                    <div class="modal fade zoomIn" id="showModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                          <div class="modal-content border-0">
+                            <div class="modal-header p-3 bg-primary-subtle">
+                              <h5 class="modal-title" id="exampleModalLabel">Crear Nuevo Turnero</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-modal"></button>
+                            </div>
+                            <form id="crudForm" method="POST" action="/api/turneros/">
+                              {% csrf_token %}
+                              <div class="modal-body">
+                                <div class="row g-3">
+                                  <div class="col-lg-6">
+                                    <label for="nombre" class="form-label">Nombre</label>
+                                    <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Nombre del turnero" required />
+                                  </div>
+                                  <div class="col-lg-6">
+                                    <label for="ubicacion" class="form-label">Ubicación</label>
+                                    <input type="text" id="ubicacion" name="ubicacion" class="form-control" placeholder="Ubicación del turnero" />
+                                  </div>
+                                  <div class="col-lg-6">
+                                    <label for="presentacion" class="form-label">Presentación</label>
+                                    <select class="form-select" id="presentacion" name="presentacion" required>
+                                      <option value="">Seleccione...</option>
+                                      <option value="IMPRIMIR">Imprimir</option>
+                                      <option value="QR">QR</option>
+                                    </select>
+                                  </div>
+                                  <!-- Nuevo campo para seleccionar Menús -->
+                                  <div class="col-lg-6">
+                                    <label for="menus" class="form-label">Menus</label>
+                                    <select class="form-select" id="menus" name="menus" multiple>
+                                      {% for menu in menus %}
+                                        <option value="{{ menu.id }}">{{ menu.nombre }}</option>
+                                      {% endfor %}
+                                    </select>
+                                    <small class="text-muted">Mantén presionada la tecla Ctrl (o Cmd en Mac) para seleccionar múltiples menús.</small>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+                                <button type="submit" class="btn btn-success">Guardar</button>
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                      
+                </div>
+                <!-- container-fluid -->
+            </div>
+            <!-- End Page-content -->
+
+        {% block footer %}
+        {% include "partials/footer.html" %}
+        {% endblock footer %}
+        </div>
+        <!-- end main content-->
+{% endblock content %}
+{% block extra_js %}
+    <!-- list.js min js -->
+    <script src="{% static 'libs/list.js/dist/list.min.js' %}"></script>
+
+    <!--list pagination js-->
+    <script src="{% static 'libs/list.pagination.js/dist/list.pagination.min.js' %}"></script>
+
+    <!-- titcket init js -->
+    <script src="{% static 'libs/pages/tasks-list.init.js' %}"></script>
+
+    <!-- Sweet Alerts js -->
+    <script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>   
+    
+    <!-- script para hacer busqueda en la tabla  -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            try {
+                // Configuración de List.js
+                const options = {
+                    listClass: "list",
+                    searchClass: "search",
+                    valueNames: ["id", "nombre", "ubicacion", "presentacion"],
+                    page: 10,  // Cantidad de elementos por página
+                    pagination: [{
+                        name: "pagination",
+                        paginationClass: "list-pagination",
+                        outerWindow: 2
+                    }]
+                };
+        
+                // Inicializar List.js
+                const turnerosList = new List("tasksList", options);
+        
+                // Manejo del evento de búsqueda con debounce
+                const searchField = document.querySelector(".search");
+                let searchTimeout = null;
+                
+                if (searchField) {
+                    searchField.addEventListener("keyup", function () {
+                        clearTimeout(searchTimeout);
+                        searchTimeout = setTimeout(() => {
+                            try {
+                                turnerosList.search(this.value);
+                            } catch (error) {
+                                console.error("Error al realizar la búsqueda:", error);
+                            }
+                        }, 300);
+                    });
+                }
+        
+                // Función para activar búsqueda manualmente con el botón de filtros
+                window.SearchData = function () {
+                    const searchValue = document.querySelector(".search").value || "";
+                    try {
+                        turnerosList.search(searchValue);
+                    } catch (error) {
+                        console.error("Error al aplicar filtros:", error);
+                    }
+                };
+        
+                // Actualizar la tabla después de cada búsqueda
+                turnerosList.on("searchComplete", function () {
+                    const tbody = document.querySelector("#turnerosTable tbody");
+                    if (!tbody) return;
+        
+                    if (turnerosList.matchingItems.length === 0) {
+                        const existingMessage = document.querySelector(".no-result-message");
+                        if (existingMessage) {
+                            existingMessage.remove();
+                        }
+                        
+                        // Agregar mensaje de "No resultados"
+                        const tr = document.createElement("tr");
+                        tr.className = "no-result-message";
+                        tr.innerHTML = '<td colspan="6" class="text-center">No se encontraron resultados</td>';
+                        tbody.appendChild(tr);
+                    } else {
+                        // Remover mensaje si hay resultados
+                        const noResultMessage = document.querySelector(".no-result-message");
+                        if (noResultMessage) {
+                            noResultMessage.remove();
+                        }
+                    }
+                });
+        
+            } catch (error) {
+                console.error("Error al inicializar List.js:", error);
+            }
+        });
+        </script>
+
+    <!-- script para hacer submit y update al formulario  -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const crudForm = document.getElementById("crudForm");
+            const token = "d07c91f369e145647caec709beac1278761a353d";
+        
+            let editingTurneroId = null; // Para saber si estamos editando
+        
+            // Manejar el botón de "Editar"
+            document.querySelectorAll(".edit-item-btn").forEach((button) => {
+                button.addEventListener("click", function () {
+                    const turneroId = this.dataset.id;
+                    const nombre = this.dataset.nombre;
+                    const ubicacion = this.dataset.ubicacion;
+                    const presentacion = this.dataset.presentacion;
+        
+                    // Establecer valores en el modal
+                    document.getElementById("nombre").value = nombre;
+                    document.getElementById("ubicacion").value = ubicacion;
+                    document.getElementById("presentacion").value = presentacion;
+        
+                    // Guardar el ID del turnero editado
+                    editingTurneroId = turneroId;
+                    crudForm.setAttribute("data-method", "PUT");
+                    crudForm.setAttribute("action", `/api/turneros/${turneroId}/`);
+        
+                    // Cambiar el título del modal
+                    document.getElementById("exampleModalLabel").textContent = "Editar Turnero";
+                });
+            });
+        
+            // Manejar el botón de "Agregar Nuevo"
+            document.querySelector(".add-btn").addEventListener("click", function () {
+                crudForm.reset();
+                editingTurneroId = null;
+                crudForm.setAttribute("data-method", "POST");
+                crudForm.setAttribute("action", "/api/turneros/");
+        
+                document.getElementById("exampleModalLabel").textContent = "Crear Nuevo Turnero";
+            });
+        
+            // Manejar la presentación del formulario
+            crudForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+        
+                // Obtener datos del formulario
+                const jsonData = {
+                    nombre: document.getElementById("nombre").value,
+                    ubicacion: document.getElementById("ubicacion").value,
+                    presentacion: document.getElementById("presentacion").value,
+                    menus: Array.from(document.getElementById("menus").selectedOptions).map(option => parseInt(option.value))
+                };
+        
+                // Determinar si es edición o creación
+                const isEdit = editingTurneroId !== null;
+                const url = isEdit ? `/api/turneros/${editingTurneroId}/` : "/api/turneros/";
+                const method = isEdit ? "PUT" : "POST";
+        
+                fetch(url, {
+                    method: method,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Token ${token}`,
+                    },
+                    body: JSON.stringify(jsonData),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => Promise.reject(err));
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    Swal.fire({
+                        title: "Éxito",
+                        text: isEdit ? "Turnero actualizado correctamente" : "Turnero creado correctamente",
+                        icon: "success",
+                        confirmButtonText: "Ok"
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    Swal.fire({
+                        title: "Error",
+                        text: "Hubo un problema al procesar la solicitud",
+                        icon: "error",
+                        confirmButtonText: "Ok"
+                    });
+                });
+            });
+        });
+        </script>
+        
+  <!-- script para eliminar  -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const token = "d07c91f369e145647caec709beac1278761a353d"; // Token de autenticación
+    
+        document.querySelectorAll(".remove-item-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                const turneroId = this.dataset.id;
+                const turneroNombre = this.dataset.nombre;
+    
+                // Mostrar confirmación antes de eliminar
+                Swal.fire({
+                    title: "¿Estás seguro?",
+                    text: `¿Deseas eliminar el turnero "${turneroNombre}"?`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Sí, eliminar",
+                    cancelButtonText: "Cancelar"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/api/turneros/${turneroId}/`, {
+                            method: "DELETE",
+                            headers: {
+                                "Authorization": `Token ${token}`,
+                            },
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error("Error al eliminar");
+                            return response.status === 204 ? null : response.json();
+                        })
+                        .then(() => {
+                            Swal.fire("Eliminado", "El turnero ha sido eliminado correctamente.", "success")
+                                .then(() => window.location.reload());
+                        })
+                        .catch(error => {
+                            Swal.fire("Error", "No se pudo eliminar el turnero.", "error");
+                        });
+                    }
+                });
+            });
+        });
+    });
+    
+</script>
+    {% endblock extra_js %}

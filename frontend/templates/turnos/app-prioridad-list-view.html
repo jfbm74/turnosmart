@@ -173,182 +173,192 @@
     <script src="{% static 'libs/sweetalert2/dist/sweetalert2.min.js' %}"></script>   
 
     <!-- Crear, Editar borrar Acciones -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const token = "d07c91f369e145647caec709beac1278761a353d";
-            let formMode = 'create';
-            let currentPrioridadId = null;
+    <!-- Crear, Editar, Eliminar Acciones -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Hardcodeamos el token (solo para pruebas, no usar en producción)
+        const token = "d07c91f369e145647caec709beac1278761a353d";
+    
+        let formMode = 'create';
+        let currentPrioridadId = null;
+    
+        // Inicializar el modal de Bootstrap
+        const modalEl = document.getElementById('showModal');
+        const modal = new bootstrap.Modal(modalEl);
+    
+        // Función para resetear el formulario
+        function resetForm() {
+            const form = document.getElementById('prioridadForm');
+            if (form) {
+                form.reset();
+                formMode = 'create';
+                currentPrioridadId = null;
+                document.getElementById('exampleModalLabel').textContent = 'Crear Nueva Prioridad';
+            }
+        }
+    
+        // Cuando se hace click en el botón de "Agregar", resetea el formulario
+        document.querySelector('.add-btn').addEventListener('click', function() {
+            resetForm();
+        });
+    
+        // Función para cargar los datos en el formulario al editar
+        function loadPrioridadData(button) {
+            formMode = 'edit';
+            currentPrioridadId = button.dataset.id;
+            document.getElementById('exampleModalLabel').textContent = 'Editar Prioridad';
+            // Cargar datos en los campos del formulario
+            document.getElementById('nombre').value = button.dataset.nombre;
+            document.getElementById('prioridad').value = button.dataset.prioridad;
+        }
+    
+        // Manejo del envío del formulario mediante fetch
+        document.getElementById('prioridadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+    
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const formData = new FormData(this);
+            const jsonData = {};
+    
+            // Convertir FormData a objeto JSON (omitiendo el token CSRF)
+            formData.forEach((value, key) => {
+                if (key !== 'csrfmiddlewaretoken') {
+                    jsonData[key] = value;
+                }
+            });
+    
+            // Determinar la URL del endpoint según el modo (crear o editar)
+            const url = formMode === 'create' 
+                ? '/api/prioridades/' 
+                : `/api/prioridades/${currentPrioridadId}/`;
+    
+            // Realizar la solicitud fetch con el token en el header Authorization
+            fetch(url, {
+                method: formMode === 'create' ? 'POST' : 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                    'Authorization': `Token ${token}`
+                },
+                body: JSON.stringify(jsonData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(err));
+                }
+                return response.json();
+            })
+            .then(data => {
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: formMode === 'create'
+                        ? 'Prioridad creada exitosamente.'
+                        : 'Prioridad actualizada exitosamente.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    modal.hide();
+                    window.location.reload();
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: error.detail || 'Hubo un error al procesar la solicitud',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        });
+    
+        // Delegación de eventos para los botones de editar y eliminar
+        document.addEventListener('click', function(e) {
+            // Si se hace click en un botón de editar
+            const editButton = e.target.closest('.edit-btn');
+            if (editButton) {
+                loadPrioridadData(editButton);
+            }
             
-            // Inicializar modal de Bootstrap
-            const modalEl = document.getElementById('showModal');
-            const modal = new bootstrap.Modal(modalEl);
-        
-            // Función para resetear el formulario
-            function resetForm() {
-                const form = document.getElementById('prioridadForm');
-                if (form) {
-                    form.reset();
-                    formMode = 'create';
-                    currentPrioridadId = null;
-                    document.getElementById('exampleModalLabel').textContent = 'Crear Nueva Prioridad';
-                }
-            }
-        
-            // Reset form when modal is opened for creating
-            document.querySelector('.add-btn').addEventListener('click', function() {
-                resetForm();
-            });
-        
-            // Función para cargar datos en el formulario para edición
-            function loadPrioridadData(button) {
-                formMode = 'edit';
-                currentPrioridadId = button.dataset.id;
-                document.getElementById('exampleModalLabel').textContent = 'Editar Prioridad';
+            // Si se hace click en un botón de eliminar
+            const deleteButton = e.target.closest('.delete-btn');
+            if (deleteButton) {
+                const id = deleteButton.dataset.id;
+                const nombre = deleteButton.dataset.nombre;
                 
-                // Cargar datos en el formulario
-                document.getElementById('nombre').value = button.dataset.nombre;
-                document.getElementById('prioridad').value = button.dataset.prioridad;
-            }
-        
-            // Manejador del formulario
-            document.getElementById('prioridadForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                const formData = new FormData(this);
-                const jsonData = {};
-                formData.forEach((value, key) => {
-                    if (key !== 'csrfmiddlewaretoken') {
-                        jsonData[key] = value;
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: `¿Deseas eliminar la prioridad "${nombre}"?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        fetch(`/api/prioridades/${id}/`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Token ${token}`,
+                                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Error al eliminar');
+                            }
+                            // Si el servidor responde con 204 No Content, no se espera JSON
+                            return response.status === 204 ? null : response.json();
+                        })
+                        .then(() => {
+                            Swal.fire('Eliminada', 'La prioridad ha sido eliminada.', 'success')
+                            .then(() => window.location.reload());
+                        })
+                        .catch(error => {
+                            Swal.fire('Error', 'No se pudo eliminar la prioridad.', 'error');
+                        });
                     }
                 });
-        
-                // Corregir las URLs para que coincidan con tu backend
-                const url = formMode === 'create' 
-                    ? '/api/prioridades/' 
-                    : `/api/prioridades/${currentPrioridadId}/`;
-        
-                fetch(url, {
-                    method: formMode === 'create' ? 'POST' : 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrftoken,
-                        'Authorization': `Token ${token}`
-                    },
-                    body: JSON.stringify(jsonData)
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => Promise.reject(err));
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    Swal.fire({
-                        title: '¡Éxito!',
-                        text: formMode === 'create' ? 'Prioridad creada exitosamente.' : 'Prioridad actualizada exitosamente.',
-                        icon: 'success',
-                        confirmButtonText: 'OK',
-                    }).then(() => {
-                        modal.hide();
-                        window.location.reload();
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        title: 'Error',
-                        text: error.detail || 'Hubo un error al procesar la solicitud',
-                        icon: 'error',
-                        confirmButtonText: 'OK'
-                    });
-                });
-            });
-        
-            // Event delegation para los botones de editar y eliminar
-            document.addEventListener('click', function(e) {
-                // Botón editar
-                if (e.target.closest('.edit-btn')) {
-                    const button = e.target.closest('.edit-btn');
-                    loadPrioridadData(button);
-                }
-                
-                // Botón eliminar
-                if (e.target.closest('.delete-btn')) {
-                    const button = e.target.closest('.delete-btn');
-                    const id = button.dataset.id;
-                    const nombre = button.dataset.nombre;
-                    
-                    Swal.fire({
-                        title: '¿Estás seguro?',
-                        text: `¿Deseas eliminar la prioridad "${nombre}"?`,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Sí, eliminar',
-                        cancelButtonText: 'Cancelar'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            fetch(`/api/prioridades/${id}/`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'Authorization': `Token ${token}`,
-                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                                }
-                            })
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error('Error al eliminar');
-                                }
-                                return response.status === 204 ? null : response.json();
-                            })
-                            .then(() => {
-                                Swal.fire('Eliminada', 'La prioridad ha sido eliminada.', 'success')
-                                    .then(() => window.location.reload());
-                            })
-                            .catch(error => {
-                                Swal.fire('Error', 'No se pudo eliminar la prioridad.', 'error');
-                            });
-                        }
-                    });
-                }
-            });
-        
-            // Inicialización de List.js
-            try {
-                const options = {
-                    valueNames: ['id', 'nombre', 'prioridad'],
-                    page: 10,
-                    pagination: [{
-                        name: "pagination",
-                        paginationClass: "list-pagination",
-                        outerWindow: 2
-                    }]
-                };
-        
-                const prioridadesList = new List('tasksList', options);
-        
-                // Configurar la búsqueda
-                const searchField = document.querySelector('.search');
-                if (searchField) {
-                    let searchTimeout;
-                    searchField.addEventListener('keyup', function() {
-                        clearTimeout(searchTimeout);
-                        searchTimeout = setTimeout(() => {
-                            prioridadesList.search(this.value);
-                        }, 300);
-                    });
-                }
-        
-                // Función para el botón de filtros
-                window.SearchData = function() {
-                    const searchValue = document.querySelector('.search')?.value || '';
-                    prioridadesList.search(searchValue);
-                };
-            } catch (error) {
-                console.error('Error al inicializar List.js:', error);
             }
         });
+    
+        // Inicialización de List.js para la paginación y búsqueda
+        try {
+            const options = {
+                valueNames: ['id', 'nombre', 'prioridad'],
+                page: 10,
+                pagination: [{
+                    name: "pagination",
+                    paginationClass: "list-pagination",
+                    outerWindow: 2
+                }]
+            };
+    
+            const prioridadesList = new List('tasksList', options);
+    
+            // Configurar búsqueda con debounce
+            const searchField = document.querySelector('.search');
+            if (searchField) {
+                let searchTimeout;
+                searchField.addEventListener('keyup', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        prioridadesList.search(this.value);
+                    }, 300);
+                });
+            }
+    
+            // Función para aplicar filtros manualmente
+            window.SearchData = function() {
+                const searchValue = document.querySelector('.search')?.value || '';
+                prioridadesList.search(searchValue);
+            };
+        } catch (error) {
+            console.error('Error al inicializar List.js:', error);
+        }
+    });
     </script>
+    
 
 {% endblock extra_js %}

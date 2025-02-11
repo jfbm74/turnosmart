@@ -10,6 +10,7 @@ from .views import (
     PrioridadListView,
     PrioridadViewSet,
     SalaViewSet,
+    TurneroListView,
     TurneroViewSet,
 )
 
@@ -31,4 +32,7 @@ urlpatterns = [
     path('turnos/prioridades/', PrioridadListView.as_view(), name='prioridades-list'),
     path("horarios/list/", HorariosListView.as_view(), name="horarios-list"),
     path('menu/list/', MenuListView.as_view(), name='menus-lista'),
+    path('turnos/turneros/', TurneroListView.as_view(), name='turneros-list'),
+
+
 ] + router.urls
